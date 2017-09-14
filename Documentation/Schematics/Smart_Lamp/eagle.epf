@@ -385,7 +385,7 @@ UsedLibrary="/home/gionata/Arduino/Eagle/libraries/SparkFun-Eagle-Libraries-mast
 
 [Win_1]
 Type="Board Editor"
-Loc="707 228 1306 627"
+Loc="0 0 599 399"
 State=1
 Number=2
 File="Smart_Lamp_v0.1.brd"
@@ -431,11 +431,11 @@ Layer=16
 
 [Win_2]
 Type="Schematic Editor"
-Loc="3143 210 3742 609"
+Loc="1946 26 2545 425"
 State=1
 Number=1
 File="Smart_Lamp_v0.1.sch"
-View="-92.9708 4.71763 219.971 124.822"
+View="-74.42 -1.7361 238.522 118.369"
 WireWidths=" 0 0.3048 0.6096 0.8128 1.016 1.27 1.4224 1.6764 1.778 1.9304 2.1844 2.54 3.81 6.4516 0.4064 0.1524"
 PadDiameters=" 0.254 0.3048 0.4064 0.6096 0.8128 1.016 1.27 1.4224 1.6764 1.778 1.9304 2.1844 2.54 3.81 6.4516 0"
 PadDrills=" 0.5 0.6 0.7 0.9 1 1.1 1.2 1.3 1.4 1.5 1.6 2 2.2 2.8 3.2 0.8"
@@ -474,7 +474,7 @@ ArcDirection=0
 AddLevel=2
 PadsSameType=0
 Layer=91
-Views=" 1: -92.9708 4.71763 219.971 124.822"
+Views=" 1: -74.42 -1.7361 238.522 118.369"
 Sheet="1"
 
 [Win_3]

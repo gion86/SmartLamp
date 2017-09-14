@@ -8927,7 +8927,7 @@ Grid 5.00 mm&lt;p&gt;
 <part name="C4" library="SparkFun-Capacitors" deviceset="CAP_POL" device="PTH2" value="2.2uF"/>
 <part name="X2" library="con-wago-500" deviceset="W237-102" device=""/>
 <part name="U1" library="HM-10_BLE" deviceset="HM-10" device=""/>
-<part name="R7" library="rcl" deviceset="R-US_" device="0207/10" value="470"/>
+<part name="R7" library="rcl" deviceset="R-US_" device="0207/10" value="1K"/>
 <part name="R8" library="rcl" deviceset="R-US_" device="0207/10" value="470"/>
 <part name="LED1" library="adafruit" deviceset="LED" device="3MM" value="BLUE"/>
 <part name="U$7" library="microbuilder" deviceset="3.3V" device=""/>
@@ -8976,14 +8976,14 @@ Grid 5.00 mm&lt;p&gt;
 <instance part="R7" gate="G$1" x="187.96" y="81.28" rot="R180"/>
 <instance part="R8" gate="G$1" x="187.96" y="88.9" rot="R180"/>
 <instance part="LED1" gate="G$1" x="200.66" y="88.9" rot="R90"/>
-<instance part="U$7" gate="G$1" x="116.84" y="114.3"/>
+<instance part="U$7" gate="G$1" x="116.84" y="111.76"/>
 <instance part="GND7" gate="1" x="119.38" y="78.74" rot="MR0"/>
 <instance part="GND8" gate="1" x="139.7" y="60.96" rot="MR0"/>
 <instance part="GND9" gate="1" x="160.02" y="60.96" rot="MR0"/>
 <instance part="GND11" gate="1" x="177.8" y="78.74" rot="MR0"/>
 <instance part="GND12" gate="1" x="210.82" y="86.36" rot="MR0"/>
 <instance part="U$8" gate="G$1" x="198.12" y="81.28" rot="R270"/>
-<instance part="C5" gate="G$1" x="116.84" y="104.14" rot="R180"/>
+<instance part="C5" gate="G$1" x="116.84" y="104.14"/>
 <instance part="S1" gate="1" x="111.76" y="91.44"/>
 <instance part="GND6" gate="1" x="109.22" y="101.6" rot="MR180"/>
 </instances>
@@ -9186,9 +9186,9 @@ Grid 5.00 mm&lt;p&gt;
 <pinref part="U$8" gate="G$1" pin="3.3V"/>
 </segment>
 <segment>
-<pinref part="C5" gate="G$1" pin="2"/>
 <pinref part="U$7" gate="G$1" pin="3.3V"/>
-<wire x1="116.84" y1="109.22" x2="116.84" y2="111.76" width="0.1524" layer="91"/>
+<pinref part="C5" gate="G$1" pin="1"/>
+<wire x1="116.84" y1="109.22" x2="116.84" y2="106.68" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="SQW_INT" class="0">
@@ -9228,12 +9228,22 @@ Grid 5.00 mm&lt;p&gt;
 <wire x1="129.54" y1="114.3" x2="121.92" y2="114.3" width="0.1524" layer="91"/>
 <label x="121.92" y="114.3" size="1.778" layer="95"/>
 </segment>
+<segment>
+<pinref part="MCU1" gate="G$1" pin="(PCINT3/T0/ADC3)PA3"/>
+<wire x1="73.66" y1="58.42" x2="81.28" y2="58.42" width="0.1524" layer="91"/>
+<label x="76.2" y="58.42" size="1.778" layer="95"/>
+</segment>
 </net>
 <net name="S_IN" class="0">
 <segment>
 <pinref part="U1" gate="G$1" pin="P1_7"/>
 <wire x1="129.54" y1="111.76" x2="121.92" y2="111.76" width="0.1524" layer="91"/>
 <label x="121.92" y="111.76" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="MCU1" gate="G$1" pin="(PCINT2/AIN1/ADC2)PA2"/>
+<wire x1="73.66" y1="55.88" x2="81.28" y2="55.88" width="0.1524" layer="91"/>
+<label x="76.2" y="55.88" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="N$9" class="0">
@@ -9267,9 +9277,9 @@ Grid 5.00 mm&lt;p&gt;
 </net>
 <net name="N$2" class="0">
 <segment>
+<pinref part="C5" gate="G$1" pin="2"/>
 <pinref part="S1" gate="1" pin="S"/>
-<pinref part="C5" gate="G$1" pin="1"/>
-<wire x1="116.84" y1="96.52" x2="116.84" y2="101.6" width="0.1524" layer="91"/>
+<wire x1="116.84" y1="99.06" x2="116.84" y2="96.52" width="0.1524" layer="91"/>
 </segment>
 </net>
 </nets>
