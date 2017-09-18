@@ -12399,7 +12399,6 @@ Marquardt, Siemens, C&amp;K, ITT, and others&lt;p&gt;
 <part name="U$8" library="microbuilder" deviceset="3.3V" device=""/>
 <part name="C5" library="adafruit" deviceset="C-US" device="025-024X044" value="0.1uF"/>
 <part name="S1" library="switch" deviceset="9070-1W" device=""/>
-<part name="GND6" library="supply1" deviceset="GND" device=""/>
 <part name="Q1" library="transistor-power" deviceset="IRFI540NPBF" device="" value="IRF1404"/>
 <part name="Q2" library="transistor-power" deviceset="IRFI540NPBF" device="" value="IRF1404"/>
 <part name="Q3" library="transistor-power" deviceset="IRFI540NPBF" device="" value="IRF1404"/>
@@ -12420,10 +12419,10 @@ Marquardt, Siemens, C&amp;K, ITT, and others&lt;p&gt;
 <sheets>
 <sheet>
 <plain>
-<text x="218.44" y="111.76" size="1.778" layer="91">MOSI</text>
-<text x="218.44" y="104.14" size="1.778" layer="91">SCK</text>
-<text x="218.44" y="101.6" size="1.778" layer="91">MISO</text>
-<text x="218.44" y="106.68" size="1.778" layer="91">RESET</text>
+<text x="172.72" y="111.76" size="1.778" layer="91">MOSI</text>
+<text x="172.72" y="104.14" size="1.778" layer="91">SCK</text>
+<text x="172.72" y="101.6" size="1.778" layer="91">MISO</text>
+<text x="172.72" y="106.68" size="1.778" layer="91">RESET</text>
 <wire x1="2.54" y1="132.08" x2="127" y2="132.08" width="0.1524" layer="94"/>
 <wire x1="127" y1="132.08" x2="127" y2="175.26" width="0.1524" layer="94"/>
 <wire x1="127" y1="132.08" x2="127" y2="91.44" width="0.1524" layer="94"/>
@@ -12470,7 +12469,6 @@ power lines 12V</text>
 <instance part="U$8" gate="G$1" x="106.68" y="83.82" rot="R270"/>
 <instance part="C5" gate="G$1" x="25.4" y="106.68"/>
 <instance part="S1" gate="2" x="17.78" y="93.98"/>
-<instance part="GND6" gate="1" x="17.78" y="104.14" rot="MR180"/>
 <instance part="Q1" gate="G$1" x="30.48" y="27.94"/>
 <instance part="Q2" gate="G$1" x="63.5" y="27.94"/>
 <instance part="Q3" gate="G$1" x="96.52" y="27.94"/>
@@ -12479,8 +12477,8 @@ power lines 12V</text>
 <instance part="R3" gate="G$1" x="20.32" y="25.4"/>
 <instance part="R4" gate="G$1" x="53.34" y="25.4"/>
 <instance part="R5" gate="G$1" x="86.36" y="25.4"/>
-<instance part="IDC1" gate="G$1" x="200.66" y="106.68" rot="R180"/>
-<instance part="GND14" gate="1" x="187.96" y="96.52" rot="MR0"/>
+<instance part="IDC1" gate="G$1" x="200.66" y="106.68"/>
+<instance part="GND14" gate="1" x="215.9" y="96.52" rot="MR0"/>
 <instance part="J1" gate="G$1" x="20.32" y="149.86"/>
 <instance part="C1" gate="G$1" x="88.9" y="152.4"/>
 <instance part="C3" gate="G$1" x="182.88" y="71.12"/>
@@ -12588,11 +12586,6 @@ power lines 12V</text>
 <pinref part="GND12" gate="1" pin="GND"/>
 </segment>
 <segment>
-<pinref part="S1" gate="2" pin="O"/>
-<pinref part="GND6" gate="1" pin="GND"/>
-<wire x1="17.78" y1="99.06" x2="17.78" y2="101.6" width="0.1524" layer="91"/>
-</segment>
-<segment>
 <pinref part="Q1" gate="G$1" pin="S"/>
 <wire x1="33.02" y1="22.86" x2="33.02" y2="17.78" width="0.1524" layer="91"/>
 <pinref part="Q2" gate="G$1" pin="S"/>
@@ -12606,16 +12599,6 @@ power lines 12V</text>
 <wire x1="66.04" y1="15.24" x2="66.04" y2="17.78" width="0.1524" layer="91"/>
 </segment>
 <segment>
-<pinref part="IDC1" gate="G$1" pin="4"/>
-<wire x1="193.04" y1="104.14" x2="187.96" y2="104.14" width="0.1524" layer="91"/>
-<pinref part="IDC1" gate="G$1" pin="2"/>
-<wire x1="193.04" y1="101.6" x2="187.96" y2="101.6" width="0.1524" layer="91"/>
-<wire x1="187.96" y1="101.6" x2="187.96" y2="104.14" width="0.1524" layer="91"/>
-<wire x1="187.96" y1="101.6" x2="187.96" y2="99.06" width="0.1524" layer="91"/>
-<junction x="187.96" y="101.6"/>
-<pinref part="GND14" gate="1" pin="GND"/>
-</segment>
-<segment>
 <pinref part="GND4" gate="1" pin="GND"/>
 <pinref part="C3" gate="G$1" pin="2"/>
 </segment>
@@ -12623,6 +12606,16 @@ power lines 12V</text>
 <pinref part="BT1" gate="G$1" pin="+"/>
 <pinref part="GND13" gate="1" pin="GND"/>
 <wire x1="231.14" y1="43.18" x2="231.14" y2="40.64" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="IDC1" gate="G$1" pin="8"/>
+<wire x1="208.28" y1="104.14" x2="215.9" y2="104.14" width="0.1524" layer="91"/>
+<pinref part="IDC1" gate="G$1" pin="10"/>
+<wire x1="208.28" y1="101.6" x2="215.9" y2="101.6" width="0.1524" layer="91"/>
+<wire x1="215.9" y1="101.6" x2="215.9" y2="104.14" width="0.1524" layer="91"/>
+<pinref part="GND14" gate="1" pin="GND"/>
+<wire x1="215.9" y1="101.6" x2="215.9" y2="99.06" width="0.1524" layer="91"/>
+<junction x="215.9" y="101.6"/>
 </segment>
 </net>
 <net name="SDA" class="0">
@@ -12709,9 +12702,9 @@ power lines 12V</text>
 <wire x1="25.4" y1="111.76" x2="25.4" y2="109.22" width="0.1524" layer="91"/>
 </segment>
 <segment>
-<pinref part="IDC1" gate="G$1" pin="10"/>
-<wire x1="193.04" y1="111.76" x2="185.42" y2="111.76" width="0.1524" layer="91"/>
-<label x="185.42" y="111.76" size="1.778" layer="95"/>
+<pinref part="IDC1" gate="G$1" pin="2"/>
+<wire x1="208.28" y1="111.76" x2="215.9" y2="111.76" width="0.1524" layer="91"/>
+<label x="210.82" y="111.76" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="!INT_SQW" class="0">
@@ -12721,9 +12714,14 @@ power lines 12V</text>
 <wire x1="175.26" y1="55.88" x2="187.96" y2="55.88" width="0.1524" layer="91"/>
 </segment>
 <segment>
-<pinref part="MCU1" gate="G$1" pin="(PCINT7/ICP/OC0B/ADC7)PA7"/>
-<wire x1="226.06" y1="147.32" x2="233.68" y2="147.32" width="0.1524" layer="91"/>
-<label x="228.6" y="147.32" size="1.778" layer="95"/>
+<pinref part="MCU1" gate="G$1" pin="(PCINT4/T1/SCL/USCK/ADC4)PA4"/>
+<wire x1="226.06" y1="139.7" x2="233.68" y2="139.7" width="0.1524" layer="91"/>
+<label x="228.6" y="139.7" size="1.778" layer="95" font="vector"/>
+</segment>
+<segment>
+<pinref part="IDC1" gate="G$1" pin="7"/>
+<wire x1="193.04" y1="104.14" x2="182.88" y2="104.14" width="0.1524" layer="91"/>
+<label x="182.88" y="104.14" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="!RTC_RST" class="0">
@@ -12738,11 +12736,12 @@ power lines 12V</text>
 <pinref part="MCU1" gate="G$1" pin="(PCINT11/~RESET/DW)PB3"/>
 <pinref part="R6" gate="G$1" pin="2"/>
 <wire x1="226.06" y1="160.02" x2="238.76" y2="160.02" width="0.1524" layer="91"/>
+<label x="228.6" y="160.02" size="1.778" layer="95"/>
 </segment>
 <segment>
 <pinref part="IDC1" gate="G$1" pin="5"/>
-<wire x1="208.28" y1="106.68" x2="213.36" y2="106.68" width="0.1524" layer="91"/>
-<label x="208.28" y="106.68" size="1.778" layer="95"/>
+<wire x1="193.04" y1="106.68" x2="182.88" y2="106.68" width="0.1524" layer="91"/>
+<label x="182.88" y="106.68" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="+12V" class="1">
@@ -12875,14 +12874,9 @@ power lines 12V</text>
 <label x="10.16" y="25.4" size="1.778" layer="95"/>
 </segment>
 <segment>
-<pinref part="MCU1" gate="G$1" pin="(PCINT6/OC1A/SDA/MOSI/ADC6)PA6"/>
-<wire x1="226.06" y1="144.78" x2="233.68" y2="144.78" width="0.1524" layer="91"/>
-<label x="228.6" y="144.78" size="1.778" layer="95"/>
-</segment>
-<segment>
-<pinref part="IDC1" gate="G$1" pin="9"/>
-<wire x1="208.28" y1="111.76" x2="213.36" y2="111.76" width="0.1524" layer="91"/>
-<label x="208.28" y="111.76" size="1.778" layer="95"/>
+<pinref part="MCU1" gate="G$1" pin="(PCINT7/ICP/OC0B/ADC7)PA7"/>
+<wire x1="226.06" y1="147.32" x2="233.68" y2="147.32" width="0.1524" layer="91"/>
+<label x="228.6" y="147.32" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="GR" class="0">
@@ -12892,14 +12886,14 @@ power lines 12V</text>
 <label x="43.18" y="25.4" size="1.778" layer="95"/>
 </segment>
 <segment>
-<pinref part="MCU1" gate="G$1" pin="(PCINT5/OC1B/MISO/DO/ADC5)PA5"/>
-<wire x1="226.06" y1="142.24" x2="233.68" y2="142.24" width="0.1524" layer="91"/>
-<label x="228.6" y="142.24" size="1.778" layer="95"/>
+<pinref part="MCU1" gate="G$1" pin="(PCINT6/OC1A/SDA/MOSI/ADC6)PA6"/>
+<wire x1="226.06" y1="144.78" x2="233.68" y2="144.78" width="0.1524" layer="91"/>
+<label x="228.6" y="144.78" size="1.778" layer="95"/>
 </segment>
 <segment>
 <pinref part="IDC1" gate="G$1" pin="1"/>
-<wire x1="208.28" y1="101.6" x2="213.36" y2="101.6" width="0.1524" layer="91"/>
-<label x="208.28" y="101.6" size="1.778" layer="95"/>
+<wire x1="193.04" y1="111.76" x2="182.88" y2="111.76" width="0.1524" layer="91"/>
+<label x="182.88" y="111.76" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="BLUE" class="0">
@@ -12909,14 +12903,14 @@ power lines 12V</text>
 <label x="76.2" y="25.4" size="1.778" layer="95"/>
 </segment>
 <segment>
-<pinref part="MCU1" gate="G$1" pin="(PCINT4/T1/SCL/USCK/ADC4)PA4"/>
-<wire x1="226.06" y1="139.7" x2="233.68" y2="139.7" width="0.1524" layer="91"/>
-<label x="228.6" y="139.7" size="1.778" layer="95"/>
+<pinref part="MCU1" gate="G$1" pin="(PCINT5/OC1B/MISO/DO/ADC5)PA5"/>
+<wire x1="226.06" y1="142.24" x2="233.68" y2="142.24" width="0.1524" layer="91"/>
+<label x="228.6" y="142.24" size="1.778" layer="95"/>
 </segment>
 <segment>
-<pinref part="IDC1" gate="G$1" pin="3"/>
-<wire x1="208.28" y1="104.14" x2="213.36" y2="104.14" width="0.1524" layer="91"/>
-<label x="208.28" y="104.14" size="1.778" layer="95"/>
+<pinref part="IDC1" gate="G$1" pin="9"/>
+<wire x1="193.04" y1="101.6" x2="182.88" y2="101.6" width="0.1524" layer="91"/>
+<label x="182.88" y="101.6" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="!BLU_RES" class="0">
@@ -12937,6 +12931,18 @@ power lines 12V</text>
 <wire x1="218.44" y1="55.88" x2="231.14" y2="55.88" width="0.1524" layer="91"/>
 <wire x1="231.14" y1="55.88" x2="231.14" y2="53.34" width="0.1524" layer="91"/>
 <pinref part="BT1" gate="G$1" pin="-"/>
+</segment>
+</net>
+<net name="S_OUT_DEBUG" class="0">
+<segment>
+<pinref part="MCU1" gate="G$1" pin="(PCINT9/XTAL2)PB1"/>
+<wire x1="226.06" y1="154.94" x2="233.68" y2="154.94" width="0.1524" layer="91"/>
+<label x="228.6" y="154.94" size="1.778" layer="95" font="vector"/>
+</segment>
+<segment>
+<pinref part="IDC1" gate="G$1" pin="6"/>
+<wire x1="208.28" y1="106.68" x2="215.9" y2="106.68" width="0.1524" layer="91"/>
+<label x="210.82" y="106.68" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 </nets>
