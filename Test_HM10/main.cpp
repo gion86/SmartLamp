@@ -17,7 +17,7 @@
 #define STATE_PIN_MISSING  -1
 
 // misc
-#define SERIAL_BAUD    115200
+#define SERIAL_BAUD      9600
 #define SERIAL_TIMEOUT  60000   // 1 min
 #define BLE_BAUD         9600   // for at mode and for data mode (CC41, HM-10 and MLT-BT05)
 #define BLE_TIMEOUT       250   // 100 was ok for CC41 and HM-10 but not for MLT_BT05's AT+HELP command
@@ -171,6 +171,10 @@ void openBLE() {
   Serial.print(STATE_PIN);
   Serial.println();
 
+  rxPin = RX_PIN;
+  txPin = TX_PIN;
+  statePin = STATE_PIN;
+
   // open and create object
   ble = new SoftwareSerial(RX_PIN, TX_PIN);
   ble->begin(BLE_BAUD);
@@ -288,5 +292,12 @@ void setup() {
 }
 
 void loop() {
-  Serial.println("TEST_Ardunio");
+  //read from the HM-10 and print in the Serial
+  if (ble->available())
+    Serial.write(ble->read());
+
+  //read from the Serial and print to the HM-10
+  if (Serial.available()) {
+    ble->write(Serial.read());
+  }
 }

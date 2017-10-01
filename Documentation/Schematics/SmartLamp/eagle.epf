@@ -381,7 +381,7 @@ UsedLibrary="/home/gionata/Arduino/Eagle/libraries/Maxim/RTC/Maxim_RTC.lbr"
 
 [Win_1]
 Type="Board Editor"
-Loc="830 399 1429 798"
+Loc="900 342 1499 741"
 State=1
 Number=2
 File="SmartLamp.brd"

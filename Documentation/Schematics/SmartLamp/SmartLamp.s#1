@@ -10137,7 +10137,7 @@ Mors</description>
 <part name="C1" library="adafruit" deviceset="C-US" device="025-024X044" value="0.1uF"/>
 <part name="FRAME1" library="frames" deviceset="A4L-LOC" device=""/>
 <part name="GND13" library="supply1" deviceset="GND" device=""/>
-<part name="S1" library="switch-dil" deviceset="SD4-02" device=""/>
+<part name="S1" library="switch-dil" deviceset="SD4-02" device="" value="S1"/>
 <part name="+3V1" library="supply1" deviceset="+3V3" device=""/>
 <part name="+3V2" library="supply1" deviceset="+3V3" device=""/>
 <part name="+3V3" library="supply1" deviceset="+3V3" device=""/>
@@ -10652,17 +10652,7 @@ power lines 12V</text>
 </sheet>
 </sheets>
 <errors>
-<approved hash="104,1,187.96,58.42,IC1,VCC,+3V3,,,"/>
-<approved hash="103,1,187.96,50.8,IC1,NC,GND,,,"/>
-<approved hash="103,1,187.96,48.26,IC1,NC1,GND,,,"/>
-<approved hash="103,1,187.96,45.72,IC1,NC2,GND,,,"/>
-<approved hash="103,1,187.96,43.18,IC1,NC3,GND,,,"/>
-<approved hash="103,1,218.44,43.18,IC1,NC4,GND,,,"/>
-<approved hash="103,1,218.44,45.72,IC1,NC5,GND,,,"/>
-<approved hash="103,1,218.44,48.26,IC1,NC6,GND,,,"/>
-<approved hash="103,1,218.44,50.8,IC1,NC7,GND,,,"/>
-<approved hash="104,1,231.14,43.18,BT1,-,GND,,,"/>
-<approved hash="104,1,231.14,53.34,BT1,+,VBAT,,,"/>
+<approved hash="104,1,187.96,58.42,U2,VCC,+3V3,,,"/>
 <approved hash="113,1,60.8288,49.0044,LED_STRIP,,,,,"/>
 <approved hash="113,1,130.071,89.431,FRAME1,,,,,"/>
 </errors>
