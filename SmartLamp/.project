@@ -4,7 +4,9 @@
 	<comment></comment>
 	<projects>
 		<project>AttinyCore</project>
+		<project>DS3232RTC</project>
 		<project>SoftwareSerial</project>
+		<project>TinyWireM</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

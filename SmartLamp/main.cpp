@@ -4,6 +4,9 @@
 #include <Arduino.h>
 #include <SoftwareSerial.h>
 
+#include <DS3232RTC.h>
+#include <TinyWireM.h>
+
 #define LED_PIN             4
 #define RX_PIN              2
 #define TX_PIN              3
@@ -16,6 +19,7 @@
 #define LENGTH             80
 
 SoftwareSerial ble(RX_PIN, TX_PIN);
+DS3232RTC RTC;
 
 // Put the micro to sleep
 void system_sleep() {
@@ -25,6 +29,28 @@ void system_sleep() {
 
   // sleeping ...
   sleep_disable(); // wake up fully
+}
+
+void printDigits(int digits) {
+    // utility function for digital clock display: prints preceding colon and leading 0
+    Serial.print(':');
+    if(digits < 10)
+        Serial.print('0');
+    Serial.print(digits);
+}
+
+void digitalClockDisplay(void) {
+    // digital clock display of the time
+    Serial.print(hour());
+    printDigits(minute());
+    printDigits(second());
+    Serial.print(' ');
+    Serial.print(day());
+    Serial.print(' ');
+    Serial.print(month());
+    Serial.print(' ');
+    Serial.print(year());
+    Serial.println();
 }
 
 void setup() {
@@ -45,6 +71,13 @@ void setup() {
 
   Serial.print(F("Initial value of OSCCAL is 0x"));
   Serial.println(OSCCAL, HEX);
+
+
+  setSyncProvider(RTC.get);   // the function to get the time from the RTC
+  if(timeStatus() != timeSet)
+      Serial.println("Unable to sync with the RTC");
+  else
+      Serial.println("RTC has set the system time");
 
   // Disable ADC to save power
   ADCSRA = 0;
@@ -90,6 +123,8 @@ void loop() {
     if (strcmp(buffer, "OFF") == 0) {
       digitalWrite(LED_PIN, LOW);
     }
+
+    digitalClockDisplay();
   }
 
 
