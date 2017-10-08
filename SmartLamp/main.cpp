@@ -62,7 +62,7 @@ void digitalClockDisplay(void) {
 }
 
 void setup() {
-  OSCCAL = 0x80;
+  OSCCAL = 0x86;                // Calibrated OSSCAL value with TinyTuner
 
   Serial.begin(SERIAL_BAUD);
   ble.begin(BLE_BAUD);
