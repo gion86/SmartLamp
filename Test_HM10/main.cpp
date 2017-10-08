@@ -116,7 +116,7 @@ ModuleType identifyDevice() {
         Serial.println(F("Verify that the module is powered. Is the led blinking?"));
         Serial.println(F("Check that pins are correctly connected and the right values were entered."));
         Serial.println(F("Are you using a logic voltage converter for a module that already has such logic on board?"));
-        Serial.println(F("Are you using a module that expects 3.3v logic? You might need to do logic convertion on Arduio's TX pin (module's RX pin)."));
+        Serial.println(F("Are you using a module that expects 3.3v logic? You might need to do logic convertion on Arduino's TX pin (module's RX pin)."));
       } else {
         Serial.print(F("Unexpected result of length="));
         Serial.println(s.length());

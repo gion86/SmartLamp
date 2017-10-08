@@ -7,10 +7,18 @@
 #include <DS3232RTC.h>
 #include <TinyWireM.h>
 
-#define LED_PIN             4
+#define LED_PIN             5
+
+#define LED_BLUE            5
+#define LED_GR              8
+#define LED_RED             7
+
+#define BLU_STATE           1
+#define BLU_RESET           9
+#define RTC_INT_SQW        10
+
 #define RX_PIN              2
 #define TX_PIN              3
-#define STATE_PIN           7
 
 // misc
 #define SERIAL_BAUD      9600
@@ -72,12 +80,11 @@ void setup() {
   Serial.print(F("Initial value of OSCCAL is 0x"));
   Serial.println(OSCCAL, HEX);
 
-
-  setSyncProvider(RTC.get);   // the function to get the time from the RTC
-  if(timeStatus() != timeSet)
-      Serial.println("Unable to sync with the RTC");
-  else
-      Serial.println("RTC has set the system time");
+//  setSyncProvider(RTC.get);   // the function to get the time from the RTC
+//  if(timeStatus() != timeSet)
+//      Serial.println("Unable to sync with the RTC");
+//  else
+//      Serial.println("RTC has set the system time");
 
   // Disable ADC to save power
   ADCSRA = 0;
@@ -126,7 +133,6 @@ void loop() {
 
     digitalClockDisplay();
   }
-
 
   /*//read from the HM-10 and print in the Serial
   if (ble.available()) {
