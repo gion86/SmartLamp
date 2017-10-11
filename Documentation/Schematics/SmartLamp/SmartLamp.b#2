@@ -2014,25 +2014,27 @@ design rules under a new name.</description>
 <contactref element="IDC1" pad="10"/>
 <contactref element="C2" pad="2"/>
 <contactref element="MCU1" pad="14"/>
-<contactref element="S1" pad="3"/>
 <contactref element="C3" pad="2"/>
 <contactref element="G1" pad="-"/>
 <contactref element="U2" pad="5"/>
 <contactref element="Q1" pad="S"/>
 <contactref element="Q2" pad="S"/>
 <contactref element="Q3" pad="S"/>
+<contactref element="C4" pad="2"/>
 <contactref element="S1" pad="4"/>
+<contactref element="S1" pad="3"/>
 <wire x1="67.31" y1="29.21" x2="73.38" y2="43.18" width="0" layer="19" extent="1-1"/>
 <wire x1="62.23" y1="26.67" x2="67.31" y2="29.21" width="0" layer="19" extent="1-1"/>
 <wire x1="50.8" y1="26.67" x2="62.23" y2="26.67" width="0" layer="19" extent="1-1"/>
 <wire x1="39.37" y1="26.67" x2="50.8" y2="26.67" width="0" layer="19" extent="1-1"/>
-<wire x1="28.96" y1="35.41" x2="39.37" y2="26.67" width="0" layer="19" extent="1-1"/>
-<wire x1="28.96" y1="45.91" x2="28.96" y2="35.41" width="0" layer="19" extent="1-1"/>
-<wire x1="26.89" y1="47.41" x2="28.96" y2="45.91" width="0" layer="19" extent="1-1"/>
-<wire x1="20.2438" y1="27.305" x2="28.96" y2="35.41" width="0" layer="19" extent="1-1"/>
+<wire x1="29.21" y1="30.48" x2="39.37" y2="26.67" width="0" layer="19" extent="1-1"/>
+<wire x1="28.96" y1="35.41" x2="29.21" y2="30.48" width="0" layer="19" extent="1-1"/>
+<wire x1="20.2438" y1="27.305" x2="29.21" y2="30.48" width="0" layer="19" extent="1-1"/>
 <wire x1="20.32" y1="21.59" x2="20.2438" y2="27.305" width="0" layer="19" extent="1-1"/>
 <wire x1="15.24" y1="21.59" x2="20.32" y2="21.59" width="0" layer="19" extent="1-1"/>
 <wire x1="11.43" y1="30.48" x2="20.2438" y2="27.305" width="0" layer="19" extent="1-1"/>
+<wire x1="28.96" y1="45.91" x2="28.96" y2="35.41" width="0" layer="19" extent="1-1"/>
+<wire x1="26.89" y1="47.41" x2="28.96" y2="45.91" width="0" layer="19" extent="1-1"/>
 <wire x1="13.97" y1="5.08" x2="15.24" y2="21.59" width="0" layer="19" extent="1-1"/>
 <wire x1="7.62" y1="2.54" x2="13.97" y2="5.08" width="0" layer="19" extent="1-1"/>
 <wire x1="5.08" y1="2.54" x2="7.62" y2="2.54" width="0" layer="19" extent="1-1"/>
@@ -2176,9 +2178,6 @@ design rules under a new name.</description>
 <contactref element="MCU1" pad="2"/>
 <wire x1="3.81" y1="27.94" x2="27.94" y2="6.35" width="0" layer="19" extent="1-1"/>
 </signal>
-<signal name="N$1">
-<contactref element="U1" pad="12"/>
-</signal>
 <signal name="+3V3" class="2">
 <contactref element="R6" pad="1"/>
 <contactref element="C1" pad="1"/>
@@ -2189,18 +2188,20 @@ design rules under a new name.</description>
 <contactref element="C3" pad="1"/>
 <contactref element="U2" pad="2"/>
 <contactref element="C4" pad="1"/>
+<contactref element="U1" pad="12"/>
 <wire x1="43.18" y1="12.7" x2="67.31" y2="26.67" width="0" layer="19" extent="1-1"/>
 <wire x1="38.1" y1="11.43" x2="43.18" y2="12.7" width="0" layer="19" extent="1-1"/>
 <wire x1="38.1381" y1="15.3416" x2="38.1" y2="11.43" width="0" layer="19" extent="1-1"/>
 <wire x1="38.1" y1="22.86" x2="38.1381" y2="15.3416" width="0" layer="19" extent="1-1"/>
 <wire x1="29.21" y1="27.94" x2="38.1" y2="22.86" width="0" layer="19" extent="1-1"/>
+<wire x1="25.39" y1="33.87" x2="29.21" y2="27.94" width="0" layer="19" extent="1-1"/>
 <wire x1="20.32" y1="24.13" x2="29.21" y2="27.94" width="0" layer="19" extent="1-1"/>
 <wire x1="15.3162" y1="29.845" x2="20.32" y2="24.13" width="0" layer="19" extent="1-1"/>
 <wire x1="46.99" y1="2.7178" x2="43.18" y2="12.7" width="0" layer="19" extent="1-1"/>
 </signal>
-<signal name="N$2">
-<contactref element="U1" pad="13"/>
+<signal name="N$1">
 <contactref element="S1" pad="1"/>
+<contactref element="U1" pad="13"/>
 <wire x1="7.62" y1="10.16" x2="26.89" y2="33.87" width="0" layer="19" extent="1-1"/>
 </signal>
 </signals>

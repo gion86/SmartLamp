@@ -10093,7 +10093,7 @@ Source: http://www.irf.com/product-info/datasheets/data/irlz44zpbf.pdf</descript
 </library>
 </libraries>
 <attributes>
-<attribute name="VERSION" value="0.3"/>
+<attribute name="VERSION" value="0.4"/>
 </attributes>
 <variantdefs>
 </variantdefs>
@@ -10358,20 +10358,6 @@ power lines 12V</text>
 <pinref part="MCU1" gate="G$1" pin="(PCINT4/T1/SCL/USCK/ADC4)PA4"/>
 <wire x1="226.06" y1="139.7" x2="233.68" y2="139.7" width="0.1524" layer="91"/>
 <label x="228.6" y="139.7" size="1.778" layer="95" font="vector"/>
-</segment>
-</net>
-<net name="3V3" class="2">
-<segment>
-<wire x1="175.26" y1="160.02" x2="167.64" y2="160.02" width="0.1524" layer="91"/>
-<label x="167.64" y="160.02" size="1.778" layer="95"/>
-<pinref part="C2" gate="G$1" pin="1"/>
-<wire x1="167.64" y1="149.86" x2="167.64" y2="160.02" width="0.1524" layer="91"/>
-<pinref part="MCU1" gate="G$1" pin="VCC"/>
-</segment>
-<segment>
-<pinref part="IDC1" gate="G$1" pin="2"/>
-<wire x1="208.28" y1="111.76" x2="215.9" y2="111.76" width="0.1524" layer="91"/>
-<label x="210.82" y="111.76" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="!INT_SQW" class="0">
@@ -10652,6 +10638,18 @@ power lines 12V</text>
 <wire x1="15.24" y1="88.9" x2="15.24" y2="91.44" width="0.1524" layer="91"/>
 <wire x1="38.1" y1="88.9" x2="15.24" y2="88.9" width="0.1524" layer="91"/>
 <junction x="15.24" y="88.9"/>
+</segment>
+<segment>
+<wire x1="175.26" y1="160.02" x2="167.64" y2="160.02" width="0.1524" layer="91"/>
+<label x="167.64" y="160.02" size="1.778" layer="95"/>
+<pinref part="C2" gate="G$1" pin="1"/>
+<wire x1="167.64" y1="149.86" x2="167.64" y2="160.02" width="0.1524" layer="91"/>
+<pinref part="MCU1" gate="G$1" pin="VCC"/>
+</segment>
+<segment>
+<pinref part="IDC1" gate="G$1" pin="2"/>
+<wire x1="208.28" y1="111.76" x2="215.9" y2="111.76" width="0.1524" layer="91"/>
+<label x="210.82" y="111.76" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="N$1" class="0">
