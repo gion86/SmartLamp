@@ -10093,7 +10093,7 @@ Source: http://www.irf.com/product-info/datasheets/data/irlz44zpbf.pdf</descript
 </library>
 </libraries>
 <attributes>
-<attribute name="VERSION" value="0.3"/>
+<attribute name="VERSION" value="0.4"/>
 </attributes>
 <variantdefs>
 </variantdefs>
@@ -10193,7 +10193,7 @@ power lines 12V</text>
 <instance part="R7" gate="G$1" x="101.6" y="81.28" rot="R180"/>
 <instance part="R8" gate="G$1" x="101.6" y="91.44" rot="R180"/>
 <instance part="LED1" gate="G$1" x="111.76" y="91.44" rot="R90"/>
-<instance part="GND7" gate="1" x="35.56" y="66.04" rot="MR0"/>
+<instance part="GND7" gate="1" x="35.56" y="63.5" rot="MR0"/>
 <instance part="GND8" gate="1" x="48.26" y="63.5" rot="MR0"/>
 <instance part="GND9" gate="1" x="68.58" y="63.5" rot="MR0"/>
 <instance part="GND11" gate="1" x="86.36" y="81.28" rot="MR0"/>
@@ -10219,13 +10219,13 @@ power lines 12V</text>
 <instance part="+3V6" gate="G$1" x="114.3" y="81.28" rot="R270"/>
 <instance part="+3V7" gate="G$1" x="15.24" y="93.98"/>
 <instance part="GND5" gate="1" x="167.64" y="124.46" rot="MR0"/>
-<instance part="GND6" gate="1" x="27.94" y="66.04" rot="MR0"/>
+<instance part="GND6" gate="1" x="27.94" y="63.5" rot="MR0"/>
 <instance part="G1" gate="G$1" x="231.14" y="48.26" rot="R90"/>
 <instance part="U2" gate="A" x="203.2" y="58.42"/>
 <instance part="Q1" gate="G$1" x="30.48" y="27.94"/>
 <instance part="Q2" gate="G$1" x="63.5" y="27.94"/>
 <instance part="Q3" gate="G$1" x="96.52" y="27.94"/>
-<instance part="GND3" gate="1" x="15.24" y="66.04" rot="MR0"/>
+<instance part="GND3" gate="1" x="15.24" y="63.5" rot="MR0"/>
 </instances>
 <busses>
 </busses>
@@ -10317,16 +10317,18 @@ power lines 12V</text>
 <segment>
 <pinref part="C4" gate="G$1" pin="2"/>
 <pinref part="GND3" gate="1" pin="GND"/>
-<wire x1="15.24" y1="71.12" x2="15.24" y2="68.58" width="0.1524" layer="91"/>
+<wire x1="15.24" y1="71.12" x2="15.24" y2="66.04" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="GND7" gate="1" pin="GND"/>
 <pinref part="S1" gate="1" pin="4"/>
+<wire x1="35.56" y1="66.04" x2="35.56" y2="68.58" width="0.1524" layer="91"/>
 <wire x1="35.56" y1="68.58" x2="33.02" y2="68.58" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="GND6" gate="1" pin="GND"/>
 <pinref part="S1" gate="1" pin="3"/>
+<wire x1="27.94" y1="66.04" x2="27.94" y2="68.58" width="0.1524" layer="91"/>
 <wire x1="27.94" y1="68.58" x2="30.48" y2="68.58" width="0.1524" layer="91"/>
 </segment>
 </net>
@@ -10356,20 +10358,6 @@ power lines 12V</text>
 <pinref part="MCU1" gate="G$1" pin="(PCINT4/T1/SCL/USCK/ADC4)PA4"/>
 <wire x1="226.06" y1="139.7" x2="233.68" y2="139.7" width="0.1524" layer="91"/>
 <label x="228.6" y="139.7" size="1.778" layer="95" font="vector"/>
-</segment>
-</net>
-<net name="3V3" class="2">
-<segment>
-<wire x1="175.26" y1="160.02" x2="167.64" y2="160.02" width="0.1524" layer="91"/>
-<label x="167.64" y="160.02" size="1.778" layer="95"/>
-<pinref part="C2" gate="G$1" pin="1"/>
-<wire x1="167.64" y1="149.86" x2="167.64" y2="160.02" width="0.1524" layer="91"/>
-<pinref part="MCU1" gate="G$1" pin="VCC"/>
-</segment>
-<segment>
-<pinref part="IDC1" gate="G$1" pin="2"/>
-<wire x1="208.28" y1="111.76" x2="215.9" y2="111.76" width="0.1524" layer="91"/>
-<label x="210.82" y="111.76" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="!INT_SQW" class="0">
@@ -10650,6 +10638,18 @@ power lines 12V</text>
 <wire x1="15.24" y1="88.9" x2="15.24" y2="91.44" width="0.1524" layer="91"/>
 <wire x1="38.1" y1="88.9" x2="15.24" y2="88.9" width="0.1524" layer="91"/>
 <junction x="15.24" y="88.9"/>
+</segment>
+<segment>
+<wire x1="175.26" y1="160.02" x2="167.64" y2="160.02" width="0.1524" layer="91"/>
+<label x="167.64" y="160.02" size="1.778" layer="95"/>
+<pinref part="C2" gate="G$1" pin="1"/>
+<wire x1="167.64" y1="149.86" x2="167.64" y2="160.02" width="0.1524" layer="91"/>
+<pinref part="MCU1" gate="G$1" pin="VCC"/>
+</segment>
+<segment>
+<pinref part="IDC1" gate="G$1" pin="2"/>
+<wire x1="208.28" y1="111.76" x2="215.9" y2="111.76" width="0.1524" layer="91"/>
+<label x="210.82" y="111.76" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="N$1" class="0">
