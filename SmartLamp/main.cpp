@@ -7,6 +7,7 @@
 #include <DS3232RTC.h>
 #include <TinyWireM.h>
 
+// Input/output defines
 #define LED_PIN             5
 
 #define LED_BLUE            5
@@ -17,17 +18,22 @@
 #define BLU_RESET           9
 #define RTC_INT_SQW        10
 
+// Serial defines
 #define RX_PIN              2
 #define TX_PIN              3
-
-// misc
 #define SERIAL_BAUD      9600
-#define BLE_BAUD         9600   // for at mode and for data mode (CC41, HM-10 and MLT-BT05)
+#define BLE_BAUD         9600   // For at mode and for data mode (CC41, HM-10 and MLT-BT05)
 
+#define SLEEP_TIMEOUT  10000L   // Timeout before sleep
 #define LENGTH             80
 
+
+// Global variables
 SoftwareSerial ble(RX_PIN, TX_PIN);
 DS3232RTC RTC;
+
+boolean data = false;
+unsigned long prevMillis = 0;
 
 // Put the micro to sleep
 void system_sleep() {
@@ -89,17 +95,24 @@ void setup() {
   // Disable ADC to save power
   ADCSRA = 0;
 
-  PCMSK0 |= (1<<PCINT10);   // pin change mask: listen to portB bit 2 (D 2)
-  GIMSK  |= (1<<PCIE0);     // enable PCINT interrupt
+  PCMSK0 |= (1<<PCINT10);       // Pin change mask: listen to portB bit 2 (D 2)
+  GIMSK  |= (1<<PCIE0);         // Enable PCINT interrupt
 }
 
-boolean data = false;
+
 
 void loop() {
   size_t count = 0;
   char buffer[LENGTH];
 
-  system_sleep();
+  // FIXME Wake from sleep with new CORE can't read first serial bytes....
+
+  if (millis() - prevMillis >= SLEEP_TIMEOUT) {
+    prevMillis = millis();
+    Serial.print(F("Sleeping..."));
+    system_sleep();
+  }
+
 
   while (ble.available() && count < LENGTH - 1) {
     delay(5);
@@ -112,6 +125,8 @@ void loop() {
     buffer[count] = c;
     count++;
     data = true;
+
+    prevMillis = millis();      // Update prevMillis to reset sleep timeout
   }
 
   if (data) {
