@@ -8,6 +8,8 @@
 		<project>SoftwareSerial</project>
 		<project>TinyWireM</project>
 		<project>USIWire</project>
+		<project>AttinyCore</project>
+		<project>NeoSWSerial</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

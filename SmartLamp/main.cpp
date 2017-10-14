@@ -2,7 +2,7 @@
 #include <avr/iotnx4.h>
 
 #include <Arduino.h>
-#include <SoftwareSerial.h>
+#include <NeoSWSerial.h>
 
 #include <DS3232RTC.h>
 //TODO #include <TinyWireM.h>
@@ -30,7 +30,7 @@
 
 
 // Global variables
-SoftwareSerial ble(RX_PIN, TX_PIN);
+NeoSWSerial ble(RX_PIN, TX_PIN);
 DS3232RTC RTC;
 USIWire bus;                    // USIWire instance (I2C bus)
 
@@ -102,7 +102,6 @@ void setup() {
 }
 
 
-
 void loop() {
   size_t count = 0;
   char buffer[LENGTH];
@@ -115,26 +114,29 @@ void loop() {
     system_sleep();
   }
 
-
   while (ble.available() && count < LENGTH - 1) {
-    delay(5);
+    delay(2);
     char c = (char) ble.read();
 
+    prevMillis = millis();      // Update prevMillis to reset sleep timeout
+
     if (c == '\r' || c == '\n') {
+      if (c == '\n') {
+        data = true;
+        ble.flush();
+        break;
+      }
       continue;
     }
 
     buffer[count] = c;
     count++;
-    data = true;
-
-    prevMillis = millis();      // Update prevMillis to reset sleep timeout
   }
 
   if (data) {
     buffer[count] = '\0';
-    Serial.print("COUNT = ");
-    Serial.println(count);
+    //Serial.print("COUNT = ");
+    //Serial.println(count);
     Serial.println(buffer);
 
     count = 0;
@@ -148,7 +150,7 @@ void loop() {
       digitalWrite(LED_PIN, LOW);
     }
 
-    digitalClockDisplay();
+    //digitalClockDisplay();
   }
 
   /*//read from the HM-10 and print in the Serial
