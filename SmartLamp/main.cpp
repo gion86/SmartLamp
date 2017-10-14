@@ -5,7 +5,8 @@
 #include <SoftwareSerial.h>
 
 #include <DS3232RTC.h>
-#include <TinyWireM.h>
+//TODO #include <TinyWireM.h>
+#include <USIWire.h>
 
 // Input/output defines
 #define LED_PIN             5
@@ -31,6 +32,7 @@
 // Global variables
 SoftwareSerial ble(RX_PIN, TX_PIN);
 DS3232RTC RTC;
+USIWire bus;                    // USIWire instance (I2C bus)
 
 boolean data = false;
 unsigned long prevMillis = 0;

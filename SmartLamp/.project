@@ -7,6 +7,7 @@
 		<project>DS3232RTC</project>
 		<project>SoftwareSerial</project>
 		<project>TinyWireM</project>
+		<project>USIWire</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
