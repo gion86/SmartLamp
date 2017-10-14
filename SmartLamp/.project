@@ -5,11 +5,9 @@
 	<projects>
 		<project>ATTinyCore</project>
 		<project>DS3232RTC</project>
-		<project>SoftwareSerial</project>
+		<project>NeoSWSerial</project>
 		<project>TinyWireM</project>
 		<project>USIWire</project>
-		<project>AttinyCore</project>
-		<project>NeoSWSerial</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
