@@ -12,11 +12,11 @@
 #define LED_PIN             5
 
 #define LED_BLUE            5
-#define LED_GR              8
+#define LED_GR              1
 #define LED_RED             7
 
-#define BLU_STATE           1
-#define BLU_RESET           9
+#define BLU_STATE           8
+#define BLU_RESET           0
 #define RTC_INT_SQW        10
 
 // Serial defines
@@ -24,6 +24,10 @@
 #define TX_PIN              3
 #define SERIAL_BAUD      9600
 #define BLE_BAUD         9600   // For at mode and for data mode (CC41, HM-10 and MLT-BT05)
+
+// I2C defines
+#define SDA                 4
+#define SCL                 6
 
 #define SLEEP_TIMEOUT  10000L   // Timeout before sleep
 #define LENGTH             80
@@ -77,6 +81,14 @@ void setup() {
 
   pinMode(LED_PIN, OUTPUT);
 
+  // Pinmode set
+  pinMode(LED_BLUE, OUTPUT);
+  pinMode(LED_GR, OUTPUT);
+  pinMode(LED_RED, OUTPUT);
+  pinMode(BLU_STATE, INPUT);
+  pinMode(BLU_RESET, OUTPUT);
+  pinMode(RTC_INT_SQW, INPUT);
+
   delay(100);
 
   //ble.println("AT");
@@ -97,8 +109,9 @@ void setup() {
   // Disable ADC to save power
   ADCSRA = 0;
 
-  PCMSK0 |= (1<<PCINT10);       // Pin change mask: listen to portB bit 2 (D 2)
-  GIMSK  |= (1<<PCIE0);         // Enable PCINT interrupt
+  PCMSK0 |= (1 << PCINT10);       // Pin change mask: listen to portB bit 2 (D 2)
+  PCMSK0 |= (1 << PCINT0);        // Pin change mask: listen to portA bit 0 (D10)
+  GIMSK  |= (1 << PCIE0);         // Enable PCINT interrupt
 }
 
 
@@ -110,8 +123,9 @@ void loop() {
 
   if (millis() - prevMillis >= SLEEP_TIMEOUT) {
     prevMillis = millis();
-    Serial.print(F("Sleeping..."));
+    Serial.println(F("Sleeping..."));
     system_sleep();
+    Serial.println(F("Waking up..."));
   }
 
   while (ble.available() && count < LENGTH - 1) {

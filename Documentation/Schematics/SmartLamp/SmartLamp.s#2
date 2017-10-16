@@ -10155,6 +10155,7 @@ Source: http://www.irf.com/product-info/datasheets/data/irlz44zpbf.pdf</descript
 <part name="Q2" library="transistor-power" deviceset="IRLZ44Z" device=""/>
 <part name="Q3" library="transistor-power" deviceset="IRLZ44Z" device=""/>
 <part name="GND3" library="supply1" deviceset="GND" device=""/>
+<part name="R9" library="rcl" deviceset="R-US_" device="0309/12" value="10K"/>
 </parts>
 <sheets>
 <sheet>
@@ -10226,6 +10227,7 @@ power lines 12V</text>
 <instance part="Q2" gate="G$1" x="63.5" y="27.94"/>
 <instance part="Q3" gate="G$1" x="96.52" y="27.94"/>
 <instance part="GND3" gate="1" x="15.24" y="63.5" rot="MR0"/>
+<instance part="R9" gate="G$1" x="172.72" y="66.04" rot="R270"/>
 </instances>
 <busses>
 </busses>
@@ -10339,6 +10341,8 @@ power lines 12V</text>
 <pinref part="R1" gate="G$1" pin="2"/>
 <wire x1="238.76" y1="58.42" x2="238.76" y2="60.96" width="0.1524" layer="91"/>
 <pinref part="U2" gate="A" pin="SDA"/>
+<wire x1="238.76" y1="58.42" x2="241.3" y2="58.42" width="0.1524" layer="91"/>
+<junction x="238.76" y="58.42"/>
 </segment>
 <segment>
 <pinref part="MCU1" gate="G$1" pin="(PCINT6/OC1A/SDA/MOSI/ADC6)PA6"/>
@@ -10353,6 +10357,8 @@ power lines 12V</text>
 <label x="220.98" y="60.96" size="1.778" layer="95"/>
 <pinref part="R2" gate="G$1" pin="2"/>
 <pinref part="U2" gate="A" pin="SCL"/>
+<wire x1="231.14" y1="60.96" x2="233.68" y2="60.96" width="0.1524" layer="91"/>
+<junction x="231.14" y="60.96"/>
 </segment>
 <segment>
 <pinref part="MCU1" gate="G$1" pin="(PCINT4/T1/SCL/USCK/ADC4)PA4"/>
@@ -10363,8 +10369,12 @@ power lines 12V</text>
 <net name="!INT_SQW" class="0">
 <segment>
 <label x="175.26" y="55.88" size="1.778" layer="95"/>
-<wire x1="175.26" y1="55.88" x2="187.96" y2="55.88" width="0.1524" layer="91"/>
 <pinref part="U2" gate="A" pin="!INT/SQW"/>
+<wire x1="172.72" y1="55.88" x2="187.96" y2="55.88" width="0.1524" layer="91"/>
+<wire x1="170.18" y1="55.88" x2="172.72" y2="55.88" width="0.1524" layer="91"/>
+<pinref part="R9" gate="G$1" pin="2"/>
+<wire x1="172.72" y1="60.96" x2="172.72" y2="55.88" width="0.1524" layer="91"/>
+<junction x="172.72" y="55.88"/>
 </segment>
 <segment>
 <pinref part="IDC1" gate="G$1" pin="7"/>
@@ -10605,6 +10615,9 @@ power lines 12V</text>
 <pinref part="C1" gate="G$1" pin="1"/>
 <pinref part="+3V2" gate="G$1" pin="+3V3"/>
 <pinref part="U2" gate="A" pin="VCC"/>
+<pinref part="R9" gate="G$1" pin="1"/>
+<wire x1="172.72" y1="71.12" x2="172.72" y2="73.66" width="0.1524" layer="91"/>
+<wire x1="172.72" y1="73.66" x2="177.8" y2="73.66" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="R2" gate="G$1" pin="1"/>
