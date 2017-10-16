@@ -1,40 +1,33 @@
 #include <avr/sleep.h>
-#include <avr/iotnx4.h>
 
 #include <Arduino.h>
-#include <NeoSWSerial.h>
 
 #include <DS3232RTC.h>
 //TODO #include <TinyWireM.h>
 #include <USIWire.h>
 
 // Input/output defines
-#define LED_PIN             5
-
 #define LED_BLUE            5
 #define LED_GR              1
 #define LED_RED             7
 
-#define BLU_STATE           8
+#define BLU_STATE           3
 #define BLU_RESET           0
+
 #define RTC_INT_SQW        10
 
 // Serial defines
-#define RX_PIN              2
-#define TX_PIN              3
-#define SERIAL_BAUD      9600
-#define BLE_BAUD         9600   // For at mode and for data mode (CC41, HM-10 and MLT-BT05)
+#define SERIAL_BAUD      9600   // For at mode and for data mode (CC41, HM-10 and MLT-BT05)
 
 // I2C defines
 #define SDA                 4
 #define SCL                 6
 
-#define SLEEP_TIMEOUT  10000L   // Timeout before sleep
-#define LENGTH             80
+#define SLEEP_TIMEOUT   2000L   // Timeout before sleep
+#define LENGTH             80   // Command buffer length
 
 
 // Global variables
-NeoSWSerial ble(RX_PIN, TX_PIN);
 DS3232RTC RTC;
 USIWire bus;                    // USIWire instance (I2C bus)
 
@@ -73,13 +66,17 @@ void digitalClockDisplay(void) {
     Serial.println();
 }
 
+// PCINT Interrupt Service Routine (unused)
+ISR(PCINT0_vect) {
+  // Don't do anything here but we must include this
+  // block of code otherwise the interrupt calls an
+  // uninitialized interrupt handler.
+}
+
 void setup() {
-  OSCCAL = 0x86;                // Calibrated OSSCAL value with TinyTuner
+  OSCCAL = 0x86;                    // Calibrated OSSCAL value with TinyTuner
 
   Serial.begin(SERIAL_BAUD);
-  ble.begin(BLE_BAUD);
-
-  pinMode(LED_PIN, OUTPUT);
 
   // Pinmode set
   pinMode(LED_BLUE, OUTPUT);
@@ -89,14 +86,7 @@ void setup() {
   pinMode(BLU_RESET, OUTPUT);
   pinMode(RTC_INT_SQW, INPUT);
 
-  delay(100);
-
-  //ble.println("AT");
-  ble.println("AT+SLEEP");
-
-  //ble.println("START BLE");
-  Serial.println("START SERIAL");
-
+  Serial.println(F("START SERIAL"));
   Serial.print(F("Initial value of OSCCAL is 0x"));
   Serial.println(OSCCAL, HEX);
 
@@ -106,12 +96,12 @@ void setup() {
 //  else
 //      Serial.println("RTC has set the system time");
 
-  // Disable ADC to save power
-  ADCSRA = 0;
+  ADCSRA  = 0;                      // Disable ADC to save power
+  MCUCR  |= _BV(BODS);              // BOD disabled
 
-  PCMSK0 |= (1 << PCINT10);       // Pin change mask: listen to portB bit 2 (D 2)
-  PCMSK0 |= (1 << PCINT0);        // Pin change mask: listen to portA bit 0 (D10)
-  GIMSK  |= (1 << PCIE0);         // Enable PCINT interrupt
+  PCMSK0 |= _BV(PCINT0);            // Pin change mask: listen to portA bit 0 (D10)
+  PCMSK0 |= _BV(PCINT2);            // Pin change mask: listen to portA bit 2 (D8)
+  GIMSK  |= _BV(PCIE0);             // Enable PCINT interrupt on portA
 }
 
 
@@ -128,16 +118,16 @@ void loop() {
     Serial.println(F("Waking up..."));
   }
 
-  while (ble.available() && count < LENGTH - 1) {
+  while (Serial.available() && count < LENGTH - 1) {
     delay(2);
-    char c = (char) ble.read();
+    char c = (char) Serial.read();
 
     prevMillis = millis();      // Update prevMillis to reset sleep timeout
 
     if (c == '\r' || c == '\n') {
       if (c == '\n') {
         data = true;
-        ble.flush();
+        Serial.flush();
         break;
       }
       continue;
@@ -157,25 +147,13 @@ void loop() {
     data = false;
 
     if (strcmp(buffer, "ON") == 0) {
-      digitalWrite(LED_PIN, HIGH);
+      digitalWrite(LED_BLUE, HIGH);
     }
 
     if (strcmp(buffer, "OFF") == 0) {
-      digitalWrite(LED_PIN, LOW);
+      digitalWrite(LED_BLUE, LOW);
     }
 
     //digitalClockDisplay();
   }
-
-  /*//read from the HM-10 and print in the Serial
-  if (ble.available()) {
-    delay(5);
-    Serial.write(ble.read());
-  }
-
-  //read from the Serial and print to the HM-10
-  if (Serial.available()) {
-    delay(5);
-    ble.write(Serial.read());
-  } */
 }

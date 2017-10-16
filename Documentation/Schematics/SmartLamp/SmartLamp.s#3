@@ -10093,7 +10093,7 @@ Source: http://www.irf.com/product-info/datasheets/data/irlz44zpbf.pdf</descript
 </library>
 </libraries>
 <attributes>
-<attribute name="VERSION" value="0.4"/>
+<attribute name="VERSION" value="0.5"/>
 </attributes>
 <variantdefs>
 </variantdefs>
@@ -10341,6 +10341,8 @@ power lines 12V</text>
 <pinref part="R1" gate="G$1" pin="2"/>
 <wire x1="238.76" y1="58.42" x2="238.76" y2="60.96" width="0.1524" layer="91"/>
 <pinref part="U2" gate="A" pin="SDA"/>
+<wire x1="238.76" y1="58.42" x2="241.3" y2="58.42" width="0.1524" layer="91"/>
+<junction x="238.76" y="58.42"/>
 </segment>
 <segment>
 <pinref part="MCU1" gate="G$1" pin="(PCINT6/OC1A/SDA/MOSI/ADC6)PA6"/>
@@ -10355,6 +10357,8 @@ power lines 12V</text>
 <label x="220.98" y="60.96" size="1.778" layer="95"/>
 <pinref part="R2" gate="G$1" pin="2"/>
 <pinref part="U2" gate="A" pin="SCL"/>
+<wire x1="231.14" y1="60.96" x2="233.68" y2="60.96" width="0.1524" layer="91"/>
+<junction x="231.14" y="60.96"/>
 </segment>
 <segment>
 <pinref part="MCU1" gate="G$1" pin="(PCINT4/T1/SCL/USCK/ADC4)PA4"/>
@@ -10424,14 +10428,14 @@ power lines 12V</text>
 </net>
 <net name="S_IN" class="0">
 <segment>
-<pinref part="MCU1" gate="G$1" pin="(PCINT10/INT0/OC0A/CKOUT)PB2"/>
-<wire x1="226.06" y1="157.48" x2="233.68" y2="157.48" width="0.1524" layer="91"/>
-<label x="228.6" y="157.48" size="1.778" layer="95" font="vector"/>
-</segment>
-<segment>
 <pinref part="U1" gate="G$1" pin="P1_6"/>
 <wire x1="38.1" y1="116.84" x2="30.48" y2="116.84" width="0.1524" layer="91"/>
 <label x="30.48" y="116.84" size="1.778" layer="95" font="vector"/>
+</segment>
+<segment>
+<pinref part="MCU1" gate="G$1" pin="(PCINT2/AIN1/ADC2)PA2"/>
+<wire x1="226.06" y1="134.62" x2="233.68" y2="134.62" width="0.1524" layer="91"/>
+<label x="228.6" y="134.62" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="BLU_STATE" class="0">
@@ -10440,11 +10444,6 @@ power lines 12V</text>
 <pinref part="R8" gate="G$1" pin="2"/>
 <wire x1="78.74" y1="91.44" x2="96.52" y2="91.44" width="0.1524" layer="91"/>
 <label x="81.28" y="91.44" size="1.778" layer="95" font="vector"/>
-</segment>
-<segment>
-<pinref part="MCU1" gate="G$1" pin="(PCINT9/XTAL2)PB1"/>
-<wire x1="226.06" y1="154.94" x2="233.68" y2="154.94" width="0.1524" layer="91"/>
-<label x="228.6" y="154.94" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="N$10" class="0">
@@ -10541,9 +10540,9 @@ power lines 12V</text>
 <label x="182.88" y="111.76" size="1.778" layer="95" font="vector"/>
 </segment>
 <segment>
-<pinref part="MCU1" gate="G$1" pin="(PCINT2/AIN1/ADC2)PA2"/>
-<wire x1="226.06" y1="134.62" x2="233.68" y2="134.62" width="0.1524" layer="91"/>
-<label x="228.6" y="134.62" size="1.778" layer="95" font="vector"/>
+<pinref part="MCU1" gate="G$1" pin="(PCINT9/XTAL2)PB1"/>
+<wire x1="226.06" y1="154.94" x2="233.68" y2="154.94" width="0.1524" layer="91"/>
+<label x="228.6" y="154.94" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="BLUE" class="0">
@@ -10570,9 +10569,9 @@ power lines 12V</text>
 <label x="25.4" y="91.44" size="1.778" layer="95"/>
 </segment>
 <segment>
-<pinref part="MCU1" gate="G$1" pin="(PCINT1/AIN0/ADC1)PA1"/>
-<wire x1="226.06" y1="132.08" x2="233.68" y2="132.08" width="0.1524" layer="91"/>
-<label x="228.6" y="132.08" size="1.778" layer="95" font="vector"/>
+<pinref part="MCU1" gate="G$1" pin="(PCINT8/XTAL1/CLKI)PB0"/>
+<wire x1="226.06" y1="152.4" x2="233.68" y2="152.4" width="0.1524" layer="91"/>
+<label x="228.6" y="152.4" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="VBAT" class="0">
@@ -10591,9 +10590,9 @@ power lines 12V</text>
 <label x="210.82" y="106.68" size="1.778" layer="95" font="vector"/>
 </segment>
 <segment>
-<pinref part="MCU1" gate="G$1" pin="(PCINT8/XTAL1/CLKI)PB0"/>
-<wire x1="226.06" y1="152.4" x2="233.68" y2="152.4" width="0.1524" layer="91"/>
-<label x="228.6" y="152.4" size="1.778" layer="95" font="vector"/>
+<pinref part="MCU1" gate="G$1" pin="(PCINT1/AIN0/ADC1)PA1"/>
+<wire x1="226.06" y1="132.08" x2="233.68" y2="132.08" width="0.1524" layer="91"/>
+<label x="228.6" y="132.08" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="+3V3" class="2">
