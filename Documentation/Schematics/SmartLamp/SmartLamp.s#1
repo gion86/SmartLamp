@@ -10450,6 +10450,11 @@ power lines 12V</text>
 <wire x1="78.74" y1="91.44" x2="96.52" y2="91.44" width="0.1524" layer="91"/>
 <label x="81.28" y="91.44" size="1.778" layer="95" font="vector"/>
 </segment>
+<segment>
+<pinref part="MCU1" gate="G$1" pin="(PCINT9/XTAL2)PB1"/>
+<wire x1="226.06" y1="154.94" x2="233.68" y2="154.94" width="0.1524" layer="91"/>
+<label x="228.6" y="154.94" size="1.778" layer="95" font="vector"/>
+</segment>
 </net>
 <net name="N$10" class="0">
 <segment>
@@ -10545,9 +10550,9 @@ power lines 12V</text>
 <label x="182.88" y="111.76" size="1.778" layer="95" font="vector"/>
 </segment>
 <segment>
-<pinref part="MCU1" gate="G$1" pin="(PCINT9/XTAL2)PB1"/>
-<wire x1="226.06" y1="154.94" x2="233.68" y2="154.94" width="0.1524" layer="91"/>
-<label x="228.6" y="154.94" size="1.778" layer="95" font="vector"/>
+<pinref part="MCU1" gate="G$1" pin="(PCINT7/ICP/OC0B/ADC7)PA7"/>
+<wire x1="226.06" y1="147.32" x2="233.68" y2="147.32" width="0.1524" layer="91"/>
+<label x="228.6" y="147.32" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="BLUE" class="0">

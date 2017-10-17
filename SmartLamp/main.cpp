@@ -8,10 +8,10 @@
 
 // Input/output defines
 #define LED_BLUE            5
-#define LED_GR              1
-#define LED_RED             7
+#define LED_GR              3
+#define LED_RED             2
 
-#define BLU_STATE           3
+#define BLU_STATE           1
 #define BLU_RESET           0
 
 #define RTC_INT_SQW        10
@@ -23,7 +23,7 @@
 #define SDA                 4
 #define SCL                 6
 
-#define SLEEP_TIMEOUT   2000L   // Timeout before sleep
+#define SLEEP_TIMEOUT  30000L   // Timeout before sleep
 #define LENGTH             80   // Command buffer length
 
 
@@ -147,11 +147,32 @@ void loop() {
     data = false;
 
     if (strcmp(buffer, "ON") == 0) {
-      digitalWrite(LED_BLUE, HIGH);
+      for(int fadeValue = 0 ; fadeValue <= 255; fadeValue +=5) {
+          analogWrite(LED_BLUE, fadeValue);
+          delay(100);
+        }
+      delay(1000);
+      digitalWrite(LED_BLUE, LOW);
+
+      for(int fadeValue = 0 ; fadeValue <= 255; fadeValue +=5) {
+        analogWrite(LED_RED, fadeValue);
+        delay(100);
+      }
+      delay(1000);
+      digitalWrite(LED_RED, LOW);
+
+      for(int fadeValue = 0 ; fadeValue <= 255; fadeValue +=5) {
+        analogWrite(LED_GR, fadeValue);
+        delay(100);
+      }
+      delay(1000);
+      digitalWrite(LED_GR, LOW);
     }
 
     if (strcmp(buffer, "OFF") == 0) {
       digitalWrite(LED_BLUE, LOW);
+      digitalWrite(LED_RED, LOW);
+      digitalWrite(LED_GR, LOW);
     }
 
     //digitalClockDisplay();
