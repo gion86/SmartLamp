@@ -128,6 +128,9 @@
 		<scannerConfigBuildInfo instanceId="de.innot.avreclipse.configuration.app.debug.381805049.216597436.850358383.628191296;de.innot.avreclipse.configuration.app.debug.381805049.216597436.850358383.628191296.;de.innot.avreclipse.tool.cppcompiler.app.debug.1881441358;de.innot.avreclipse.cppcompiler.input.399283472">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="de.innot.avreclipse.core.AVRGCCManagedMakePerProjectProfileCPP"/>
 		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="de.innot.avreclipse.configuration.app.debug.381805049.216597436.543410479.2008053798.1482811896.655344572;de.innot.avreclipse.configuration.app.debug.381805049.216597436.543410479.2008053798.1482811896.655344572.;de.innot.avreclipse.tool.compiler.winavr.app.debug.143349851;de.innot.avreclipse.compiler.winavr.input.1705942748">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="de.innot.avreclipse.core.AVRGCCManagedMakePerProjectProfileC"/>
+		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="de.innot.avreclipse.configuration.app.debug.381805049.216597436.543410479;de.innot.avreclipse.configuration.app.debug.381805049.216597436.543410479.;de.innot.avreclipse.tool.cppcompiler.app.debug.1495780395;de.innot.avreclipse.cppcompiler.input.876646708">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="de.innot.avreclipse.core.AVRGCCManagedMakePerProjectProfileCPP"/>
 		</scannerConfigBuildInfo>
@@ -156,6 +159,9 @@
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="de.innot.avreclipse.core.AVRGCCManagedMakePerProjectProfileCPP"/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="de.innot.avreclipse.configuration.app.debug.381805049.216597436;de.innot.avreclipse.configuration.app.debug.381805049.216597436.;de.innot.avreclipse.tool.cppcompiler.app.debug.628825484;de.innot.avreclipse.cppcompiler.input.616688598">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="de.innot.avreclipse.core.AVRGCCManagedMakePerProjectProfileCPP"/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="de.innot.avreclipse.configuration.app.debug.381805049.216597436.543410479.2008053798.1482811896.655344572;de.innot.avreclipse.configuration.app.debug.381805049.216597436.543410479.2008053798.1482811896.655344572.;de.innot.avreclipse.tool.cppcompiler.app.debug.1635776065;de.innot.avreclipse.cppcompiler.input.1943597271">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="de.innot.avreclipse.core.AVRGCCManagedMakePerProjectProfileCPP"/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="de.innot.avreclipse.configuration.app.debug.381805049;de.innot.avreclipse.configuration.app.debug.381805049.;de.innot.avreclipse.tool.cppcompiler.app.debug.249071780;de.innot.avreclipse.cppcompiler.input.244677041">
