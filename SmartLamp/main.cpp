@@ -17,7 +17,7 @@
 
 /*
  * Built for Attiny84 8Mhz, using AVR USBasp programmer.
- * VERSION 0.1
+ * VERSION 0.2
  */
 
 #include <avr/io.h>
@@ -26,8 +26,8 @@
 
 #include <Arduino.h>
 
+#include <USIWire.h>
 #include <DS3232RTC.h>
-//#include <USIWire.h>
 
 // Input/output defines
 #define LED_BLUE            5
@@ -51,13 +51,12 @@
 
 
 // Global variables
-USI_TWI bus;                    // TinyWireM instance (I2C bus)
-//USIWire bus;                    // USIWire instance (I2C bus)
-DS3232RTC RTC(bus);
+USIWire bus;                    // USIWire instance (I2C bus)
+DS3232RTC RTC(bus);             // DS3232 RTC instance (I2C bus)
 
 boolean data = false;
-unsigned long prevMillis = 0;
-bool rtcInitOk = false;
+unsigned long prevMillis = 0;   // Millis counter to sleep
+bool rtcInitOk = false;         // Communication OK with RTC
 
 // Put the micro to sleep
 void system_sleep() {
@@ -69,14 +68,25 @@ void system_sleep() {
   sleep_disable(); // wake up fully
 }
 
+/*
+ * Converts the date/time to standard Unix epoch format, using time.h library (avr-libc)
+ *
+ * Param:
+ * - int16_t YYYY: year (Gregorian format: ex. 2017)
+ * - int8_t MM: month
+ * - int8_t DD: day of the month
+ * - int8_t hh: hour
+ * - int8_t mm: minute
+ * - int8_t ss: second
+ */
 time_t tmConvert_t(int16_t YYYY, int8_t MM, int8_t DD, int8_t hh, int8_t mm, int8_t ss) {
   struct tm tm;
   tm.tm_year = YYYY - 1900 + 30;    // avr-libc time.h: years since 1900 + y2k epoch difference (2000 - 1970)
-  tm.tm_mon = MM - 1;               // avr-libc time.h: months in [0, 11]
+  tm.tm_mon  = MM - 1;              // avr-libc time.h: months in [0, 11]
   tm.tm_mday = DD;
   tm.tm_hour = hh;
-  tm.tm_min = mm;
-  tm.tm_sec = ss;
+  tm.tm_min  = mm;
+  tm.tm_sec  = ss;
   return mk_gmtime(&tm);
 }
 
@@ -87,6 +97,13 @@ void printDigits(int digits) {
   Serial.print(digits);
 }
 
+/*
+ * Prints the time in time_t, using the standard Unix epoch format, even if the time_t type is from
+ * time.h (avr-libc) and is in Y2K epoch format.
+ *
+ * Param:
+ *  - time_t time: time since Unix epoch
+ */
 void digitalClockDisplay(time_t time) {
   struct tm tm;
 
@@ -128,11 +145,10 @@ void setup() {
   pinMode(BLU_RESET, OUTPUT);
   pinMode(RTC_INT_SQW, INPUT);
 
-  Serial.println(F("START SERIAL"));
   Serial.print(F("Initial value of OSCCAL is 0x"));
   Serial.println(OSCCAL, HEX);
 
-  ts = tmConvert_t(2017, 10, 20, 23, 05, 00);
+  ts = tmConvert_t(2032, 10, 20, 23, 05, 00);
 
   if ((retcode = RTC.set(ts)) == 0)
     rtcInitOk = true;
