@@ -59,11 +59,6 @@ boolean data = false;
 unsigned long prevMillis = 0;
 bool rtcInitOk = false;
 
-
-time_t timeProvider() {
-  return RTC.get();
-}
-
 // Put the micro to sleep
 void system_sleep() {
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
@@ -74,27 +69,39 @@ void system_sleep() {
   sleep_disable(); // wake up fully
 }
 
+time_t tmConvert_t(int16_t YYYY, int8_t MM, int8_t DD, int8_t hh, int8_t mm, int8_t ss) {
+  struct tm tm;
+  tm.tm_year = YYYY - 1900 + 30;    // avr-libc time.h: years since 1900 + y2k epoch difference (2000 - 1970)
+  tm.tm_mon = MM - 1;               // avr-libc time.h: months in [0, 11]
+  tm.tm_mday = DD;
+  tm.tm_hour = hh;
+  tm.tm_min = mm;
+  tm.tm_sec = ss;
+  return mk_gmtime(&tm);
+}
+
 void printDigits(int digits) {
-  // Utility function for digital clock display: prints preceding colon and leading 0
   Serial.print(':');
   if (digits < 10)
     Serial.print('0');
   Serial.print(digits);
 }
 
-void digitalClockDisplay(void) {
-  time_t now = timeProvider();
+void digitalClockDisplay(time_t time) {
+  struct tm tm;
+
+  gmtime_r(&time, &tm);
 
   // Digital clock display of the time
-  Serial.print(hour(now));
-  printDigits(minute(now));
-  printDigits(second(now));
+  Serial.print(tm.tm_hour);
+  printDigits(tm.tm_min);
+  printDigits(tm.tm_sec);
   Serial.print(' ');
-  Serial.print(day(now));
+  Serial.print(tm.tm_mday);
   Serial.print('/');
-  Serial.print(month(now));
+  Serial.print(tm.tm_mon + 1);              // avr-libc time.h: months in [0, 11]
   Serial.print('/');
-  Serial.println(year(now));
+  Serial.println(tm.tm_year + 1900 - 30);   // avr-libc time.h: years since 1900 + y2k epoch difference (2000 - 1970)
 }
 
 // PCINT Interrupt Service Routine (unused)
@@ -105,6 +112,9 @@ ISR(PCINT0_vect) {
 }
 
 void setup() {
+  byte retcode;
+  time_t ts;
+
   OSCCAL = 0x86;                    // Calibrated OSSCAL value with TinyTuner
 
   Serial.begin(SERIAL_BAUD);
@@ -122,34 +132,22 @@ void setup() {
   Serial.print(F("Initial value of OSCCAL is 0x"));
   Serial.println(OSCCAL, HEX);
 
-  //setSyncProvider(RTC.get);     // The function to get the time from the RTC
-  // Real time clock
-  setSyncProvider(timeProvider);  // Pointer to function to get the time from the RTC
+  ts = tmConvert_t(2017, 10, 20, 23, 05, 00);
 
-  if (timeStatus() != timeSet) {
-    Serial.println(F("Unable to sync with the RTC"));
-  }
-  else {
-    Serial.println(F("RTC has set the system time"));
+  if ((retcode = RTC.set(ts)) == 0)
     rtcInitOk = true;
+  else {
+    Serial.print(F("RTC Set error: "));
+    Serial.print(retcode);
   }
 
-  if (rtcInitOk) {
-    time_t t;
-    tmElements_t tm;
-  
-    tm.Year = 47;
-    tm.Month = 10;
-    tm.Day = 18;
-    tm.Hour = 21;
-    tm.Minute = 45;
-    tm.Second = 00;
-    t = makeTime(tm);
-    RTC.set(t);        //use the time_t value to ensure correct weekday is set
-    setTime(t);
-    Serial.print(F("RTC set to: "));
-    digitalClockDisplay();
-  }
+  Serial.print(F("TS: "));
+  Serial.println(ts);
+  digitalClockDisplay(ts);
+
+  Serial.print(F("RTC set to: "));
+  Serial.println(RTC.get());
+  digitalClockDisplay(RTC.get());
 
   ADCSRA  = 0;                      // Disable ADC to save power
   MCUCR  |= _BV(BODS);              // BOD disabled
@@ -158,7 +156,6 @@ void setup() {
   PCMSK0 |= _BV(PCINT2);            // Pin change mask: listen to portA bit 2 (D8)
   GIMSK  |= _BV(PCIE0);             // Enable PCINT interrupt on portA
 }
-
 
 void loop() {
   size_t count = 0;
@@ -171,7 +168,7 @@ void loop() {
     Serial.println(F("Sleeping..."));
     system_sleep();
     Serial.println(F("Waking up..."));
-    digitalClockDisplay();
+    digitalClockDisplay(RTC.get());
 
     // Necessary to reset the alarm flag on RTC!
     if (RTC.alarm(ALARM_1)) {
@@ -202,7 +199,7 @@ void loop() {
     buffer[count] = '\0';
     //Serial.print("COUNT = ");
     //Serial.println(count);
-    //Serial.println(buffer);
+    Serial.println(buffer);
 
     count = 0;
     data = false;
@@ -210,7 +207,7 @@ void loop() {
     if (strcmp(buffer, "ON") == 0) {
       digitalWrite(LED_BLUE, HIGH);
 
-      RTC.setAlarm(ALM1_MATCH_MINUTES, 45, 45, 21, 0);
+      RTC.setAlarm(ALM1_MATCH_MINUTES, 00, 10, 23, 0);
       RTC.alarmInterrupt(ALARM_1, true);
 
 //      for(int fadeValue = 0 ; fadeValue <= 255; fadeValue +=5) {
@@ -241,6 +238,6 @@ void loop() {
       digitalWrite(LED_GR, LOW);
     }
 
-    digitalClockDisplay();
+    digitalClockDisplay(RTC.get());
   }
 }
