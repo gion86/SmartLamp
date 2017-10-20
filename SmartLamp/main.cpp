@@ -148,7 +148,7 @@ void setup() {
   Serial.print(F("Initial value of OSCCAL is 0x"));
   Serial.println(OSCCAL, HEX);
 
-  ts = tmConvert_t(2032, 10, 20, 23, 05, 00);
+  ts = tmConvert_t(2017, 10, 20, 23, 05, 00);
 
   if ((retcode = RTC.set(ts)) == 0)
     rtcInitOk = true;
