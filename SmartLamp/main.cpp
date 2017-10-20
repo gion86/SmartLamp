@@ -30,21 +30,21 @@
 #include <DS3232RTC.h>
 
 // Input/output defines
-#define LED_BLUE            5
-#define LED_GR              3
-#define LED_RED             2
+#define LED_RED             2   // RGB strip: red pin
+#define LED_GR              3   // RGB strip: green pin
+#define LED_BLUE            5   // RGB strip: blue pin
 
-#define BLU_STATE           1
-#define BLU_RESET           0
+#define BLU_STATE           1   // Bluetooth module state pin
+#define BLU_RESET           0   // Bluetooth module reset pin
 
-#define RTC_INT_SQW        10
+#define RTC_INT_SQW        10   // INT/SQW pin from RTC
+
+// I2C defines
+#define SDA                 4   // SDA pin
+#define SCL                 6   // SCL pin
 
 // Serial defines
 #define SERIAL_BAUD      9600   // For at mode and for data mode (CC41, HM-10 and MLT-BT05)
-
-// I2C defines
-#define SDA                 4
-#define SCL                 6
 
 #define SLEEP_TIMEOUT   5000L   // Timeout before sleep
 #define LENGTH             80   // Command buffer length
@@ -168,8 +168,8 @@ void setup() {
   ADCSRA  = 0;                      // Disable ADC to save power
   MCUCR  |= _BV(BODS);              // BOD disabled
 
-  PCMSK0 |= _BV(PCINT0);            // Pin change mask: listen to portA bit 0 (D10)
-  PCMSK0 |= _BV(PCINT2);            // Pin change mask: listen to portA bit 2 (D8)
+  PCMSK0 |= _BV(PCINT0);            // Pin change mask: listen to portA bit 0 (D10) (RTC_INT_SQW)
+  PCMSK0 |= _BV(PCINT2);            // Pin change mask: listen to portA bit 2  (D8) (Serial RX - AIN1)
   GIMSK  |= _BV(PCIE0);             // Enable PCINT interrupt on portA
 }
 
