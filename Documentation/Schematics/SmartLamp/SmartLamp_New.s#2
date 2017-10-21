@@ -15270,12 +15270,7 @@ Source: AVX .. aphvc.pdf</description>
 power lines 12V</text>
 <text x="355.6" y="187.96" size="2.54" layer="97" font="vector" ratio="16">AVR Micro</text>
 <text x="381" y="93.98" size="2.54" layer="97" font="vector">TODO
-- bluetooth shutdown??
-- regulator?</text>
-<wire x1="104.14" y1="132.08" x2="276.86" y2="132.08" width="0.3048" layer="94"/>
-<wire x1="276.86" y1="132.08" x2="462.28" y2="132.08" width="0.3048" layer="94"/>
-<wire x1="276.86" y1="279.4" x2="276.86" y2="132.08" width="0.3048" layer="94"/>
-<wire x1="104.14" y1="210.82" x2="462.28" y2="210.82" width="0.3048" layer="94"/>
+- bluetooth shutdown??</text>
 </plain>
 <instances>
 <instance part="R2" gate="G$1" x="388.62" y="251.46" rot="R270"/>
