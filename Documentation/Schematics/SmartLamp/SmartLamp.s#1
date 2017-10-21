@@ -10101,7 +10101,7 @@ Source: http://www.irf.com/product-info/datasheets/data/irlz44zpbf.pdf</descript
 <class number="0" name="default" width="0" drill="0">
 </class>
 <class number="1" name="12V" width="0.762" drill="0.508">
-<clearance class="1" value="0.5588"/>
+<clearance class="1" value="0.381"/>
 </class>
 <class number="2" name="3.3V" width="0.127" drill="0.127">
 <clearance class="2" value="0.254"/>
@@ -10349,6 +10349,11 @@ power lines 12V</text>
 <wire x1="226.06" y1="144.78" x2="233.68" y2="144.78" width="0.1524" layer="91"/>
 <label x="228.6" y="144.78" size="1.778" layer="95" font="vector"/>
 </segment>
+<segment>
+<pinref part="IDC1" gate="G$1" pin="1"/>
+<wire x1="193.04" y1="111.76" x2="182.88" y2="111.76" width="0.1524" layer="91"/>
+<label x="182.88" y="111.76" size="1.778" layer="95" font="vector"/>
+</segment>
 </net>
 <net name="SCL" class="0">
 <segment>
@@ -10365,6 +10370,11 @@ power lines 12V</text>
 <wire x1="226.06" y1="139.7" x2="233.68" y2="139.7" width="0.1524" layer="91"/>
 <label x="228.6" y="139.7" size="1.778" layer="95" font="vector"/>
 </segment>
+<segment>
+<pinref part="IDC1" gate="G$1" pin="7"/>
+<wire x1="193.04" y1="104.14" x2="182.88" y2="104.14" width="0.1524" layer="91"/>
+<label x="182.88" y="104.14" size="1.778" layer="95" font="vector"/>
+</segment>
 </net>
 <net name="!INT_SQW" class="0">
 <segment>
@@ -10375,11 +10385,6 @@ power lines 12V</text>
 <pinref part="R9" gate="G$1" pin="2"/>
 <wire x1="172.72" y1="60.96" x2="172.72" y2="55.88" width="0.1524" layer="91"/>
 <junction x="172.72" y="55.88"/>
-</segment>
-<segment>
-<pinref part="IDC1" gate="G$1" pin="7"/>
-<wire x1="193.04" y1="104.14" x2="182.88" y2="104.14" width="0.1524" layer="91"/>
-<label x="182.88" y="104.14" size="1.778" layer="95" font="vector"/>
 </segment>
 <segment>
 <pinref part="MCU1" gate="G$1" pin="(PCINT0/AREF/ADC0)PA0"/>
@@ -10480,29 +10485,32 @@ power lines 12V</text>
 <label x="17.78" y="83.82" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
-<net name="N$3" class="1">
+<net name="GR_12V" class="1">
 <segment>
 <wire x1="33.02" y1="33.02" x2="60.96" y2="33.02" width="0.1524" layer="91"/>
 <pinref part="LED_STRIP" gate="A" pin="2"/>
 <wire x1="60.96" y1="45.72" x2="60.96" y2="33.02" width="0.1524" layer="91"/>
 <pinref part="Q1" gate="G$1" pin="D"/>
+<label x="35.56" y="33.02" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
-<net name="N$4" class="1">
+<net name="RED_12V" class="1">
 <segment>
 <wire x1="63.5" y1="33.02" x2="66.04" y2="33.02" width="0.1524" layer="91"/>
 <pinref part="LED_STRIP" gate="A" pin="3"/>
 <wire x1="63.5" y1="33.02" x2="63.5" y2="45.72" width="0.1524" layer="91"/>
 <pinref part="Q2" gate="G$1" pin="D"/>
+<label x="63.5" y="30.48" size="1.778" layer="95" font="vector" rot="R90"/>
 </segment>
 </net>
-<net name="N$6" class="1">
+<net name="BLUE_12V" class="1">
 <segment>
 <wire x1="66.04" y1="35.56" x2="99.06" y2="35.56" width="0.1524" layer="91"/>
 <wire x1="99.06" y1="35.56" x2="99.06" y2="33.02" width="0.1524" layer="91"/>
 <pinref part="LED_STRIP" gate="A" pin="4"/>
 <wire x1="66.04" y1="45.72" x2="66.04" y2="35.56" width="0.1524" layer="91"/>
 <pinref part="Q3" gate="G$1" pin="D"/>
+<label x="83.82" y="35.56" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="N$7" class="0">
@@ -10528,31 +10536,26 @@ power lines 12V</text>
 </net>
 <net name="RED" class="0">
 <segment>
-<pinref part="R3" gate="G$1" pin="1"/>
-<wire x1="15.24" y1="25.4" x2="10.16" y2="25.4" width="0.1524" layer="91"/>
-<label x="10.16" y="25.4" size="1.778" layer="95"/>
+<pinref part="MCU1" gate="G$1" pin="(PCINT10/INT0/OC0A/CKOUT)PB2"/>
+<wire x1="226.06" y1="157.48" x2="233.68" y2="157.48" width="0.1524" layer="91"/>
+<label x="228.6" y="157.48" size="1.778" layer="95" font="vector"/>
 </segment>
 <segment>
-<pinref part="MCU1" gate="G$1" pin="(PCINT3/T0/ADC3)PA3"/>
-<wire x1="226.06" y1="137.16" x2="233.68" y2="137.16" width="0.1524" layer="91"/>
-<label x="228.6" y="137.16" size="1.778" layer="95" font="vector"/>
+<pinref part="R4" gate="G$1" pin="1"/>
+<wire x1="48.26" y1="25.4" x2="43.18" y2="25.4" width="0.1524" layer="91"/>
+<label x="43.18" y="25.4" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="GR" class="0">
 <segment>
-<pinref part="R4" gate="G$1" pin="1"/>
-<wire x1="48.26" y1="25.4" x2="43.18" y2="25.4" width="0.1524" layer="91"/>
-<label x="43.18" y="25.4" size="1.778" layer="95"/>
-</segment>
-<segment>
-<pinref part="IDC1" gate="G$1" pin="1"/>
-<wire x1="193.04" y1="111.76" x2="182.88" y2="111.76" width="0.1524" layer="91"/>
-<label x="182.88" y="111.76" size="1.778" layer="95" font="vector"/>
-</segment>
-<segment>
 <pinref part="MCU1" gate="G$1" pin="(PCINT7/ICP/OC0B/ADC7)PA7"/>
 <wire x1="226.06" y1="147.32" x2="233.68" y2="147.32" width="0.1524" layer="91"/>
 <label x="228.6" y="147.32" size="1.778" layer="95" font="vector"/>
+</segment>
+<segment>
+<pinref part="R3" gate="G$1" pin="1"/>
+<wire x1="15.24" y1="25.4" x2="10.16" y2="25.4" width="0.1524" layer="91"/>
+<label x="10.16" y="25.4" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="BLUE" class="0">
@@ -10575,7 +10578,7 @@ power lines 12V</text>
 <net name="!BLU_RES" class="0">
 <segment>
 <pinref part="U1" gate="G$1" pin="RES"/>
-<wire x1="38.1" y1="91.44" x2="30.48" y2="91.44" width="0.1524" layer="91"/>
+<wire x1="38.1" y1="91.44" x2="25.4" y2="91.44" width="0.1524" layer="91"/>
 <label x="25.4" y="91.44" size="1.778" layer="95"/>
 </segment>
 <segment>
