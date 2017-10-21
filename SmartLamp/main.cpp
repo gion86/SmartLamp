@@ -22,11 +22,14 @@
 
 #include <avr/io.h>
 #include <avr/sleep.h>
+#include <avr/pgmspace.h>
 #include <time.h>
+
 
 #include <Arduino.h>
 
 #include <USIWire.h>
+#include <Timezone.h>
 #include <DS3232RTC.h>
 
 // Input/output defines
@@ -58,6 +61,19 @@ boolean data = false;
 unsigned long prevMillis = 0;   // Millis counter to sleep
 bool rtcInitOk = false;         // Communication OK with RTC
 
+
+#define RULES_TZ_ADD            0       // Timezone rules EEPROM start address
+#define WD_WAIT_DIS_TIME        2      // Time [s] to check if the current time enables the system
+
+//CET Time Zone (Rome, Berlin) -> UTC/GMT + 1
+const TimeChangeRule CEST = {"CEST", Last, Sun, Mar, 2, 120};     // Central European Summer Time (DST)
+const TimeChangeRule CET  = {"CET ", Last, Sun, Oct, 3, 60};      // Central European Standard Time
+
+//Timezone myTZ(RULES_TZ_ADD);            // Rules stored at EEPROM address RULES_TZ_ADD
+Timezone myTZ(CET, CEST);
+
+TimeChangeRule *tcr;                    // Pointer to the time change rule, use to get TZ abbreviations
+
 // Put the micro to sleep
 void system_sleep() {
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
@@ -72,7 +88,7 @@ void system_sleep() {
  * Converts the date/time to standard Unix epoch format, using time.h library (avr-libc)
  *
  * Param:
- * - int16_t YYYY: year (Gregorian format: ex. 2017)
+ * - int16_t YYYY: year (given as ex. 2017)
  * - int8_t MM: month
  * - int8_t DD: day of the month
  * - int8_t hh: hour
@@ -104,6 +120,21 @@ void printDigits(int digits) {
  * Param:
  *  - time_t time: time since Unix epoch
  */
+/*
+void digitalClockDisplay(time_t time) {
+
+  // Digital clock display of the time
+  Serial.print(hour(time));
+  printDigits(minute(time));
+  printDigits(second(time));
+  Serial.print(' ');
+  Serial.print(day(time));
+  Serial.print('/');
+  Serial.print(month(time));
+  Serial.print('/');
+  Serial.println(year(time));
+}
+*/
 void digitalClockDisplay(time_t time) {
   struct tm tm;
 
@@ -128,9 +159,12 @@ ISR(PCINT0_vect) {
   // uninitialized interrupt handler.
 }
 
+time_t timeProvider() {
+  return RTC.get();
+}
+
 void setup() {
   byte retcode;
-  time_t ts;
 
   OSCCAL = 0x86;                    // Calibrated OSSCAL value with TinyTuner
 
@@ -145,25 +179,39 @@ void setup() {
   pinMode(BLU_RESET, OUTPUT);
   pinMode(RTC_INT_SQW, INPUT);
 
-  Serial.print(F("Initial value of OSCCAL is 0x"));
+  Serial.println(F("\nSTART"));
+  Serial.print(F("OSCCAL = 0x"));
   Serial.println(OSCCAL, HEX);
 
-  ts = tmConvert_t(2017, 10, 20, 23, 05, 00);
+  time_t t;
+  t = tmConvert_t(2017, 10, 30, 11, 00, 00);
 
-  if ((retcode = RTC.set(ts)) == 0)
+  if ((retcode = RTC.set(t)) == 0)
     rtcInitOk = true;
   else {
     Serial.print(F("RTC Set error: "));
     Serial.print(retcode);
   }
 
-  Serial.print(F("TS: "));
-  Serial.println(ts);
-  digitalClockDisplay(ts);
+  Serial.print(F("T: "));
+  Serial.println(t);
+  digitalClockDisplay(t);
 
-  Serial.print(F("RTC set to: "));
+  Serial.print(F("RTC: "));
   Serial.println(RTC.get());
   digitalClockDisplay(RTC.get());
+
+  Serial.println();
+
+  time_t utc = RTC.get();
+  Serial.print(F("UTC: "));
+  digitalClockDisplay(utc);
+
+  time_t local = myTZ.toLocal(utc, &tcr);
+  Serial.print(F("Local: "));
+  digitalClockDisplay(local);
+  Serial.println(tcr->abbrev);
+
 
   ADCSRA  = 0;                      // Disable ADC to save power
   MCUCR  |= _BV(BODS);              // BOD disabled
@@ -255,5 +303,14 @@ void loop() {
     }
 
     digitalClockDisplay(RTC.get());
+
+    time_t utc = RTC.get();
+    Serial.print(F("UTC: "));
+    digitalClockDisplay(utc);
+
+    time_t local = myTZ.toLocal(utc, &tcr);
+    Serial.print(F("Local: "));
+    digitalClockDisplay(local);
+    Serial.println(tcr->abbrev);
   }
 }
