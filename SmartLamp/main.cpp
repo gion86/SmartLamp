@@ -25,7 +25,6 @@
 #include <avr/pgmspace.h>
 #include <time.h>
 
-
 #include <Arduino.h>
 
 #include <USIWire.h>
@@ -52,6 +51,13 @@
 #define SLEEP_TIMEOUT   5000L   // Timeout before sleep
 #define LENGTH             80   // Command buffer length
 
+#define RULES_TZ_ADD        0   // Timezone rules EEPROM start address
+
+
+// Global constants
+//CET Time Zone (Rome, Berlin) -> UTC/GMT + 1
+const TimeChangeRule CEST = {"CEST", Last, Sun, Mar, 2, 120};     // Central European Summer Time (DST)
+const TimeChangeRule CET  = {"CET ", Last, Sun, Oct, 3, 60};      // Central European Standard Time
 
 // Global variables
 USIWire bus;                    // USIWire instance (I2C bus)
@@ -61,18 +67,11 @@ boolean data = false;
 unsigned long prevMillis = 0;   // Millis counter to sleep
 bool rtcInitOk = false;         // Communication OK with RTC
 
+//Timezone myTZ(RULES_TZ_ADD);    // TODO Constructor to read rules stored at EEPROM address RULES_TZ_ADD
+Timezone myTZ(CET, CEST);       // Constructor to build object with TimeChangeRule
 
-#define RULES_TZ_ADD            0       // Timezone rules EEPROM start address
-#define WD_WAIT_DIS_TIME        2      // Time [s] to check if the current time enables the system
+TimeChangeRule *tcr;            // Pointer to the time change rule, use to get TZ abbreviations
 
-//CET Time Zone (Rome, Berlin) -> UTC/GMT + 1
-const TimeChangeRule CEST = {"CEST", Last, Sun, Mar, 2, 120};     // Central European Summer Time (DST)
-const TimeChangeRule CET  = {"CET ", Last, Sun, Oct, 3, 60};      // Central European Standard Time
-
-//Timezone myTZ(RULES_TZ_ADD);            // Rules stored at EEPROM address RULES_TZ_ADD
-Timezone myTZ(CET, CEST);
-
-TimeChangeRule *tcr;                    // Pointer to the time change rule, use to get TZ abbreviations
 
 // Put the micro to sleep
 void system_sleep() {
@@ -89,11 +88,11 @@ void system_sleep() {
  *
  * Param:
  * - int16_t YYYY: year (given as ex. 2017)
- * - int8_t MM: month
- * - int8_t DD: day of the month
- * - int8_t hh: hour
- * - int8_t mm: minute
- * - int8_t ss: second
+ * - int8_t MM: month [1, 12]
+ * - int8_t DD: day of the month [1, 31]
+ * - int8_t hh: hour [0, 23]
+ * - int8_t mm: minute [0, 59]
+ * - int8_t ss: second [0, 59]
  */
 time_t tmConvert_t(int16_t YYYY, int8_t MM, int8_t DD, int8_t hh, int8_t mm, int8_t ss) {
   struct tm tm;
@@ -113,29 +112,7 @@ void printDigits(int digits) {
   Serial.print(digits);
 }
 
-/*
- * Prints the time in time_t, using the standard Unix epoch format, even if the time_t type is from
- * time.h (avr-libc) and is in Y2K epoch format.
- *
- * Param:
- *  - time_t time: time since Unix epoch
- */
-/*
-void digitalClockDisplay(time_t time) {
-
-  // Digital clock display of the time
-  Serial.print(hour(time));
-  printDigits(minute(time));
-  printDigits(second(time));
-  Serial.print(' ');
-  Serial.print(day(time));
-  Serial.print('/');
-  Serial.print(month(time));
-  Serial.print('/');
-  Serial.println(year(time));
-}
-*/
-void digitalClockDisplay(time_t time) {
+void digitalClockDisplay(time_t time, const char *tz = NULL) {
   struct tm tm;
 
   gmtime_r(&time, &tm);
@@ -149,7 +126,14 @@ void digitalClockDisplay(time_t time) {
   Serial.print('/');
   Serial.print(tm.tm_mon + 1);              // avr-libc time.h: months in [0, 11]
   Serial.print('/');
-  Serial.println(tm.tm_year + 1900 - 30);   // avr-libc time.h: years since 1900 + y2k epoch difference (2000 - 1970)
+  Serial.print(tm.tm_year + 1900 - 30);     // avr-libc time.h: years since 1900 + y2k epoch difference (2000 - 1970)
+
+  if (tz != NULL) {
+    Serial.print(' ');
+    Serial.print(tz);
+  }
+
+  Serial.println();
 }
 
 // PCINT Interrupt Service Routine (unused)
@@ -184,33 +168,28 @@ void setup() {
   Serial.println(OSCCAL, HEX);
 
   time_t t;
-  t = tmConvert_t(2017, 10, 30, 11, 00, 00);
+  t = tmConvert_t(2017, 10, 25, 11, 00, 00);
 
   if ((retcode = RTC.set(t)) == 0)
     rtcInitOk = true;
   else {
     Serial.print(F("RTC Set error: "));
-    Serial.print(retcode);
+    Serial.println(retcode);
   }
 
   Serial.print(F("T: "));
   Serial.println(t);
-  digitalClockDisplay(t);
-
-  Serial.print(F("RTC: "));
-  Serial.println(RTC.get());
-  digitalClockDisplay(RTC.get());
+  digitalClockDisplay(t, "UTC");
 
   Serial.println();
 
   time_t utc = RTC.get();
   Serial.print(F("UTC: "));
-  digitalClockDisplay(utc);
+  digitalClockDisplay(utc, "UTC");
 
   time_t local = myTZ.toLocal(utc, &tcr);
   Serial.print(F("Local: "));
-  digitalClockDisplay(local);
-  Serial.println(tcr->abbrev);
+  digitalClockDisplay(local, tcr->abbrev);
 
 
   ADCSRA  = 0;                      // Disable ADC to save power
@@ -232,7 +211,7 @@ void loop() {
     Serial.println(F("Sleeping..."));
     system_sleep();
     Serial.println(F("Waking up..."));
-    digitalClockDisplay(RTC.get());
+    digitalClockDisplay(RTC.get(), "UTC");
 
     // Necessary to reset the alarm flag on RTC!
     if (RTC.alarm(ALARM_1)) {
@@ -302,15 +281,12 @@ void loop() {
       digitalWrite(LED_GR, LOW);
     }
 
-    digitalClockDisplay(RTC.get());
-
     time_t utc = RTC.get();
     Serial.print(F("UTC: "));
-    digitalClockDisplay(utc);
+    digitalClockDisplay(utc, "UTC");
 
     time_t local = myTZ.toLocal(utc, &tcr);
     Serial.print(F("Local: "));
-    digitalClockDisplay(local);
-    Serial.println(tcr->abbrev);
+    digitalClockDisplay(local, tcr->abbrev);
   }
 }
