@@ -143,9 +143,6 @@ ISR(PCINT0_vect) {
   // uninitialized interrupt handler.
 }
 
-time_t timeProvider() {
-  return RTC.get();
-}
 
 void setup() {
   byte retcode;
@@ -191,7 +188,7 @@ void setup() {
   Serial.print(F("Local: "));
   digitalClockDisplay(local, tcr->abbrev);
 
-
+  // Power settings
   ADCSRA  = 0;                      // Disable ADC to save power
   MCUCR  |= _BV(BODS);              // BOD disabled
 
