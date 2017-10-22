@@ -10093,14 +10093,14 @@ Source: http://www.irf.com/product-info/datasheets/data/irlz44zpbf.pdf</descript
 </library>
 </libraries>
 <attributes>
-<attribute name="VERSION" value="0.6"/>
+<attribute name="VERSION" value="0.7"/>
 </attributes>
 <variantdefs>
 </variantdefs>
 <classes>
 <class number="0" name="default" width="0" drill="0">
 </class>
-<class number="1" name="12V" width="0.762" drill="0.508">
+<class number="1" name="POWER" width="0.762" drill="0.508">
 <clearance class="1" value="0.381"/>
 </class>
 <class number="2" name="3.3V" width="0.127" drill="0.127">
@@ -10232,7 +10232,7 @@ power lines 12V</text>
 <busses>
 </busses>
 <nets>
-<net name="GND" class="0">
+<net name="GND" class="1">
 <segment>
 <pinref part="GND1" gate="1" pin="GND"/>
 <wire x1="218.44" y1="53.34" x2="220.98" y2="53.34" width="0.1524" layer="91"/>

@@ -10093,7 +10093,7 @@ Source: http://www.irf.com/product-info/datasheets/data/irlz44zpbf.pdf</descript
 </library>
 </libraries>
 <attributes>
-<attribute name="VERSION" value="0.5"/>
+<attribute name="VERSION" value="0.6"/>
 </attributes>
 <variantdefs>
 </variantdefs>
@@ -10661,7 +10661,7 @@ power lines 12V</text>
 <label x="210.82" y="111.76" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
-<net name="N$1" class="0">
+<net name="BLU_SWITCH" class="0">
 <segment>
 <pinref part="S1" gate="1" pin="1"/>
 <wire x1="33.02" y1="83.82" x2="33.02" y2="86.36" width="0.1524" layer="91"/>
