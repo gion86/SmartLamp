@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="yes"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="0.01" unitdist="inch" unit="mm" style="lines" multiple="1" display="no" altdistance="0.025" altunitdist="inch" altunit="mm"/>
+<grid distance="0.01" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.025" altunitdist="inch" altunit="inch"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
 <layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="yes"/>
@@ -2186,17 +2186,17 @@ design rules under a new name.</description>
 <wire x1="53.25" y1="41.5" x2="53.264640625" y2="42.342640625" width="0.381" layer="1"/>
 <via x="37" y="9.5" extent="1-16" drill="0.3048"/>
 <via x="41" y="8.5" extent="1-16" drill="0.3048"/>
-<polygon width="0.1524" layer="1">
-<vertex x="1.016" y="50.038"/>
-<vertex x="60.452" y="50.038"/>
+<polygon width="0.1524" layer="1" isolate="0.3048">
+<vertex x="1.27" y="49.784"/>
+<vertex x="60.706" y="49.784"/>
 <vertex x="60.452" y="0.254"/>
 <vertex x="15.748" y="0.254"/>
 <vertex x="15.748" y="6.096"/>
 <vertex x="1.016" y="6.096"/>
 </polygon>
-<polygon width="0.1524" layer="16">
-<vertex x="1.016" y="50.038"/>
-<vertex x="60.452" y="50.038"/>
+<polygon width="0.1524" layer="16" isolate="0.3048">
+<vertex x="1.016" y="49.784"/>
+<vertex x="60.452" y="49.784"/>
 <vertex x="60.452" y="0.254"/>
 <vertex x="15.748" y="0.254"/>
 <vertex x="15.748" y="6.096"/>

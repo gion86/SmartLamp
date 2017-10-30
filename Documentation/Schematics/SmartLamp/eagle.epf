@@ -379,7 +379,7 @@ UsedLibrary="/home/gionata/Arduino/Eagle/libraries/Microchip/Regulator/Microchip
 
 [Win_1]
 Type="Schematic Editor"
-Loc="1320 626 1919 1025"
+Loc="2389 437 2988 836"
 State=1
 Number=1
 File="SmartLamp.sch"
@@ -431,7 +431,7 @@ Loc="1320 549 1919 948"
 State=1
 Number=2
 File="SmartLamp.brd"
-View="-6.35987 -2.44087 69.6574 58.4444"
+View="0.0518625 -8.62813 76.0692 52.2572"
 WireWidths=" 0 0.3048 0.6096 0.8128 1.016 1.27 1.4224 1.6764 1.778 1.9304 2.1844 2.54 3.81 6.4516 0.4064 0.1524"
 PadDiameters=" 0.254 0.3048 0.4064 0.6096 0.8128 1.016 1.27 1.4224 1.6764 1.778 1.9304 2.1844 2.54 3.81 6.4516 0"
 PadDrills=" 0.5 0.6 0.7 0.9 1 1.1 1.2 1.3 1.4 1.5 1.6 2 2.2 2.8 3.2 0.8"
@@ -473,12 +473,12 @@ Layer=1
 
 [Win_3]
 Type="Control Panel"
-Loc="971 316 1919 912"
+Loc="2207 287 3155 883"
 State=2
 Number=0
 
 [Desktop]
-Screen="1920 1080"
+Screen="3840 1080"
 Window="Win_1"
 Window="Win_2"
 Window="Win_3"

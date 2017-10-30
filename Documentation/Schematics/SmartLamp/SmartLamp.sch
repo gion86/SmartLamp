@@ -10580,6 +10580,7 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 <text x="292.1" y="114.3" size="3.81" layer="97" ratio="10">ICSP</text>
 <text x="157.48" y="81.28" size="2.54" layer="97" font="vector" ratio="16">Bluetooth module</text>
 <wire x1="256.54" y1="86.36" x2="256.54" y2="5.08" width="0.3048" layer="94"/>
+<text x="274.32" y="109.22" size="1.778" layer="94" font="vector">MOSI</text>
 </plain>
 <instances>
 <instance part="R2" gate="G$1" x="375.92" y="220.98" rot="R270"/>
@@ -10836,9 +10837,9 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 <junction x="317.5" y="208.28"/>
 </segment>
 <segment>
-<pinref part="U3" gate="G$1" pin="PD3(INT1)"/>
-<wire x1="375.92" y1="132.08" x2="386.08" y2="132.08" width="0.1524" layer="91"/>
-<label x="378.46" y="132.08" size="1.778" layer="95" font="vector"/>
+<pinref part="U3" gate="G$1" pin="PD4(XCK/T0)"/>
+<wire x1="375.92" y1="129.54" x2="386.08" y2="129.54" width="0.1524" layer="91"/>
+<label x="378.46" y="129.54" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="RESET" class="0">
@@ -10862,9 +10863,8 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 <label x="195.58" y="43.18" size="1.778" layer="95" font="vector"/>
 </segment>
 <segment>
-<pinref part="U3" gate="G$1" pin="PC1(ADC1)"/>
-<wire x1="375.92" y1="160.02" x2="386.08" y2="160.02" width="0.1524" layer="91"/>
-<label x="378.46" y="160.02" size="1.778" layer="95" font="vector"/>
+<wire x1="375.92" y1="134.62" x2="386.08" y2="134.62" width="0.1524" layer="91"/>
+<label x="378.46" y="134.62" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="BLU_KEY" class="0">
@@ -10892,9 +10892,9 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 <label x="116.84" y="124.46" size="1.778" layer="95" font="vector"/>
 </segment>
 <segment>
-<pinref part="U3" gate="G$1" pin="PC3(ADC3)"/>
-<wire x1="375.92" y1="154.94" x2="386.08" y2="154.94" width="0.1524" layer="91"/>
-<label x="378.46" y="154.94" size="1.778" layer="95" font="vector"/>
+<pinref part="U3" gate="G$1" pin="PB2(SS/OC1B)"/>
+<wire x1="375.92" y1="111.76" x2="391.16" y2="111.76" width="0.1524" layer="91"/>
+<label x="378.46" y="111.76" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="BLUE" class="0">
@@ -10904,9 +10904,14 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 <label x="182.88" y="124.46" size="1.778" layer="95"/>
 </segment>
 <segment>
-<pinref part="U3" gate="G$1" pin="ADC6"/>
-<wire x1="375.92" y1="147.32" x2="386.08" y2="147.32" width="0.1524" layer="91"/>
-<label x="378.46" y="147.32" size="1.778" layer="95" font="vector"/>
+<pinref part="U3" gate="G$1" pin="PB3(MOSI/OC2)"/>
+<wire x1="375.92" y1="109.22" x2="391.16" y2="109.22" width="0.1524" layer="91"/>
+<label x="378.46" y="109.22" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="IDC1" gate="G$1" pin="1"/>
+<wire x1="289.56" y1="109.22" x2="281.94" y2="109.22" width="0.1524" layer="91"/>
+<label x="281.94" y="109.22" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="!BLU_RES" class="0">
@@ -10916,9 +10921,8 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 <label x="139.7" y="43.18" size="1.778" layer="95"/>
 </segment>
 <segment>
-<pinref part="U3" gate="G$1" pin="PC2(ADC2)"/>
-<wire x1="375.92" y1="157.48" x2="386.08" y2="157.48" width="0.1524" layer="91"/>
-<label x="378.46" y="157.48" size="1.778" layer="95" font="vector"/>
+<wire x1="375.92" y1="132.08" x2="386.08" y2="132.08" width="0.1524" layer="91"/>
+<label x="378.46" y="132.08" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="VBAT" class="0">
@@ -11083,9 +11087,9 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 <label x="149.86" y="124.46" size="1.778" layer="95" font="vector"/>
 </segment>
 <segment>
-<pinref part="U3" gate="G$1" pin="PC0(ADC0)"/>
-<wire x1="375.92" y1="162.56" x2="386.08" y2="162.56" width="0.1524" layer="91"/>
-<label x="378.46" y="162.56" size="1.778" layer="95" font="vector"/>
+<pinref part="U3" gate="G$1" pin="PB1(OC1A)"/>
+<wire x1="375.92" y1="114.3" x2="391.16" y2="114.3" width="0.1524" layer="91"/>
+<label x="378.46" y="114.3" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="S_OUT" class="0">
@@ -11115,18 +11119,6 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 <pinref part="IDC1" gate="G$1" pin="7"/>
 <wire x1="289.56" y1="101.6" x2="281.94" y2="101.6" width="0.1524" layer="91"/>
 <label x="281.94" y="101.6" size="1.778" layer="95" font="vector"/>
-</segment>
-</net>
-<net name="MOSI" class="0">
-<segment>
-<pinref part="U3" gate="G$1" pin="PB3(MOSI/OC2)"/>
-<wire x1="375.92" y1="109.22" x2="391.16" y2="109.22" width="0.1524" layer="91"/>
-<label x="378.46" y="109.22" size="1.778" layer="95"/>
-</segment>
-<segment>
-<pinref part="IDC1" gate="G$1" pin="1"/>
-<wire x1="289.56" y1="109.22" x2="281.94" y2="109.22" width="0.1524" layer="91"/>
-<label x="281.94" y="109.22" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="N$15" class="0">
