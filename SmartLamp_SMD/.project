@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>SmartLamp</name>
+	<name>SmartLamp_SMD</name>
 	<comment></comment>
 	<projects>
-		<project>ATTinyCore</project>
+		<project>ATMegaCore</project>
 		<project>DS3232RTC</project>
 		<project>TimeZone</project>
-		<project>USIWire</project>
+		<project>Wire</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
