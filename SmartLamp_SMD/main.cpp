@@ -28,11 +28,11 @@
 
 #include <Arduino.h>
 
-#include <Wire.h>
-#include <Timezone.h>
-#include <DS3232RTC.h>
+#include <Wire.h>               // Wire I2C library
+#include <DS3232RTC.h>          // RTC library
+#include <Timezone.h>           // Timezone library
 
-// Input/output defines
+// Input/output pin defines
 #define LED_RED             9   // RGB strip: red pin
 #define LED_GR             10   // RGB strip: green pin
 #define LED_BLUE           11   // RGB strip: blue pin
@@ -45,14 +45,18 @@
 // Serial defines
 #define SERIAL_BAUD      9600   // For at mode and for data mode (CC41, HM-10 and MLT-BT05)
 
+// Sleep defines
 #define SLEEP_TIMEOUT   5000L   // Timeout before sleep
-#define LENGTH             80   // Command buffer length
+
+#define CMD_LENGTH         80   // Command buffer length
 
 #define RULES_TZ_ADD        0   // Timezone rules EEPROM start address
 
+// LED defines
 #define PERIOD          5000L   // LED crossfade total duration
 #define MAX_ANALOG_V      255   // Analog output max value for RGB
 
+// States
 #define STEP_SLEEP         0
 #define STEP_READ_CMD      10
 #define STEP_FADE          15
@@ -82,15 +86,9 @@ TimeChangeRule *tcr;            // Pointer to the time change rule, use to get T
 
 uint8_t step = STEP_READ_CMD;
 
-// Put the micro to sleep
-void system_sleep() {
-  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-  sleep_enable();
-  sleep_mode();
-
-  // sleeping ...
-  sleep_disable(); // wake up fully
-}
+// ########################################################
+// Time manipulation functions
+// ########################################################
 
 /*
  * Converts the date/time to standard Unix epoch format, using time.h library (avr-libc)
@@ -103,7 +101,7 @@ void system_sleep() {
  * - int8_t mm: minute [0, 59]
  * - int8_t ss: second [0, 59]
  */
-time_t tmConvert_t(int16_t YYYY, int8_t MM, int8_t DD, int8_t hh, int8_t mm, int8_t ss) {
+static time_t tmConvert_t(int16_t YYYY, int8_t MM, int8_t DD, int8_t hh, int8_t mm, int8_t ss) {
   struct tm tm;
   tm.tm_year = YYYY - 1900 + 30;    // avr-libc time.h: years since 1900 + y2k epoch difference (2000 - 1970)
   tm.tm_mon  = MM - 1;              // avr-libc time.h: months in [0, 11]
@@ -114,14 +112,27 @@ time_t tmConvert_t(int16_t YYYY, int8_t MM, int8_t DD, int8_t hh, int8_t mm, int
   return mk_gmtime(&tm);
 }
 
-void printDigits(int digits) {
+/*
+ * Write to serial a digit with zero padding if needed.
+ *
+ * Param:
+ * - int digits
+ */
+static void printDigits(int digits) {
   Serial.print(':');
   if (digits < 10)
     Serial.print('0');
   Serial.print(digits);
 }
 
-void digitalClockDisplay(time_t time, const char *tz = NULL) {
+/*
+ * Writes to Serial the clock (date and time) in human readable format.
+ *
+ * Param:
+ * - time_t time: time from the time.h (avr-libc)
+ * - const char *tz: string for the timezone, if not used set to NULL
+ */
+static void digitalClockDisplay(time_t time, const char *tz = NULL) {
   struct tm tm;
 
   gmtime_r(&time, &tm);
@@ -145,12 +156,58 @@ void digitalClockDisplay(time_t time, const char *tz = NULL) {
   Serial.println();
 }
 
-// PCINT Interrupt Service Routine (unused)
+// ########################################################
+// AVR specific functions
+// ########################################################
+
+/*
+ * Put the micro to sleep
+ */
+static void system_sleep() {
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+  sleep_enable();
+  sleep_mode();
+
+  // sleeping ...
+  sleep_disable(); // wake up fully
+}
+
+/*
+ *  PCINT Interrupt Service Routine (unused)
+ */
 ISR(PCINT2_vect) {
   // Don't do anything here but we must include this
   // block of code otherwise the interrupt calls an
   // uninitialized interrupt handler.
 }
+
+/*
+ * Set various power reduction options
+ */
+static void powerReduction() {
+    // Disable digital input buffer on ADC pins
+    DIDR0 = (1 << ADC5D) | (1 << ADC4D) | (1 << ADC3D) | (1 << ADC2D) | (1 << ADC1D) | (1 << ADC0D);
+
+    // Disable digital input buffer on Analog comparator pins
+    DIDR1 |= (1 << AIN1D) | (1 << AIN0D);
+
+    // Disable Analog Comparator interrupt
+    ACSR &= ~(1 << ACIE);
+
+    // Disable Analog Comparator
+    ACSR |= (1 << ACD);
+
+    // Disable unused peripherals to save power
+    // Disable ADC (ADC must be disabled before shutdown)
+    ADCSRA &= ~(1 << ADEN);
+
+    // Enable power reduction register except:
+    // - USART0: for serial communications
+    // - TWI module: for I2C communications
+    // - TIMER0: for millis()
+    PRR = 0xFF & (~(1 << PRUSART0)) & (~(1 << PRTWI)) & (~(1 << PRTIM0));
+}
+
 
 // ========================================================
 // |                        SETUP                         |
@@ -189,10 +246,9 @@ void setup() {
   digitalClockDisplay(local, tcr->abbrev);
 
   // Power settings
+  powerReduction();
 
-  ADCSRA  = 0;                      // Disable ADC to save power
-  MCUCR  |= _BV(BODS);              // BOD disabled
-
+  // Interrupt configuration
   PCMSK2 |= _BV(PCINT20);           // Pin change mask: listen to portD bit 4 (D4) (RTC_INT_SQW)
   PCMSK2 |= _BV(PCINT16);           // TODO Pin change mask: listen to portD bit 0 (D0) (Serial RX)
   PCICR  |= _BV(PCIE2);             // Enable PCINT interrupt on portD
@@ -205,12 +261,13 @@ void setup() {
 // ========================================================
 
 void loop() {
-  char buffer[LENGTH];
+  char buffer[CMD_LENGTH];
   uint8_t led_value;
   double x = 0;
 
   switch (step) {
     case STEP_SLEEP:
+      // Sleep state
 
       Serial.println(F("Sleeping..."));
       delay(50);
@@ -229,8 +286,9 @@ void loop() {
       break;
 
     case STEP_READ_CMD:
+      // Read command state (from serial connection to bluetooth module)
 
-      while (Serial.available() && count < LENGTH - 1) {
+      while (Serial.available() && count < CMD_LENGTH - 1) {
         char c = (char) Serial.read();
 
         prevMillis = millis();      // Update prevMillis to reset sleep timeout
@@ -295,11 +353,12 @@ void loop() {
       break;
 
     case STEP_FADE:
+      // LED fade state
 
       x = (millis() % PERIOD) / (double) PERIOD;
       led_value = MAX_ANALOG_V * sin(PI * x);
 
-      Serial.print(F(", x: "));
+      Serial.print(F("x: "));
       Serial.print(x);
       Serial.print(F(", c: "));
       Serial.println(led_value);
