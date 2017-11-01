@@ -371,6 +371,8 @@ void loop() {
         analogWrite(LED_BLUE, 0);
         analogWrite(LED_RED, 0);
         analogWrite(LED_GR, 0);
+
+        prevMillis = millis();      // Update prevMillis to reset sleep timeout
         step = STEP_READ_CMD;
       }
 
