@@ -37,10 +37,12 @@
 #define LED_GR             10   // RGB strip: green pin
 #define LED_BLUE           11   // RGB strip: blue pin
 
-#define BLU_STATE           2   // Bluetooth module state pin
-#define BLU_RESET           3   // Bluetooth module reset pin
+#define BLU_STATE           2   // BLE module state pin
+#define BLU_RESET           3   // BLE module reset pin
 
 #define RTC_INT_SQW         4   // INT/SQW pin from RTC
+
+#define BLU_LED             6   // BLE module connection LED
 
 // Serial defines
 #define SERIAL_BAUD      9600   // For at mode and for data mode (CC41, HM-10 and MLT-BT05)
@@ -226,6 +228,7 @@ void setup() {
   pinMode(BLU_STATE, INPUT);
   pinMode(BLU_RESET, OUTPUT);
   pinMode(RTC_INT_SQW, INPUT);
+  pinMode(BLU_LED, OUTPUT);
 
   time_t t;
   t = tmConvert_t(2017, 11, 01, 11, 00, 00);
@@ -250,7 +253,7 @@ void setup() {
 
   // Interrupt configuration
   PCMSK2 |= _BV(PCINT20);           // Pin change mask: listen to portD bit 4 (D4) (RTC_INT_SQW)
-  PCMSK2 |= _BV(PCINT16);           // TODO Pin change mask: listen to portD bit 0 (D0) (Serial RX)
+  PCMSK2 |= _BV(PCINT16);           // Pin change mask: listen to portD bit 0 (D0) (Serial RX)
   PCICR  |= _BV(PCIE2);             // Enable PCINT interrupt on portD
 
   prevMillis = millis();
