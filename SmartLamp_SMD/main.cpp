@@ -159,6 +159,145 @@ static void digitalClockDisplay(time_t time, const char *tz = NULL) {
 }
 
 // ########################################################
+// Command parsing functions (from BLE Serial)
+// ########################################################
+
+/*
+ * Returns the integer representation of the char data
+ *
+ * Param:
+ * - char data: a ASCII char 0-9
+ */
+static inline int8_t atod(char data) {
+  return data - '0';
+}
+
+
+static bool parseCommand(char *buffer) {
+  // TODO data checks....
+
+  // Set date and time
+  char *s = strstr(buffer, "ST_");
+
+  if (s != NULL && strlen(buffer) == 18) {
+    int16_t YYYY;
+    int8_t MM, DD, hh, mm, ss;
+
+    YYYY = atod(buffer[7]) * 1000 + atod(buffer[8]) * 100 + atod(buffer[9]) * 10 + atod(buffer[10]);
+    MM   = atod(buffer[5]) * 10 + atod(buffer[6]);
+    DD   = atod(buffer[3]) * 10 + atod(buffer[4]);
+    hh   = atod(buffer[12]) * 10 + atod(buffer[13]);
+    mm   = atod(buffer[14]) * 10 + atod(buffer[15]);
+    ss   = atod(buffer[16]) * 10 + atod(buffer[17]);
+
+    // RTC.set()
+
+    Serial.print("YYYY = ");
+    Serial.println(YYYY);
+
+    Serial.print("MM = ");
+    Serial.println(MM);
+
+    Serial.print("DD = ");
+    Serial.println(DD);
+
+    Serial.print("hh = ");
+    Serial.println(hh);
+
+    Serial.print("mm = ");
+    Serial.println(mm);
+
+    Serial.print("ss = ");
+    Serial.println(ss);
+
+    return true;
+  }
+
+  // Set alarm on weekday
+  s = strstr(buffer, "AL_");
+
+  if (s != NULL && strlen(buffer) == 10) {
+    int8_t WD, hh, mm;
+
+    WD   = atod(buffer[3]) * 10 + atod(buffer[4]);
+    hh   = atod(buffer[6]) * 10 + atod(buffer[7]);
+    mm   = atod(buffer[8]) * 10 + atod(buffer[9]);
+
+    // RTC.setAlarm()
+
+    Serial.print("WD = ");
+    Serial.println(WD);
+
+    Serial.print("hh = ");
+    Serial.println(hh);
+
+    Serial.print("mm = ");
+    Serial.println(mm);
+
+    return true;
+  }
+
+  // Disable alarm on weekday
+  s = strstr(buffer, "AL_DIS_");
+
+  if (s != NULL && strlen(buffer) == 9) {
+    uint8_t WD;
+
+    WD = atod(buffer[7]) * 10 + atod(buffer[8]);
+
+    Serial.print("WD = ");
+    Serial.println(WD);
+
+    return true;
+  }
+
+  // Set lamp fade time before or after the alarm
+  s = strstr(buffer, "FT_");
+
+  if (s != NULL && strlen(buffer) == 9) {
+    uint16_t ss;
+
+    ss = atod(buffer[5]) * 1000 + atod(buffer[6]) * 100 + atod(buffer[7]) * 10 + atod(buffer[8]);
+
+    if (buffer[3] == 'A') {
+      // after
+    } else {
+      // before
+    }
+
+    Serial.print("ss = ");
+    Serial.println(ss);
+
+    return true;
+  }
+
+  // Set RGB color for the lamp LED
+  s = strstr(buffer, "RGB_");
+
+  if (s != NULL && strlen(buffer) == 15) {
+    uint8_t red, gr, blue;
+
+    red  = atod(buffer[4]) * 100 + atod(buffer[5]) * 10 + atod(buffer[6]);
+    gr   = atod(buffer[8]) * 100 + atod(buffer[9]) * 10 + atod(buffer[10]);
+    blue = atod(buffer[12]) * 100 + atod(buffer[13]) * 10 + atod(buffer[14]);
+
+    Serial.print("red = ");
+    Serial.println(red);
+
+    Serial.print("gr = ");
+    Serial.println(gr);
+
+    Serial.print("blue = ");
+    Serial.println(blue);
+
+    return true;
+  }
+
+  // Error: unrecognized command!!
+  return false;
+}
+
+// ########################################################
 // AVR specific functions
 // ########################################################
 
@@ -312,24 +451,21 @@ void loop() {
         buffer[count] = '\0';
         //Serial.print("COUNT = ");
         //Serial.println(count);
+
+        // Test
+        //strcpy(buffer, "ST_05112017_141607");
+        //strcpy(buffer, "AL_05_1418");
+        //strcpy(buffer, "RGB_055_129_255");
+        //strcpy(buffer, "AL_DIS_07");
+        //strcpy(buffer, "FT_A_1400");
         Serial.println(buffer);
 
-        /*
-        if (buffer[0] == 'S' && buffer[1] == 'T') {
-          char d[5];
-
-          strlcpy(d, buffer + 2, 4);
-
-          d[5] = '\0';
-          Serial.println(d);
-        }
-        */
+        parseCommand(buffer);
 
         if (strcmp(buffer, "ON") == 0) {
           RTC.setAlarm(ALM1_MATCH_MINUTES, 00, 01, 11, 0);
           RTC.alarmInterrupt(ALARM_1, true);
           step = STEP_FADE;
-          //step = STEP_SLEEP;
         } else if (strcmp(buffer, "OFF") == 0) {
           analogWrite(LED_BLUE, 0);
           analogWrite(LED_RED, 0);
