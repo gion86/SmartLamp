@@ -10095,7 +10095,8 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 <part name="SUPPLY1" library="supply2" deviceset="GND" device=""/>
 <part name="IDC1" library="pinhead" deviceset="PINHD-2X5" device="" value="IDC1"/>
 <part name="GND14" library="supply2" deviceset="GND" device=""/>
-<part name="J3" library="SparkFun-Connectors" deviceset="AVR_SPI_PROG_5X2" device="LOCK"/>
+<part name="J2" library="SparkFun-Connectors" deviceset="AVR_SPI_PROG_5X2" device="PTH2"/>
+<part name="GND5" library="supply2" deviceset="GND" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -10185,7 +10186,8 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 <instance part="SUPPLY1" gate="GND" x="144.78" y="182.88"/>
 <instance part="IDC1" gate="A" x="241.3" y="106.68"/>
 <instance part="GND14" gate="GND" x="256.54" y="96.52" rot="MR0"/>
-<instance part="J3" gate="G$1" x="228.6" y="149.86"/>
+<instance part="J2" gate="G$1" x="236.22" y="137.16"/>
+<instance part="GND5" gate="GND" x="254" y="124.46" rot="MR0"/>
 </instances>
 <busses>
 </busses>
@@ -10311,6 +10313,16 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 <wire x1="256.54" y1="101.6" x2="256.54" y2="99.06" width="0.1524" layer="91"/>
 <junction x="256.54" y="101.6"/>
 </segment>
+<segment>
+<pinref part="J2" gate="G$1" pin="GND@3"/>
+<wire x1="246.38" y1="134.62" x2="254" y2="134.62" width="0.1524" layer="91"/>
+<pinref part="GND5" gate="GND" pin="GND"/>
+<wire x1="254" y1="134.62" x2="254" y2="132.08" width="0.1524" layer="91"/>
+<pinref part="J2" gate="G$1" pin="GND@4"/>
+<wire x1="254" y1="132.08" x2="254" y2="127" width="0.1524" layer="91"/>
+<wire x1="246.38" y1="132.08" x2="254" y2="132.08" width="0.1524" layer="91"/>
+<junction x="254" y="132.08"/>
+</segment>
 </net>
 <net name="SDA" class="0">
 <segment>
@@ -10372,6 +10384,11 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 <wire x1="238.76" y1="106.68" x2="226.06" y2="106.68" width="0.1524" layer="91"/>
 <label x="226.06" y="106.68" size="1.778" layer="95" font="vector"/>
 </segment>
+<segment>
+<pinref part="J2" gate="G$1" pin="RESET"/>
+<wire x1="228.6" y1="137.16" x2="218.44" y2="137.16" width="0.1524" layer="91"/>
+<label x="218.44" y="137.16" size="1.778" layer="95" font="vector"/>
+</segment>
 </net>
 <net name="BLU_STATE" class="0">
 <segment>
@@ -10431,6 +10448,11 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 <pinref part="IDC1" gate="A" pin="1"/>
 <wire x1="238.76" y1="111.76" x2="226.06" y2="111.76" width="0.1524" layer="91"/>
 <label x="226.06" y="111.76" size="1.778" layer="95" font="vector"/>
+</segment>
+<segment>
+<pinref part="J2" gate="G$1" pin="MOSI"/>
+<wire x1="228.6" y1="142.24" x2="218.44" y2="142.24" width="0.1524" layer="91"/>
+<label x="218.44" y="142.24" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="!BLU_RES" class="0">
@@ -10533,6 +10555,11 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 <wire x1="246.38" y1="111.76" x2="256.54" y2="111.76" width="0.1524" layer="91"/>
 <label x="251.46" y="111.76" size="1.778" layer="95" font="vector"/>
 </segment>
+<segment>
+<pinref part="J2" gate="G$1" pin="VCC"/>
+<wire x1="246.38" y1="142.24" x2="254" y2="142.24" width="0.1524" layer="91"/>
+<label x="246.38" y="142.24" size="1.778" layer="95" font="vector"/>
+</segment>
 </net>
 <net name="+12V" class="1">
 <segment>
@@ -10628,6 +10655,11 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 <wire x1="246.38" y1="106.68" x2="256.54" y2="106.68" width="0.1524" layer="91"/>
 <label x="251.46" y="106.68" size="1.778" layer="95" font="vector"/>
 </segment>
+<segment>
+<pinref part="J2" gate="G$1" pin="GND@2"/>
+<wire x1="246.38" y1="137.16" x2="254" y2="137.16" width="0.1524" layer="91"/>
+<label x="246.38" y="137.16" size="1.778" layer="95" font="vector"/>
+</segment>
 </net>
 <net name="SCK" class="0">
 <segment>
@@ -10639,6 +10671,11 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 <pinref part="IDC1" gate="A" pin="7"/>
 <wire x1="238.76" y1="104.14" x2="226.06" y2="104.14" width="0.1524" layer="91"/>
 <label x="226.06" y="104.14" size="1.778" layer="95" font="vector"/>
+</segment>
+<segment>
+<pinref part="J2" gate="G$1" pin="SCK"/>
+<wire x1="228.6" y1="134.62" x2="218.44" y2="134.62" width="0.1524" layer="91"/>
+<label x="218.44" y="134.62" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="N$22" class="0">
@@ -10671,6 +10708,11 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 <wire x1="246.38" y1="109.22" x2="256.54" y2="109.22" width="0.1524" layer="91"/>
 <label x="251.46" y="109.22" size="1.778" layer="95" font="vector"/>
 </segment>
+<segment>
+<pinref part="J2" gate="G$1" pin="GND@1"/>
+<wire x1="246.38" y1="139.7" x2="254" y2="139.7" width="0.1524" layer="91"/>
+<label x="246.38" y="139.7" size="1.778" layer="95" font="vector"/>
+</segment>
 </net>
 <net name="N$1" class="0">
 <segment>
@@ -10697,6 +10739,11 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 <pinref part="IDC1" gate="A" pin="9"/>
 <wire x1="238.76" y1="101.6" x2="226.06" y2="101.6" width="0.1524" layer="91"/>
 <label x="226.06" y="101.6" size="1.778" layer="95" font="vector"/>
+</segment>
+<segment>
+<pinref part="J2" gate="G$1" pin="MISO"/>
+<wire x1="228.6" y1="132.08" x2="218.44" y2="132.08" width="0.1524" layer="91"/>
+<label x="218.44" y="132.08" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 </nets>
