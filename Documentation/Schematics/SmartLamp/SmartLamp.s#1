@@ -9843,7 +9843,7 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 </library>
 </libraries>
 <attributes>
-<attribute name="VERSION" value="0.56"/>
+<attribute name="VERSION" value="0.6"/>
 </attributes>
 <variantdefs>
 </variantdefs>
@@ -9858,8 +9858,8 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 </class>
 </classes>
 <parts>
-<part name="R2" library="rcl" deviceset="R-US_" device="R1206" value="10K"/>
-<part name="R1" library="rcl" deviceset="R-US_" device="R1206" value="10K"/>
+<part name="R2" library="rcl" deviceset="R-US_" device="R1206" value="18K"/>
+<part name="R1" library="rcl" deviceset="R-US_" device="R1206" value="18K"/>
 <part name="GND4" library="supply2" deviceset="GND" device=""/>
 <part name="J1" library="SparkFun-Connectors" deviceset="POWER_JACK" device="PTH_BREAD"/>
 <part name="C1" library="rcl" deviceset="C-EU" device="C1206" value="0.1uF"/>
@@ -9870,7 +9870,7 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 <part name="+3V4" library="supply1" deviceset="+3V3" device=""/>
 <part name="G1" library="CuSTOM_GB" deviceset="CR2032_EBM" device=""/>
 <part name="U2" library="Maxim_RTC" deviceset="DS3231MZ" device=""/>
-<part name="R9" library="rcl" deviceset="R-US_" device="R1206" value="10K"/>
+<part name="R9" library="rcl" deviceset="R-US_" device="R1206" value="18K"/>
 <part name="FRAME2" library="frames" deviceset="DOCFIELD" device=""/>
 <part name="SUPPLY52" library="supply2" deviceset="GND" device=""/>
 <part name="C23" library="rcl" deviceset="C-EU" device="C1206" value="0.1uF"/>
@@ -9886,19 +9886,19 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 <part name="Q1" library="transistor-power" deviceset="N-HEXFET-2D_?-*" device="SOT232" technology="IRLL014N" value="STN4NF03L"/>
 <part name="Q2" library="transistor-power" deviceset="N-HEXFET-2D_?-*" device="SOT232" technology="IRLL014N" value="STN4NF03L"/>
 <part name="Q3" library="transistor-power" deviceset="N-HEXFET-2D_?-*" device="SOT232" technology="IRLL014N" value="STN4NF03L"/>
-<part name="R6" library="rcl" deviceset="R-US_" device="R1206" value="10K"/>
+<part name="R6" library="rcl" deviceset="R-US_" device="R1206" value="18K"/>
 <part name="+3V1" library="supply1" deviceset="+3V3" device=""/>
 <part name="C3" library="SparkFun-Capacitors" deviceset="CAP_POL" device="C" value="100uf"/>
 <part name="SUPPLY8" library="supply2" deviceset="GND" device=""/>
 <part name="U3" library="IC" deviceset="ATMEGA8/168/328" device="" value="ATMEGA8/168/328"/>
 <part name="SUPPLY20" library="supply2" deviceset="GND" device=""/>
 <part name="SUPPLY9" library="supply2" deviceset="GND" device=""/>
-<part name="R19" library="rcl" deviceset="R-US_" device="R1206" value="499"/>
+<part name="R19" library="rcl" deviceset="R-US_" device="R1206" value="560"/>
 <part name="SUPPLY10" library="supply2" deviceset="GND" device=""/>
 <part name="BLE_CONN" library="adafruit" deviceset="LED" device="CHIPLED_1206" value="RED"/>
 <part name="U4" library="HM-10_BLE" deviceset="HM-10" device=""/>
 <part name="R10" library="rcl" deviceset="R-US_" device="R1206" value="10K"/>
-<part name="R11" library="rcl" deviceset="R-US_" device="R1206" value="499"/>
+<part name="R11" library="rcl" deviceset="R-US_" device="R1206" value="560"/>
 <part name="BLU_STATE" library="adafruit" deviceset="LED" device="CHIPLED_1206" value="BLUE"/>
 <part name="GND7" library="supply2" deviceset="GND" device=""/>
 <part name="GND8" library="supply2" deviceset="GND" device=""/>
@@ -9944,18 +9944,29 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 <instance part="C1" gate="G$1" x="266.7" y="213.36"/>
 <instance part="GND13" gate="GND" x="314.96" y="180.34" rot="MR0"/>
 <instance part="S1" gate="G$1" x="116.84" y="27.94" rot="R180"/>
-<instance part="+3V2" gate="G$1" x="261.62" y="220.98"/>
-<instance part="+3V3" gate="G$1" x="314.96" y="220.98"/>
-<instance part="+3V4" gate="G$1" x="322.58" y="220.98"/>
+<instance part="+3V2" gate="G$1" x="261.62" y="220.98" smashed="yes">
+<attribute name="VALUE" x="261.62" y="223.52" size="1.778" layer="96" rot="R180"/>
+</instance>
+<instance part="+3V3" gate="G$1" x="314.96" y="220.98" smashed="yes">
+<attribute name="VALUE" x="314.96" y="223.52" size="1.778" layer="96" rot="R180"/>
+</instance>
+<instance part="+3V4" gate="G$1" x="322.58" y="220.98" smashed="yes">
+<attribute name="VALUE" x="322.58" y="223.52" size="1.778" layer="96" rot="R180"/>
+</instance>
 <instance part="G1" gate="G$1" x="314.96" y="190.5" rot="R90"/>
 <instance part="U2" gate="A" x="287.02" y="200.66"/>
 <instance part="R9" gate="G$1" x="256.54" y="208.28" rot="R270"/>
 <instance part="FRAME2" gate="G$1" x="261.62" y="5.08"/>
 <instance part="SUPPLY52" gate="GND" x="124.46" y="190.5"/>
-<instance part="C23" gate="G$1" x="124.46" y="200.66" rot="R180"/>
+<instance part="C23" gate="G$1" x="124.46" y="200.66" smashed="yes" rot="R180">
+<attribute name="NAME" x="130.556" y="200.279" size="1.778" layer="95" rot="R180"/>
+<attribute name="VALUE" x="122.936" y="205.359" size="1.778" layer="96" rot="R180"/>
+</instance>
 <instance part="C24" gate="G$1" x="170.18" y="200.66" rot="R180"/>
 <instance part="SUPPLY54" gate="GND" x="170.18" y="195.58"/>
-<instance part="SUPPLY55" gate="G$1" x="170.18" y="210.82"/>
+<instance part="SUPPLY55" gate="G$1" x="170.18" y="210.82" smashed="yes">
+<attribute name="VALUE" x="170.18" y="213.36" size="1.778" layer="96" rot="R180"/>
+</instance>
 <instance part="SUPPLY7" gate="GND" x="304.8" y="180.34"/>
 <instance part="GND10" gate="GND" x="144.78" y="111.76"/>
 <instance part="LED_STRIP" gate="A" x="142.24" y="147.32" rot="R90"/>
@@ -9965,16 +9976,21 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 <instance part="Q1" gate="G$1" x="109.22" y="127"/>
 <instance part="Q2" gate="G$1" x="142.24" y="127"/>
 <instance part="Q3" gate="G$1" x="175.26" y="127"/>
-<instance part="R6" gate="G$1" x="269.24" y="154.94" rot="R180"/>
-<instance part="+3V1" gate="G$1" x="264.16" y="162.56"/>
+<instance part="R6" gate="G$1" x="269.24" y="154.94" smashed="yes" rot="R180">
+<attribute name="NAME" x="270.51" y="153.4414" size="1.778" layer="95" rot="R180"/>
+<attribute name="VALUE" x="270.51" y="158.242" size="1.778" layer="96" rot="R180"/>
+</instance>
+<instance part="+3V1" gate="G$1" x="264.16" y="162.56" smashed="yes">
+<attribute name="VALUE" x="264.16" y="165.1" size="1.778" layer="96" rot="R180"/>
+</instance>
 <instance part="C3" gate="G$1" x="180.34" y="203.2"/>
 <instance part="SUPPLY8" gate="GND" x="180.34" y="195.58"/>
 <instance part="U3" gate="G$1" x="299.72" y="129.54"/>
 <instance part="SUPPLY20" gate="GND" x="261.62" y="152.4" rot="R180"/>
 <instance part="SUPPLY9" gate="GND" x="271.78" y="127" rot="R180"/>
 <instance part="R19" gate="G$1" x="334.01" y="116.84" smashed="yes" rot="MR0">
-<attribute name="NAME" x="331.978" y="119.126" size="1.778" layer="95" rot="MR180"/>
-<attribute name="VALUE" x="332.74" y="115.824" size="1.778" layer="96" rot="MR180"/>
+<attribute name="NAME" x="337.058" y="119.126" size="1.778" layer="95" rot="MR180"/>
+<attribute name="VALUE" x="335.28" y="115.824" size="1.778" layer="96" rot="MR180"/>
 </instance>
 <instance part="SUPPLY10" gate="GND" x="345.44" y="106.68"/>
 <instance part="BLE_CONN" gate="G$1" x="345.44" y="114.3" smashed="yes">
@@ -9983,8 +9999,14 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 </instance>
 <instance part="U4" gate="G$1" x="142.24" y="45.72"/>
 <instance part="R10" gate="G$1" x="185.42" y="33.02" rot="R180"/>
-<instance part="R11" gate="G$1" x="185.42" y="43.18" rot="R180"/>
-<instance part="BLU_STATE" gate="G$1" x="195.58" y="43.18" rot="R90"/>
+<instance part="R11" gate="G$1" x="185.42" y="43.18" smashed="yes" rot="R180">
+<attribute name="NAME" x="189.23" y="41.6814" size="1.778" layer="95" rot="R180"/>
+<attribute name="VALUE" x="189.23" y="46.482" size="1.778" layer="96" rot="R180"/>
+</instance>
+<instance part="BLU_STATE" gate="G$1" x="195.58" y="43.18" smashed="yes" rot="R90">
+<attribute name="NAME" x="207.772" y="46.736" size="1.778" layer="95" rot="R180"/>
+<attribute name="VALUE" x="200.152" y="48.895" size="1.778" layer="96" rot="R180"/>
+</instance>
 <instance part="GND7" gate="GND" x="119.38" y="15.24" rot="MR0"/>
 <instance part="GND8" gate="GND" x="132.08" y="15.24" rot="MR0"/>
 <instance part="GND9" gate="GND" x="152.4" y="15.24" rot="MR0"/>
@@ -9995,8 +10017,12 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 <instance part="+3V7" gate="G$1" x="99.06" y="45.72"/>
 <instance part="GND2" gate="GND" x="111.76" y="15.24" rot="MR0"/>
 <instance part="GND3" gate="GND" x="99.06" y="15.24" rot="MR0"/>
-<instance part="+3V6" gate="G$1" x="266.7" y="142.24"/>
-<instance part="+3V8" gate="G$1" x="271.78" y="114.3" rot="R180"/>
+<instance part="+3V6" gate="G$1" x="266.7" y="142.24" smashed="yes">
+<attribute name="VALUE" x="269.24" y="144.78" size="1.778" layer="96" rot="R180"/>
+</instance>
+<instance part="+3V8" gate="G$1" x="271.78" y="114.3" smashed="yes" rot="R180">
+<attribute name="VALUE" x="271.78" y="111.76" size="1.778" layer="96"/>
+</instance>
 <instance part="C6" gate="G$1" x="261.62" y="144.78" rot="R180"/>
 <instance part="C7" gate="G$1" x="271.78" y="119.38" rot="R180"/>
 <instance part="U1" gate="G$1" x="144.78" y="200.66"/>
