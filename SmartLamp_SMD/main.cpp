@@ -17,10 +17,11 @@
 
 /*
  * Built for ATMega328P 8Mhz, using AVR USBasp programmer.
- * VERSION 0.1
+ * VERSION 0.2
  */
 
 #include <avr/io.h>
+#include <avr/eeprom.h>
 #include <avr/sleep.h>
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
@@ -52,10 +53,11 @@
 
 #define CMD_LENGTH         80   // Command buffer length
 
-#define RULES_TZ_ADD        0   // Timezone rules EEPROM start address
+#define RULES_TZ_OFFSET     0   // Timezone rules EEPROM start address
+#define ALARMS_OFFSET     100   // Alarms array EEPROM start address
 
 // LED defines
-#define PERIOD          5000L   // LED crossfade total duration
+#define FADE_TIME        5000   // LED crossfade total duration
 #define MAX_ANALOG_V      255   // Analog output max value for RGB
 
 // States
@@ -76,15 +78,27 @@ const TimeChangeRule CET  = {"CET ", Last, Sun, Oct, 3, 60};      // Central Eur
 TwoWire bus;                    // USIWire instance (I2C bus)
 DS3232RTC RTC(bus);             // DS3232 RTC instance (I2C bus)
 
-size_t count = 0;
-bool data = false;
 unsigned long prevMillis = 0;   // Millis counter to sleep
-bool rtcInitOk = false;         // Communication OK with RTC
 
-//Timezone myTZ(RULES_TZ_ADD);    // Constructor to read rules stored at EEPROM address RULES_TZ_ADD
-Timezone myTZ(CET, CEST);     // Constructor to build object with TimeChangeRule
+// Command parsing variables
+size_t count = 0;               // Char count on buffer (data parsing)
+bool cmd = false;               // Command present on serial interface (BLE)
+
+// Time variables
+//Timezone myTZ(RULES_TZ_ADD);    // TODO Constructor to read rules stored at EEPROM address RULES_TZ_OFFSET
+Timezone myTZ(CET, CEST);       // Constructor to build object with TimeChangeRule
 
 TimeChangeRule *tcr;            // Pointer to the time change rule, use to get TZ abbreviations
+
+typedef struct {
+  int8_t hh, mm, ss;            // Time of day
+  uint16_t fadeTime;            // Fade time in seconds, from the alarm wake up
+} alarm;                        // Alarm structure
+
+alarm alarms[7];                // Alarms array
+
+// LED variables
+uint8_t ledColor[] = {0, 0, 0}; // LED color
 
 uint8_t step = STEP_READ_CMD;
 
@@ -172,13 +186,24 @@ static inline int8_t atod(char data) {
   return data - '0';
 }
 
-
+/*
+ * Parses a command string from serial interface into predefined commands.
+ * Also sets global variables depending on received command.
+ *
+ * Param:
+ * - char *buffer: pointer to the char array, NULL-terminated.
+ */
 static bool parseCommand(char *buffer) {
-  // TODO data checks....
+  // TODO Data checks....
 
+  Serial.println(buffer);
+
+  // ------------------------------------------------------
   // Set date and time
+  // ------------------------------------------------------
   char *s = strstr(buffer, "ST_");
 
+  //strcpy(buffer, "ST_05112017_141607");
   if (s != NULL && strlen(buffer) == 18) {
     int16_t YYYY;
     int8_t MM, DD, hh, mm, ss;
@@ -189,8 +214,6 @@ static bool parseCommand(char *buffer) {
     hh   = atod(buffer[12]) * 10 + atod(buffer[13]);
     mm   = atod(buffer[14]) * 10 + atod(buffer[15]);
     ss   = atod(buffer[16]) * 10 + atod(buffer[17]);
-
-    // RTC.set()
 
     Serial.print("YYYY = ");
     Serial.println(YYYY);
@@ -210,12 +233,33 @@ static bool parseCommand(char *buffer) {
     Serial.print("ss = ");
     Serial.println(ss);
 
-    return true;
+    time_t t;
+    t = tmConvert_t(YYYY, MM, DD, hh, mm, ss);
+
+    if (RTC.set(t) == 0) {
+
+#ifdef DEBUG
+      time_t utc = RTC.get();
+      Serial.print("UTC: ");
+      digitalClockDisplay(utc, "UTC");
+
+      time_t local = myTZ.toLocal(utc, &tcr);
+      Serial.print("Local: ");
+      digitalClockDisplay(local, tcr->abbrev);
+#endif
+      return true;
+    }
+    else {
+      return false;
+    }
   }
 
+  // ------------------------------------------------------
   // Set alarm on weekday
+  // ------------------------------------------------------
   s = strstr(buffer, "AL_");
 
+  //strcpy(buffer, "AL_05_1418");
   if (s != NULL && strlen(buffer) == 10) {
     int8_t WD, hh, mm;
 
@@ -223,8 +267,7 @@ static bool parseCommand(char *buffer) {
     hh   = atod(buffer[6]) * 10 + atod(buffer[7]);
     mm   = atod(buffer[8]) * 10 + atod(buffer[9]);
 
-    // RTC.setAlarm()
-
+#ifdef DEBUG
     Serial.print("WD = ");
     Serial.println(WD);
 
@@ -233,62 +276,93 @@ static bool parseCommand(char *buffer) {
 
     Serial.print("mm = ");
     Serial.println(mm);
+#endif
+
+    if (WD < 0 || WD > 6) {
+      return false;
+    }
+
+
+    RTC.setAlarm(ALM1_MATCH_DAY, 00, mm, hh, WD);
+    RTC.alarmInterrupt(ALARM_1, true);
+
+    alarms[WD].hh = hh;
+    alarms[WD].mm = mm;
+    alarms[WD].ss = 0;
+    alarms[WD].fadeTime = FADE_TIME;
+
+    eeprom_write_block((void*) &alarms, (void*) ALARMS_OFFSET, sizeof(alarms));
 
     return true;
   }
 
+  // ------------------------------------------------------
   // Disable alarm on weekday
+  // ------------------------------------------------------
   s = strstr(buffer, "AL_DIS_");
 
+  //strcpy(buffer, "AL_DIS_07");
   if (s != NULL && strlen(buffer) == 9) {
     uint8_t WD;
 
     WD = atod(buffer[7]) * 10 + atod(buffer[8]);
 
+#ifdef DEBUG
     Serial.print("WD = ");
     Serial.println(WD);
+#endif
+
+    RTC.alarmInterrupt(ALARM_1, false);
 
     return true;
   }
 
-  // Set lamp fade time before or after the alarm
+  // ------------------------------------------------------
+  // Set lamp fade time after the alarm
+  // ------------------------------------------------------
   s = strstr(buffer, "FT_");
 
+  //strcpy(buffer, "FT_1400_1800");
   if (s != NULL && strlen(buffer) == 9) {
-    uint16_t ss;
 
-    ss = atod(buffer[5]) * 1000 + atod(buffer[6]) * 100 + atod(buffer[7]) * 10 + atod(buffer[8]);
+    for (int i = 0; i < 7; ++i) {
+     uint16_t ssb = atod(buffer[3]) * 1000 + atod(buffer[4]) * 100 + atod(buffer[5]) * 10 + atod(buffer[6]);
+     uint16_t ssa = atod(buffer[8]) * 1000 + atod(buffer[9]) * 100 + atod(buffer[10]) * 10 + atod(buffer[11]);
 
-    if (buffer[3] == 'A') {
-      // after
-    } else {
-      // before
+     // TODO set the alarm time
+     alarms[i].fadeTime = ssa + ssb;
     }
 
+#ifdef DEBUG
     Serial.print("ss = ");
-    Serial.println(ss);
+    Serial.println(alarms[0].fadeTime);
+#endif
 
     return true;
   }
 
+  // ------------------------------------------------------
   // Set RGB color for the lamp LED
+  // ------------------------------------------------------
   s = strstr(buffer, "RGB_");
 
+  //strcpy(buffer, "RGB_055_129_255");
   if (s != NULL && strlen(buffer) == 15) {
-    uint8_t red, gr, blue;
 
-    red  = atod(buffer[4]) * 100 + atod(buffer[5]) * 10 + atod(buffer[6]);
-    gr   = atod(buffer[8]) * 100 + atod(buffer[9]) * 10 + atod(buffer[10]);
-    blue = atod(buffer[12]) * 100 + atod(buffer[13]) * 10 + atod(buffer[14]);
+    ledColor[0] = atod(buffer[4]) * 100 + atod(buffer[5]) * 10 + atod(buffer[6]);
+    ledColor[1] = atod(buffer[8]) * 100 + atod(buffer[9]) * 10 + atod(buffer[10]);
+    ledColor[2] = atod(buffer[12]) * 100 + atod(buffer[13]) * 10 + atod(buffer[14]);
 
+#ifdef DEBUG
     Serial.print("red = ");
-    Serial.println(red);
+    Serial.println(ledColor[0]);
 
-    Serial.print("gr = ");
-    Serial.println(gr);
+    Serial.print("green = ");
+    Serial.println(ledColor[1]);
 
     Serial.print("blue = ");
-    Serial.println(blue);
+    Serial.println(ledColor[2]);
+#endif
 
     return true;
   }
@@ -369,23 +443,20 @@ void setup() {
   pinMode(RTC_INT_SQW, INPUT);
   pinMode(BLU_LED, OUTPUT);
 
-  time_t t;
-  t = tmConvert_t(2017, 11, 01, 11, 00, 00);
-
-  if ((retcode = RTC.set(t)) == 0)
-    rtcInitOk = true;
-  else {
-    Serial.print(F("RTC err: "));
+  // RTC connection check
+  if ((retcode = RTC.checkCon()) != 0) {
+    Serial.print("RTC err: ");
     Serial.println(retcode);
+
+    // Signal the error with "retcode" number of flash on the LED
+    for (int i = 0; i < retcode; ++i) {
+      digitalWrite(BLU_LED, (i % 2 ? HIGH : LOW));
+      delay(500);
+    }
+
+    // Exit application code to infinite loop
+    exit(retcode);
   }
-
-  time_t utc = RTC.get();
-  Serial.print(F("UTC: "));
-  digitalClockDisplay(utc, "UTC");
-
-  time_t local = myTZ.toLocal(utc, &tcr);
-  Serial.print(F("Local: "));
-  digitalClockDisplay(local, tcr->abbrev);
 
   // Power settings
   powerReduction();
@@ -396,6 +467,9 @@ void setup() {
   PCICR  |= _BV(PCIE2);             // Enable PCINT interrupt on portD
 
   prevMillis = millis();
+
+  // Read alarms[] array from EEPROM
+  eeprom_read_block((void*) &alarms, (void*) ALARMS_OFFSET, sizeof(alarms));
 }
 
 // ========================================================
@@ -405,25 +479,33 @@ void setup() {
 void loop() {
   char buffer[CMD_LENGTH];
   uint8_t led_value;
-  double x = 0;
+  float x = 0;
 
   switch (step) {
     case STEP_SLEEP:
       // Sleep state
+#ifdef DEBUG
+      Serial.println("Sleeping...");
+#endif
 
-      Serial.println(F("Sleeping..."));
       delay(50);
       system_sleep();
-      Serial.println(F("Waking up..."));
+
+#ifdef DEBUG
+      Serial.println("Waking up...");
       digitalClockDisplay(RTC.get(), "UTC");
+#endif
 
       // Necessary to reset the alarm flag on RTC!
       if (RTC.alarm(ALARM_1)) {
-        Serial.println(F("From alarm..."));
+        Serial.println("From alarm...");
+        step = STEP_FADE;
+      }
+      else {
+        step = STEP_READ_CMD;
       }
 
       prevMillis = millis();
-      step = STEP_READ_CMD;
 
       break;
 
@@ -437,7 +519,11 @@ void loop() {
 
         if (c == '\r' || c == '\n') {
           if (c == '\n') {
-            data = true;
+            // Command present
+            cmd = true;
+
+            // Set string delimiter
+            buffer[count] = '\0';
             break;
           }
           continue;
@@ -447,41 +533,20 @@ void loop() {
         count++;
       }
 
-      if (data) {
-        buffer[count] = '\0';
-        //Serial.print("COUNT = ");
-        //Serial.println(count);
-
-        // Test
-        //strcpy(buffer, "ST_05112017_141607");
-        //strcpy(buffer, "AL_05_1418");
-        //strcpy(buffer, "RGB_055_129_255");
-        //strcpy(buffer, "AL_DIS_07");
-        //strcpy(buffer, "FT_A_1400");
-        Serial.println(buffer);
+      if (cmd) {
+#ifdef DEBUG
+        Serial.print("COUNT = ");
+        Serial.println(count);
+#endif
 
         parseCommand(buffer);
 
-        if (strcmp(buffer, "ON") == 0) {
-          RTC.setAlarm(ALM1_MATCH_MINUTES, 00, 01, 11, 0);
-          RTC.alarmInterrupt(ALARM_1, true);
-          step = STEP_FADE;
-        } else if (strcmp(buffer, "OFF") == 0) {
-          analogWrite(LED_BLUE, 0);
-          analogWrite(LED_RED, 0);
-          analogWrite(LED_GR, 0);
-          step = STEP_SLEEP;
-        }
+        // TODO if () {
+        //  step = STEP_FADE;
+        //}
 
-        time_t utc = RTC.get();
-        Serial.print(F("UTC: "));
-        digitalClockDisplay(utc, "UTC");
-
-        time_t local = myTZ.toLocal(utc, &tcr);
-        Serial.print(F("Local: "));
-        digitalClockDisplay(local, tcr->abbrev);
         count = 0;
-        data = false;
+        cmd = false;
         delay(50);
       }
 
@@ -494,13 +559,15 @@ void loop() {
     case STEP_FADE:
       // LED fade state
 
-      x = (millis() % PERIOD) / (double) PERIOD;
+      x = (millis() % FADE_TIME) / (float) FADE_TIME;
       led_value = MAX_ANALOG_V * sin(PI * x);
 
-      Serial.print(F("x: "));
+#ifdef DEBUG
+      Serial.print("x: ");
       Serial.print(x);
-      Serial.print(F(", c: "));
+      Serial.print(", c: ");
       Serial.println(led_value);
+#endif
 
       analogWrite(LED_BLUE, led_value);
       analogWrite(LED_RED, led_value);
