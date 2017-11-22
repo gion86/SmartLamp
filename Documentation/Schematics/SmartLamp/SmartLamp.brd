@@ -169,9 +169,9 @@
 <text x="5.334" y="30.988" size="0.6096" layer="49">BLUE</text>
 <text x="2.032" y="46.482" size="0.6096" layer="49">GND</text>
 <text x="7.112" y="46.482" size="0.6096" layer="49">+12V</text>
-<text x="20.32" y="49.784" size="1.27" layer="26" rot="MR0">GR</text>
-<text x="29.972" y="49.784" size="1.27" layer="25" rot="MR0">RED</text>
-<text x="39.624" y="49.784" size="1.27" layer="26" rot="MR0">BLUE</text>
+<text x="20.32" y="50.292" size="1.27" layer="26" rot="MR0">GR</text>
+<text x="29.972" y="50.292" size="1.27" layer="26" rot="MR0">RED</text>
+<text x="39.624" y="50.292" size="1.27" layer="26" rot="MR0">BLUE</text>
 </plain>
 <libraries>
 <library name="adafruit">
@@ -2011,13 +2011,13 @@ design rules under a new name.</description>
 <attribute name="VALUE" x="38.9001" y="35.608259375" size="1.27" layer="28" rot="MR0"/>
 </element>
 <element name="Q1" library="transistor-power" package="SOT223" value="STN4NF03L" x="19.304" y="45.974" smashed="yes" rot="MR0">
-<attribute name="NAME" x="17.272" y="48.0568" size="1.27" layer="26" rot="MR0"/>
+<attribute name="NAME" x="17.018" y="48.0568" size="1.27" layer="26" rot="MR0"/>
 </element>
 <element name="Q2" library="transistor-power" package="SOT223" value="STN4NF03L" x="28.448" y="45.974" smashed="yes" rot="MR0">
-<attribute name="NAME" x="26.416" y="48.0568" size="1.27" layer="26" rot="MR0"/>
+<attribute name="NAME" x="26.162" y="48.0568" size="1.27" layer="26" rot="MR0"/>
 </element>
 <element name="Q3" library="transistor-power" package="SOT223" value="STN4NF03L" x="37.592" y="45.974" smashed="yes" rot="MR0">
-<attribute name="NAME" x="35.56" y="48.0568" size="1.27" layer="26" rot="MR0"/>
+<attribute name="NAME" x="35.306" y="48.0568" size="1.27" layer="26" rot="MR0"/>
 </element>
 <element name="R6" library="rcl" package="R1206" value="18K" x="20.574" y="10.16" smashed="yes" rot="R180">
 <attribute name="NAME" x="24.892" y="9.652" size="1.016" layer="25" rot="R180"/>
