@@ -9843,7 +9843,7 @@ The MIC2920 is available in several configurations. The MIC2920A-x.x devices are
 </library>
 </libraries>
 <attributes>
-<attribute name="VERSION" value="0.6"/>
+<attribute name="VERSION" value="1.0"/>
 </attributes>
 <variantdefs>
 </variantdefs>
