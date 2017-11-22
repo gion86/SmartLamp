@@ -10093,7 +10093,7 @@ Source: http://www.irf.com/product-info/datasheets/data/irlz44zpbf.pdf</descript
 </library>
 </libraries>
 <attributes>
-<attribute name="VERSION" value="0.7"/>
+<attribute name="VERSION" value="1.0"/>
 </attributes>
 <variantdefs>
 </variantdefs>
