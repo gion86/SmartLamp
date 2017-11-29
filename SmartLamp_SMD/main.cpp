@@ -53,8 +53,7 @@
 
 #define CMD_LENGTH         80   // Command buffer length
 
-#define RULES_TZ_OFFSET     0   // Timezone rules EEPROM start address
-#define ALARMS_OFFSET     100   // Alarms array EEPROM start address
+#define ALARMS_OFFSET       0   // Alarms array EEPROM start address
 
 // LED defines
 #define FADE_TIME        5000   // LED crossfade total duration
@@ -67,10 +66,6 @@
 
 // Global constants
 // CET Time Zone (Rome, Berlin) -> UTC/GMT + 1
-// These rules are written in the EEPROM, at address RULES_TZ_ADD. The EEPROM by default gets erased by the
-// erase procedure on upload, which clears FLASH, EEPROM and lock bits. To preserve the EEPROM memory fuse
-// EESAVE has to be set. In this case EEPROM will not be erased during erase procedure.
-// But the fuse has to be cleared if you want to clear and/or reflash EEPROM.
 const TimeChangeRule CEST = {"CEST", Last, Sun, Mar, 2, 120};     // Central European Summer Time (DST)
 const TimeChangeRule CET  = {"CET ", Last, Sun, Oct, 3, 60};      // Central European Standard Time
 
@@ -85,7 +80,6 @@ size_t count = 0;               // Char count on buffer (data parsing)
 bool cmd = false;               // Command present on serial interface (BLE)
 
 // Time variables
-//Timezone myTZ(RULES_TZ_ADD);    // TODO Constructor to read rules stored at EEPROM address RULES_TZ_OFFSET
 Timezone myTZ(CET, CEST);       // Constructor to build object with TimeChangeRule
 
 TimeChangeRule *tcr;            // Pointer to the time change rule, use to get TZ abbreviations
@@ -194,8 +188,6 @@ static inline int8_t atod(char data) {
  * - char *buffer: pointer to the char array, NULL-terminated.
  */
 static bool parseCommand(char *buffer) {
-  // TODO Data checks....
-
   Serial.println(buffer);
 
   // ------------------------------------------------------
@@ -215,6 +207,7 @@ static bool parseCommand(char *buffer) {
     mm   = atod(buffer[14]) * 10 + atod(buffer[15]);
     ss   = atod(buffer[16]) * 10 + atod(buffer[17]);
 
+#ifdef DEBUG
     Serial.print("YYYY = ");
     Serial.println(YYYY);
 
@@ -232,12 +225,19 @@ static bool parseCommand(char *buffer) {
 
     Serial.print("ss = ");
     Serial.println(ss);
+#endif
+
+    // Date and time data checks
+    if (YYYY < 1900 || MM < 1 || DD < 1 || hh < 0 || mm < 0 || ss < 0
+        ||
+        MM > 12 || DD > 31 || hh > 23 || mm > 59 || ss > 59) {
+      return false;
+    }
 
     time_t t;
     t = tmConvert_t(YYYY, MM, DD, hh, mm, ss);
 
     if (RTC.set(t) == 0) {
-
 #ifdef DEBUG
       time_t utc = RTC.get();
       Serial.print("UTC: ");
@@ -278,10 +278,10 @@ static bool parseCommand(char *buffer) {
     Serial.println(mm);
 #endif
 
-    if (WD < 0 || WD > 6) {
+    // Data checks
+    if (WD < 0 || hh < 0 || mm < 0 || WD > 6 || hh > 23 || mm > 59) {
       return false;
     }
-
 
     RTC.setAlarm(ALM1_MATCH_DAY, 00, mm, hh, WD);
     RTC.alarmInterrupt(ALARM_1, true);
@@ -311,6 +311,11 @@ static bool parseCommand(char *buffer) {
     Serial.print("WD = ");
     Serial.println(WD);
 #endif
+
+    // Data checks
+    if (WD < 0 || WD > 6) {
+      return false;
+    }
 
     RTC.alarmInterrupt(ALARM_1, false);
 
@@ -348,21 +353,31 @@ static bool parseCommand(char *buffer) {
 
   //strcpy(buffer, "RGB_055_129_255");
   if (s != NULL && strlen(buffer) == 15) {
+    uint8_t ledTemp[] = {0, 0, 0};
 
-    ledColor[0] = atod(buffer[4]) * 100 + atod(buffer[5]) * 10 + atod(buffer[6]);
-    ledColor[1] = atod(buffer[8]) * 100 + atod(buffer[9]) * 10 + atod(buffer[10]);
-    ledColor[2] = atod(buffer[12]) * 100 + atod(buffer[13]) * 10 + atod(buffer[14]);
+    ledTemp[0] = atod(buffer[4]) * 100 + atod(buffer[5]) * 10 + atod(buffer[6]);
+    ledTemp[1] = atod(buffer[8]) * 100 + atod(buffer[9]) * 10 + atod(buffer[10]);
+    ledTemp[2] = atod(buffer[12]) * 100 + atod(buffer[13]) * 10 + atod(buffer[14]);
 
 #ifdef DEBUG
     Serial.print("red = ");
-    Serial.println(ledColor[0]);
+    Serial.println(ledTemp[0]);
 
     Serial.print("green = ");
-    Serial.println(ledColor[1]);
+    Serial.println(ledTemp[1]);
 
     Serial.print("blue = ");
-    Serial.println(ledColor[2]);
+    Serial.println(ledTemp[2]);
 #endif
+
+    // Data checks
+    if (ledTemp[0] < 0 || ledTemp[1] < 0 || ledTemp[2] < 0
+        ||
+        ledTemp[0] > 255 || ledTemp[1] > 255 || ledTemp[2] > 255) {
+      return false;
+    }
+
+    ledColor = ledTemp;
 
     return true;
   }

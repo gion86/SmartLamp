@@ -39,7 +39,7 @@
 								</option>
 								<option id="de.innot.avreclipse.compiler.option.optimize.other.255411445" name="Other Optimization Flags" superClass="de.innot.avreclipse.compiler.option.optimize.other" value="-flto -fno-devirtualize" valueType="string"/>
 								<option id="de.innot.avreclipse.compiler.option.optimize.packstruct.1208856899" name="Pack structs (-fpack-struct)" superClass="de.innot.avreclipse.compiler.option.optimize.packstruct" value="false" valueType="boolean"/>
-								<option id="de.innot.avreclipse.compiler.option.def.207960226" superClass="de.innot.avreclipse.compiler.option.def" valueType="definedSymbols">
+								<option id="de.innot.avreclipse.compiler.option.def.207960226" name="Define Syms (-D)" superClass="de.innot.avreclipse.compiler.option.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="DEBUG=1"/>
 								</option>
 								<inputType id="de.innot.avreclipse.compiler.winavr.input.2047562832" name="C Source Files" superClass="de.innot.avreclipse.compiler.winavr.input"/>
