@@ -377,7 +377,16 @@ static bool parseCommand(char *buffer) {
       return false;
     }
 
-    ledColor = ledTemp;
+    memcpy((void*) ledColor, (void*) ledTemp, sizeof(ledColor));
+
+#ifdef DEBUG
+    for (int i = 0; i < 3; ++i) {
+      Serial.print("ledColor[");
+      Serial.print(i);
+      Serial.print("] = ");
+      Serial.println(ledColor[i]);
+    }
+#endif
 
     return true;
   }
