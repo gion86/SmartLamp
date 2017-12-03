@@ -113,7 +113,11 @@ uint8_t step = STEP_READ_CMD;
  */
 static time_t tmConvert_t(int16_t YYYY, int8_t MM, int8_t DD, int8_t hh, int8_t mm, int8_t ss) {
   struct tm tm;
-  tm.tm_year = YYYY - 1900 + 30;    // avr-libc time.h: years since 1900 + y2k epoch difference (2000 - 1970)
+
+  memset(&tm, 0, sizeof(tm));
+
+  //tm.tm_year = YYYY - 1900 + 30;    // avr-libc time.h: years since 1900 + y2k epoch difference (2000 - 1970)
+  tm.tm_year = YYYY - 1900;         // avr-libc time.h: years since 1900 TODO test
   tm.tm_mon  = MM - 1;              // avr-libc time.h: months in [0, 11]
   tm.tm_mday = DD;
   tm.tm_hour = hh;
@@ -145,6 +149,8 @@ static void printDigits(int digits) {
 static void digitalClockDisplay(time_t time, const char *tz = NULL) {
   struct tm tm;
 
+  memset(&tm, 0, sizeof(tm));
+
   gmtime_r(&time, &tm);
 
   // Digital clock display of the time
@@ -156,7 +162,11 @@ static void digitalClockDisplay(time_t time, const char *tz = NULL) {
   Serial.print('/');
   Serial.print(tm.tm_mon + 1);              // avr-libc time.h: months in [0, 11]
   Serial.print('/');
-  Serial.print(tm.tm_year + 1900 - 30);     // avr-libc time.h: years since 1900 + y2k epoch difference (2000 - 1970)
+  //Serial.print(tm.tm_year + 1900 - 30);     // avr-libc time.h: years since 1900 + y2k epoch difference (2000 - 1970)
+  Serial.print(tm.tm_year + 1900);          // avr-libc time.h: years since 1900 TODO test
+
+  Serial.print(' ');
+  Serial.print(tm.tm_wday);
 
   if (tz != NULL) {
     Serial.print(' ');
@@ -195,7 +205,7 @@ static bool parseCommand(char *buffer) {
   // ------------------------------------------------------
   char *s = strstr(buffer, "ST_");
 
-  //strcpy(buffer, "ST_05112017_141607");
+  // buffer = "ST_05112017_141607"
   if (s != NULL && strlen(buffer) == 18) {
     int16_t YYYY;
     int8_t MM, DD, hh, mm, ss;
@@ -259,7 +269,7 @@ static bool parseCommand(char *buffer) {
   // ------------------------------------------------------
   s = strstr(buffer, "AL_");
 
-  //strcpy(buffer, "AL_05_1418");
+  //buffer = "AL_05_1418"
   if (s != NULL && strlen(buffer) == 10) {
     int8_t WD, hh, mm;
 
@@ -301,7 +311,7 @@ static bool parseCommand(char *buffer) {
   // ------------------------------------------------------
   s = strstr(buffer, "AL_DIS_");
 
-  //strcpy(buffer, "AL_DIS_07");
+  //buffer = "AL_DIS_07"
   if (s != NULL && strlen(buffer) == 9) {
     uint8_t WD;
 
@@ -327,7 +337,7 @@ static bool parseCommand(char *buffer) {
   // ------------------------------------------------------
   s = strstr(buffer, "FT_");
 
-  //strcpy(buffer, "FT_1400_1800");
+  //buffer = "FT_1400_1800"
   if (s != NULL && strlen(buffer) == 9) {
 
     for (int i = 0; i < 7; ++i) {
@@ -351,7 +361,7 @@ static bool parseCommand(char *buffer) {
   // ------------------------------------------------------
   s = strstr(buffer, "RGB_");
 
-  //strcpy(buffer, "RGB_055_129_255");
+  //buffer = "RGB_055_129_255"
   if (s != NULL && strlen(buffer) == 15) {
     uint8_t ledTemp[] = {0, 0, 0};
 
@@ -565,16 +575,18 @@ void loop() {
 
         parseCommand(buffer);
 
-        // TODO if () {
-        //  step = STEP_FADE;
-        //}
-
         count = 0;
         cmd = false;
         delay(50);
       }
 
-      if (millis() - prevMillis >= SLEEP_TIMEOUT) {
+      if (RTC.alarm(ALARM_1)) {
+#ifdef DEBUG
+        Serial.println("Alarm interrupt...");
+#endif
+        step = STEP_FADE;
+      }
+      else if (millis() - prevMillis >= SLEEP_TIMEOUT) {
         step = STEP_SLEEP;
       }
 
