@@ -41,7 +41,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".DeviceControlActivity"/>
-        <service android:name=".BluetoothLeService" android:enabled="true"/>
+        <service android:name=".BLESerialPortService" android:enabled="true"/>
     </application>
 
 </manifest>
