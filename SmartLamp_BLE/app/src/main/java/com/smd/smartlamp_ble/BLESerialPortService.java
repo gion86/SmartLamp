@@ -78,7 +78,7 @@ public class BLESerialPortService extends Service {
     private BluetoothGattCharacteristic disModel;
     private BluetoothGattCharacteristic disSWRev;
     private boolean disAvailable;
-    private Queue<BluetoothGattCharacteristic> readQueue; // TODO
+    private Queue<BluetoothGattCharacteristic> readQueue; // TODO keep??
 
     // Implements callback methods for GATT events that the app cares about.  For example,
     // connection change and services discovered.
@@ -195,10 +195,6 @@ public class BLESerialPortService extends Service {
         // For all profiles, writes the data in ASCII.
         final byte[] data = characteristic.getValue();
         if (data != null && data.length > 0) {
-            final StringBuilder stringBuilder = new StringBuilder(data.length);
-            for (byte byteChar : data)
-                stringBuilder.append(byteChar);
-
             String dataStr = new String(data);
             intent.putExtra(EXTRA_DATA, dataStr);
 
@@ -401,7 +397,7 @@ public class BLESerialPortService extends Service {
                 break;
             }
         }
-        ; // Wait for the flag to clear in onCharacteristicWrite
+        // Wait for the flag to clear in onCharacteristicWrite
     }
 
     // Send data to connected ble serial port device. We can only send 20 bytes per packet,

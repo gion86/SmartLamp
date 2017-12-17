@@ -80,16 +80,16 @@ public class DeviceControlActivity extends Activity {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
-            if (mBLESerialPortService.ACTION_GATT_CONNECTED.equals(action)) {
+            if (BLESerialPortService.ACTION_GATT_CONNECTED.equals(action)) {
                 mConnected = true;
                 invalidateOptionsMenu();
-            } else if (mBLESerialPortService.ACTION_GATT_DISCONNECTED.equals(action)) {
+            } else if (BLESerialPortService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 mConnected = false;
                 invalidateOptionsMenu();
-            } else if (mBLESerialPortService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+            //} else if (BLESerialPortService.ACTION_GATT_SERVICES_DISCOVERED.equals(action))
                 // Show all the supported services and characteristics on the user interface.
-            } else if (mBLESerialPortService.ACTION_DATA_AVAILABLE.equals(action)) {
-                displayData(intent.getStringExtra(mBLESerialPortService.EXTRA_DATA));
+            } else if (BLESerialPortService.ACTION_DATA_AVAILABLE.equals(action)) {
+                displayData(intent.getStringExtra(BLESerialPortService.EXTRA_DATA));
             }
         }
     };
@@ -112,8 +112,8 @@ public class DeviceControlActivity extends Activity {
         mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
 
         // Sets up UI references.
-        mReadTextView = (TextView) findViewById(R.id.readTextView);
-        mWriteText = (EditText) findViewById(R.id.writeText);
+        mReadTextView = findViewById(R.id.readTextView);
+        mWriteText = findViewById(R.id.writeText);
 
         final Button button = findViewById(R.id.sendButton);
         button.setOnClickListener(new View.OnClickListener() {
