@@ -61,6 +61,7 @@
 
 // States
 #define STEP_SLEEP         0
+#define SET_DAY_ALARM      5
 #define STEP_READ_CMD      10
 #define STEP_FADE          15
 
@@ -75,18 +76,23 @@ DS3232RTC RTC(bus);             // DS3232 RTC instance (I2C bus)
 
 unsigned long prevMillis = 0;   // Millis counter to sleep
 
+
 // Command parsing variables
 size_t count = 0;               // Char count on buffer (data parsing)
 bool cmd = false;               // Command present on serial interface (BLE)
 
 // Time variables
-Timezone myTZ(CET, CEST);       // Constructor to build object with TimeChangeRule
+//Timezone myTZ(CET, CEST);       // Constructor to build object with TimeChangeRule
+Timezone myTZ(CEST, CET);       // Constructor to build object with TimeChangeRule
 
 TimeChangeRule *tcr;            // Pointer to the time change rule, use to get TZ abbreviations
+
+struct tm systemTime;           // Current system time (local timezone)
 
 typedef struct {
   int8_t hh, mm, ss;            // Time of day
   uint16_t fadeTime;            // Fade time in seconds, from the alarm wake up
+  bool enabled;
 } alarm;                        // Alarm structure
 
 alarm alarms[7];                // Alarms array [0...6 as weekdays sun...sat]
@@ -94,7 +100,7 @@ alarm alarms[7];                // Alarms array [0...6 as weekdays sun...sat]
 // LED variables
 uint8_t ledColor[] = {0, 0, 0}; // LED color
 
-uint8_t step = STEP_READ_CMD;
+uint8_t step = STEP_SLEEP;
 
 // ########################################################
 // Time manipulation functions
@@ -139,20 +145,10 @@ static void printDigits(int digits) {
   Serial.print(digits);
 }
 
-/*
- * Writes to Serial the clock (date and time) in human readable format.
- *
- * Param:
- * - time_t time: time from the time.h (avr-libc)
- * - const char *tz: string for the timezone, if not used set to NULL
+/**
+ * TODO
  */
-static void digitalClockDisplay(time_t time, const char *tz = NULL) {
-  struct tm tm;
-
-  memset(&tm, 0, sizeof(tm));
-
-  gmtime_r(&time, &tm);
-
+static void digitalClockDisplay(struct tm tm, const char *tz = NULL) {
   // Digital clock display of the time
   Serial.print(tm.tm_hour);
   printDigits(tm.tm_min);
@@ -174,6 +170,68 @@ static void digitalClockDisplay(time_t time, const char *tz = NULL) {
   }
 
   Serial.println();
+}
+
+/*
+ * Writes to Serial the clock (date and time) in human readable format.
+ *
+ * Param:
+ * - time_t time: time from the time.h (avr-libc)
+ * - const char *tz: string for the timezone, if not used set to NULL
+ */
+static void digitalClockDisplay(time_t time, const char *tz = NULL) {
+  struct tm tm;
+
+  memset(&tm, 0, sizeof(tm));
+  gmtime_r(&time, &tm);
+
+  digitalClockDisplay(tm, tz);
+}
+
+/**
+ * TODO
+ */
+static bool setNextAlarm(int8_t hour, int8_t min, int8_t wday) {
+  if (wday < 0 || wday > 6) {
+    return false;
+  }
+
+  for (int i = wday, c = 0; i < wday + 7; ++i, ++c) {
+    int i_m = i % 7;
+
+    if (alarms[i_m].enabled) {
+
+      if (c > 0 || (i_m == wday && (hour < alarms[i_m].hh || (hour == alarms[i_m].hh && min < alarms[i_m].mm)))) {
+#ifdef DEBUG
+        Serial.print("Set alarm on ");
+        Serial.print(alarms[i_m].hh);
+        Serial.print(":");
+        Serial.print(alarms[i_m].mm);
+        Serial.print(" ");
+        Serial.println(i_m);
+#endif
+
+        RTC.setAlarm(ALM1_MATCH_DAY, 00, alarms[i_m].mm, alarms[i_m].hh, i_m);
+        RTC.alarmInterrupt(ALARM_1, true);
+        return true;
+      }
+    }
+  }
+
+  RTC.alarmInterrupt(ALARM_1, false);
+  return false;
+}
+
+/**
+ * TODO
+ */
+static time_t getTime(struct tm *tm) {
+  memset(tm, 0, sizeof(*tm));
+  time_t utc = RTC.get();
+  time_t local = myTZ.toLocal(utc, &tcr);
+  gmtime_r(&local, tm);
+
+  return local;
 }
 
 // ########################################################
@@ -257,9 +315,14 @@ static bool parseCommand(char *buffer) {
       Serial.print("Local: ");
       digitalClockDisplay(local, tcr->abbrev);
 #endif
+
+      // Get the current system time
+      getTime(&systemTime);
+
+      // TODO alarm init flag
+      setNextAlarm(systemTime.tm_hour, systemTime.tm_min, systemTime.tm_wday);
       return true;
-    }
-    else {
+    } else {
       return false;
     }
   }
@@ -293,16 +356,18 @@ static bool parseCommand(char *buffer) {
       return false;
     }
 
-    RTC.setAlarm(ALM1_MATCH_DAY, 00, mm, hh, WD);
-    RTC.alarmInterrupt(ALARM_1, true);
-
     alarms[WD].hh = hh;
     alarms[WD].mm = mm;
     alarms[WD].ss = 0;
     alarms[WD].fadeTime = FADE_TIME;
+    alarms[WD].enabled = true;
 
     eeprom_write_block((void*) &alarms, (void*) ALARMS_OFFSET, sizeof(alarms));
 
+    // Get the current system time
+    getTime(&systemTime);
+
+    setNextAlarm(systemTime.tm_hour, systemTime.tm_min, systemTime.tm_wday);
     return true;
   }
 
@@ -327,8 +392,14 @@ static bool parseCommand(char *buffer) {
       return false;
     }
 
-    RTC.alarmInterrupt(ALARM_1, false);
+    alarms[WD].enabled = false;
 
+    eeprom_write_block((void*) &alarms, (void*) ALARMS_OFFSET, sizeof(alarms));
+
+    // Get the current system time
+    getTime(&systemTime);
+
+    setNextAlarm(systemTime.tm_hour, systemTime.tm_min, systemTime.tm_wday);
     return true;
   }
 
@@ -347,6 +418,8 @@ static bool parseCommand(char *buffer) {
      // TODO set the alarm time
      alarms[i].fadeTime = ssa + ssb;
     }
+
+    eeprom_write_block((void*) &alarms, (void*) ALARMS_OFFSET, sizeof(alarms));
 
 #ifdef DEBUG
     Serial.print("ss = ");
@@ -504,6 +577,13 @@ void setup() {
 
   // Read alarms[] array from EEPROM
   eeprom_read_block((void*) &alarms, (void*) ALARMS_OFFSET, sizeof(alarms));
+
+  // Get the current system time
+  getTime(&systemTime);
+
+  for (int i = 0; i < 7; ++i) {
+     alarms[i].enabled = false;
+  }
 }
 
 // ========================================================
@@ -517,6 +597,7 @@ void loop() {
 
   switch (step) {
     case STEP_SLEEP:
+      // ######################################################################
       // Sleep state
 #ifdef DEBUG
       Serial.println("Sleeping...");
@@ -525,17 +606,29 @@ void loop() {
       delay(50);
       system_sleep();
 
+      // Get the current system time
+      getTime(&systemTime);
+
 #ifdef DEBUG
-      Serial.println("Waking up...");
-      digitalClockDisplay(RTC.get(), "UTC");
+      Serial.println("System time");
+      digitalClockDisplay(systemTime, "Local");
 #endif
 
       // Necessary to reset the alarm flag on RTC!
       if (RTC.alarm(ALARM_1)) {
-        Serial.println("From alarm...");
-        step = STEP_FADE;
-      }
-      else {
+#ifdef DEBUG
+        Serial.println("From alarm 1");
+#endif
+        delay(50);
+        //step = STEP_FADE;
+        step = SET_DAY_ALARM;
+      } else if (RTC.alarm(ALARM_2)) {
+#ifdef DEBUG
+        Serial.println("From alarm 2");
+#endif
+        delay(50);
+        step = SET_DAY_ALARM;
+      } else {
         step = STEP_READ_CMD;
       }
 
@@ -543,7 +636,18 @@ void loop() {
 
       break;
 
+    case SET_DAY_ALARM:
+      // ######################################################################
+      // Set alarm for the day "tm_wday"
+
+      setNextAlarm(systemTime.tm_hour, systemTime.tm_min, systemTime.tm_wday);
+
+      step = STEP_SLEEP;
+      // TODO step = STEP_FADE;
+      break;
+
     case STEP_READ_CMD:
+      // ######################################################################
       // Read command state (from serial connection to bluetooth module)
 
       while (Serial.available() && count < CMD_LENGTH - 1) {
@@ -584,18 +688,17 @@ void loop() {
       }
 
       if (RTC.alarm(ALARM_1)) {
-#ifdef DEBUG
-        Serial.println("Alarm interrupt...");
-#endif
         step = STEP_FADE;
-      }
-      else if (millis() - prevMillis >= SLEEP_TIMEOUT) {
+      } else if (RTC.alarm(ALARM_2)) {
+        step = SET_DAY_ALARM;
+      } else if (millis() - prevMillis >= SLEEP_TIMEOUT) {
         step = STEP_SLEEP;
       }
 
       break;
 
     case STEP_FADE:
+      // ######################################################################
       // LED fade state
 
       x = (millis() % FADE_TIME) / (float) FADE_TIME;
@@ -618,7 +721,12 @@ void loop() {
         analogWrite(LED_GR, 0);
 
         prevMillis = millis();      // Update prevMillis to reset sleep timeout
-        step = STEP_READ_CMD;
+
+        if (RTC.alarm(ALARM_2)) {
+          step = SET_DAY_ALARM;
+        } else {
+          step = STEP_READ_CMD;
+        }
       }
 
       break;
