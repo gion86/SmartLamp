@@ -26,6 +26,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,6 +34,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * For a given BLE device, this Activity provides the user interface to connect, display data,
@@ -44,6 +49,7 @@ public class DeviceControlActivity extends Activity {
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
     private final static String TAG = DeviceControlActivity.class.getSimpleName();
+    private final static String LINE_SEP = "\r\n";
     private TextView mReadTextView;
     private EditText mWriteText;
     private String mDeviceName;
@@ -113,13 +119,48 @@ public class DeviceControlActivity extends Activity {
 
         // Sets up UI references.
         mReadTextView = findViewById(R.id.readTextView);
+        mReadTextView.setMovementMethod(new ScrollingMovementMethod());
+
         mWriteText = findViewById(R.id.writeText);
 
-        final Button button = findViewById(R.id.sendButton);
-        button.setOnClickListener(new View.OnClickListener() {
+        final Button sendButton = findViewById(R.id.sendButton);
+        sendButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                String lineSep = System.getProperty("line.separator");
-                mBLESerialPortService.send(mWriteText.getText().toString() + lineSep);
+                mBLESerialPortService.send(mWriteText.getText().toString() + LINE_SEP);
+            }
+        });
+
+        final Button timeButton = findViewById(R.id.timeButton);
+        timeButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                SimpleDateFormat dateFormatGmt = new SimpleDateFormat("yyyyMMdd_HHmmss");
+                dateFormatGmt.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+                // Send date in command as the UTC actual time.
+                String data = "ST_" + dateFormatGmt.format(new Date());
+                mWriteText.setText(data);
+
+                mBLESerialPortService.send(data + LINE_SEP);
+            }
+        });
+
+        final Button alarmButton = findViewById(R.id.alarmButton);
+        alarmButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                String data = "AL_00_1735";
+                mWriteText.setText(data);
+
+                mBLESerialPortService.send(data + LINE_SEP);
+            }
+        });
+
+        final Button colorButton = findViewById(R.id.colorButton);
+        colorButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                String data = "RGB_055_129_255";
+                mWriteText.setText(data);
+
+                mBLESerialPortService.send(data + LINE_SEP);
             }
         });
 
@@ -187,7 +228,7 @@ public class DeviceControlActivity extends Activity {
 
     private void displayData(String data) {
         if (data != null) {
-            mReadTextView.setText(data);
+            mReadTextView.append(data);
         }
     }
 }

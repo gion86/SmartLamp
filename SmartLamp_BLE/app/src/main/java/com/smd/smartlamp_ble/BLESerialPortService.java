@@ -72,13 +72,12 @@ public class BLESerialPortService extends Service {
     private boolean writeInProgress; // Flag to indicate a write is currently in progress
     private int mConnectionState = STATE_DISCONNECTED;
     private String mBluetoothDeviceAddress;
+    private String mRecData;
 
     // Device Information state.
     private BluetoothGattCharacteristic disManuf;
     private BluetoothGattCharacteristic disModel;
     private BluetoothGattCharacteristic disSWRev;
-    private boolean disAvailable;
-    private Queue<BluetoothGattCharacteristic> readQueue; // TODO keep??
 
     // Implements callback methods for GATT events that the app cares about.  For example,
     // connection change and services discovered.
@@ -132,7 +131,7 @@ public class BLESerialPortService extends Service {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
-            Log.w(TAG, "onCharacteristicChanged");
+            //Log.w(TAG, "onCharacteristicChanged");
 
             broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
         }
@@ -140,23 +139,11 @@ public class BLESerialPortService extends Service {
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicRead(gatt, characteristic, status);
-
             Log.w(TAG, "onCharacteristicRead");
 
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
-
                 Log.w(TAG, characteristic.getStringValue(0));
-
-                // TODO ?? Check if there is anything left in the queue
-                BluetoothGattCharacteristic nextRequest = readQueue.poll();
-                if (nextRequest != null) {
-                    // Send a read request for the next item in the queue
-                    mBluetoothGatt.readCharacteristic(nextRequest);
-                } else {
-                    // We've reached the end of the queue
-                    disAvailable = true;
-                }
+                broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
             }
         }
 
@@ -172,15 +159,14 @@ public class BLESerialPortService extends Service {
      */
     public BLESerialPortService() {
         super();
-        this.mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        this.mBluetoothGatt = null;
-        this.tx = null;
-        this.disManuf = null;
-        this.disModel = null;
-        this.disSWRev = null;
-        this.disAvailable = false;
-        this.writeInProgress = false;
-        this.readQueue = new ConcurrentLinkedQueue<BluetoothGattCharacteristic>();
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        mBluetoothGatt = null;
+        tx = null;
+        disManuf = null;
+        disModel = null;
+        disSWRev = null;
+        writeInProgress = false;
+        mRecData = "";
     }
 
     private void broadcastUpdate(final String action) {
@@ -194,13 +180,17 @@ public class BLESerialPortService extends Service {
 
         // For all profiles, writes the data in ASCII.
         final byte[] data = characteristic.getValue();
-        if (data != null && data.length > 0) {
-            String dataStr = new String(data);
-            intent.putExtra(EXTRA_DATA, dataStr);
 
-            Log.i(TAG, "DATA: " + dataStr);
+        if (data != null && data.length > 0) {
+            mRecData += new String(data);
+
+            if (data.length < 20) {
+                Log.i(TAG, mRecData);
+                intent.putExtra(EXTRA_DATA, mRecData);
+                sendBroadcast(intent);
+                mRecData = "";
+            }
         }
-        sendBroadcast(intent);
     }
 
     @Override
@@ -417,13 +407,13 @@ public class BLESerialPortService extends Service {
                 stringBuilder.append(string.toCharArray(), pos, len);
                 len = 0;
             }
-            Log.i(TAG, "T: " + stringBuilder.append(string.toCharArray(), pos, len).toString());
+            Log.i(TAG, "T: " + stringBuilder.toString() + "   len = " + stringBuilder.toString().length());
             send(stringBuilder.toString().getBytes());
         }
     }
 
     public String getDeviceInfo() {
-        if (tx == null || !disAvailable) {
+        if (tx == null) {
             // Do nothing if there is no connection.
             return "";
         }
@@ -432,10 +422,6 @@ public class BLESerialPortService extends Service {
         sb.append("Model        : " + disModel.getStringValue(0) + "\n");
         sb.append("Firmware     : " + disSWRev.getStringValue(0) + "\n");
         return sb.toString();
-    }
-
-    public boolean deviceInfoAvailable() {
-        return disAvailable;
     }
 
     public static class CommunicationStatus {
