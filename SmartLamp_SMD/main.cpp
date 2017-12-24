@@ -89,7 +89,7 @@ typedef struct {
   uint16_t fadeTime;            // Fade time in seconds, from the alarm wake up
 } alarm;                        // Alarm structure
 
-alarm alarms[7];                // Alarms array
+alarm alarms[7];                // Alarms array [0...6 as weekdays sun...sat]
 
 // LED variables
 uint8_t ledColor[] = {0, 0, 0}; // LED color
@@ -205,14 +205,14 @@ static bool parseCommand(char *buffer) {
   // ------------------------------------------------------
   char *s = strstr(buffer, "ST_");
 
-  // buffer = "ST_05112017_141607"
+  // buffer = "ST_20171105_141607"
   if (s != NULL && strlen(buffer) == 18) {
     int16_t YYYY;
     int8_t MM, DD, hh, mm, ss;
 
-    YYYY = atod(buffer[7]) * 1000 + atod(buffer[8]) * 100 + atod(buffer[9]) * 10 + atod(buffer[10]);
-    MM   = atod(buffer[5]) * 10 + atod(buffer[6]);
-    DD   = atod(buffer[3]) * 10 + atod(buffer[4]);
+    YYYY = atod(buffer[3]) * 1000 + atod(buffer[4]) * 100 + atod(buffer[5]) * 10 + atod(buffer[6]);
+    MM   = atod(buffer[7]) * 10 + atod(buffer[8]);
+    DD   = atod(buffer[9]) * 10 + atod(buffer[10]);
     hh   = atod(buffer[12]) * 10 + atod(buffer[13]);
     mm   = atod(buffer[14]) * 10 + atod(buffer[15]);
     ss   = atod(buffer[16]) * 10 + atod(buffer[17]);
@@ -573,7 +573,10 @@ void loop() {
         Serial.println(count);
 #endif
 
-        parseCommand(buffer);
+        // Send back "OK" response as an acknowledge.
+        if (parseCommand(buffer)) {
+          Serial.println("OK");
+        }
 
         count = 0;
         cmd = false;
