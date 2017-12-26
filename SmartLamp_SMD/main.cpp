@@ -70,20 +70,19 @@
 const TimeChangeRule CEST = {"CEST", Last, Sun, Mar, 2, 120};     // Central European Summer Time (DST)
 const TimeChangeRule CET  = {"CET ", Last, Sun, Oct, 3, 60};      // Central European Standard Time
 
+
 // Global variables
 TwoWire bus;                    // USIWire instance (I2C bus)
 DS3232RTC RTC(bus);             // DS3232 RTC instance (I2C bus)
 
 unsigned long prevMillis = 0;   // Millis counter to sleep
 
-
 // Command parsing variables
 size_t count = 0;               // Char count on buffer (data parsing)
 bool cmd = false;               // Command present on serial interface (BLE)
 
 // Time variables
-//Timezone myTZ(CET, CEST);       // Constructor to build object with TimeChangeRule
-Timezone myTZ(CEST, CET);       // Constructor to build object with TimeChangeRule
+Timezone TZ(CEST, CET);         // Constructor to build object with TimeChangeRule
 
 TimeChangeRule *tcr;            // Pointer to the time change rule, use to get TZ abbreviations
 
@@ -101,6 +100,7 @@ alarm alarms[7];                // Alarms array [0...6 as weekdays sun...sat]
 uint8_t ledColor[] = {0, 0, 0}; // LED color
 
 uint8_t step = STEP_SLEEP;
+
 
 // ########################################################
 // Serial debug functions
@@ -229,6 +229,7 @@ static bool setNextAlarm(struct tm *sys_t) {
   }
 
 #ifdef DEBUG
+  Serial.println();
   Serial.println("NEXT ALARM");
 #endif
 
@@ -250,7 +251,7 @@ static bool setNextAlarm(struct tm *sys_t) {
       if (c > 0 || (i_m == sys_t->tm_wday &&
                    (sys_t->tm_hour < alarms[i_m].hh || (sys_t->tm_hour == alarms[i_m].hh && sys_t->tm_min < alarms[i_m].mm)))) {
 
-        time_t alarm, tc_alarm;
+        time_t alarm, utc_alarm;
         struct tm al_tm, utc_alarm_tm;
 
         // Length of month, given the year and month, where month is in the range 1 to 12.
@@ -278,7 +279,7 @@ static bool setNextAlarm(struct tm *sys_t) {
           }
         }
 
-#ifdef DEBUG
+//#ifdef DEBUG
 //        Serial.print("al_tm.tm_year = ");
 //        Serial.println(al_tm.tm_year);
 //
@@ -290,19 +291,19 @@ static bool setNextAlarm(struct tm *sys_t) {
 //        Serial.print(", ");
 //        Serial.println(loc_tm.tm_mday);
 //        Serial.println();
-        digitalClockDisplay(&al_tm, "Local");
-#endif
+//        digitalClockDisplay(&al_tm, "Local");
+//#endif
 
         // Local alarm time to UTC time conversion
         alarm     = mk_gmtime(&al_tm);
-        utc_alarm = myTZ.toUTC(alarm);
+        utc_alarm = TZ.toUTC(alarm);
 
-#ifdef DEBUG
+//#ifdef DEBUG
 //        Serial.print("Alarm local = ");
 //        Serial.println(alarm);
 //        Serial.print("Alarm UTC = ");
 //        Serial.println(utc_alarm);
-#endif
+//#endif
 
         // time_t to struct tm conversion
         gmtime_r(&utc_alarm, &utc_alarm_tm);
@@ -340,7 +341,7 @@ static bool setNextAlarm(struct tm *sys_t) {
 static time_t getSysTime(struct tm *tm) {
   memset((void*) tm, 0, sizeof(*tm));
   time_t utc = RTC.get();
-  time_t local = myTZ.toLocal(utc, &tcr);
+  time_t local = TZ.toLocal(utc, &tcr);
   gmtime_r(&local, tm);
   return local;
 }
@@ -418,12 +419,11 @@ static bool parseCommand(char *buffer) {
 
     if (RTC.set(t) == 0) {
 #ifdef DEBUG
-      // TODO time in UTC or local
       time_t utc = RTC.get();
       Serial.print("UTC:   ");
       digitalClockDisplay(utc, "UTC");
 
-      time_t local = myTZ.toLocal(utc, &tcr);
+      time_t local = TZ.toLocal(utc, &tcr);
       Serial.print("Local: ");
       digitalClockDisplay(local, tcr->abbrev);
 #endif
@@ -494,10 +494,10 @@ static bool parseCommand(char *buffer) {
 
     WD = atod(buffer[7]) * 10 + atod(buffer[8]);
 
-#ifdef DEBUG
-    Serial.print("WD = ");
-    Serial.println(WD);
-#endif
+//#ifdef DEBUG
+//    Serial.print("WD = ");
+//    Serial.println(WD);
+//#endif
 
     // Data checks
     if (WD < 0 || WD > 6) {
@@ -508,10 +508,10 @@ static bool parseCommand(char *buffer) {
 
     eeprom_write_block((void*) &alarms, (void*) ALARMS_OFFSET, sizeof(alarms));
 
-    // Get the current system time
+    // Get the current system time and set next alarm
     getSysTime(&systemTime);
-
     setNextAlarm(&systemTime);
+
     return true;
   }
 
@@ -521,7 +521,7 @@ static bool parseCommand(char *buffer) {
   s = strstr(buffer, "FT_");
 
   // buffer = "FT_1800"
-  if (s != NULL && strlen(buffer) == 9) {
+  if (s != NULL && strlen(buffer) == 7) {
     uint16_t fadeTime = atod(buffer[3]) * 1000 + atod(buffer[4]) * 100 + atod(buffer[5]) * 10 + atod(buffer[6]);
 
     if (fadeTime > 9999) {
@@ -535,10 +535,10 @@ static bool parseCommand(char *buffer) {
 
     eeprom_write_block((void*) &alarms, (void*) ALARMS_OFFSET, sizeof(alarms));
 
-#ifdef DEBUG
-    Serial.print("ss = ");
-    Serial.println(alarms[0].fadeTime);
-#endif
+//#ifdef DEBUG
+//    Serial.print("ss = ");
+//    Serial.println(alarms[0].fadeTime);
+//#endif
 
     return true;
   }
@@ -556,16 +556,16 @@ static bool parseCommand(char *buffer) {
     ledTemp[1] = atod(buffer[8]) * 100 + atod(buffer[9]) * 10 + atod(buffer[10]);
     ledTemp[2] = atod(buffer[12]) * 100 + atod(buffer[13]) * 10 + atod(buffer[14]);
 
-#ifdef DEBUG
-    Serial.print("red = ");
-    Serial.println(ledTemp[0]);
-
-    Serial.print("green = ");
-    Serial.println(ledTemp[1]);
-
-    Serial.print("blue = ");
-    Serial.println(ledTemp[2]);
-#endif
+//#ifdef DEBUG
+//    Serial.print("red = ");
+//    Serial.println(ledTemp[0]);
+//
+//    Serial.print("green = ");
+//    Serial.println(ledTemp[1]);
+//
+//    Serial.print("blue = ");
+//    Serial.println(ledTemp[2]);
+//#endif
 
     // Data checks
     if (ledTemp[0] < 0 || ledTemp[1] < 0 || ledTemp[2] < 0
@@ -685,8 +685,18 @@ void setup() {
 
 #ifdef DEBUG
   printAlarms();
-  delay(50);
 #endif
+
+  // Get the current system time from RTC
+  getSysTime(&systemTime);
+
+#ifdef DEBUG
+  Serial.println("STARTUP system time");
+  digitalClockDisplay(&systemTime, tcr->abbrev);
+#endif
+
+  // Set the next alarm.
+  setNextAlarm(&systemTime);
 
   // Power settings
   powerReduction();
@@ -697,6 +707,7 @@ void setup() {
   PCICR  |= _BV(PCIE2);             // Enable PCINT interrupt on portD
 
   prevMillis = millis();
+  delay(50);
 }
 
 // ========================================================
@@ -725,7 +736,7 @@ void loop() {
 
 #ifdef DEBUG
       Serial.println("System time");
-      digitalClockDisplay(&systemTime, "Local");
+      digitalClockDisplay(&systemTime, tcr->abbrev);
 #endif
 
       // Necessary to reset the alarm flag on RTC!
