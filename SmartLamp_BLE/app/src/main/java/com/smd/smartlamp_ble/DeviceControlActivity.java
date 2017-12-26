@@ -139,8 +139,6 @@ public class DeviceControlActivity extends Activity {
                 // Send date in command as the UTC actual time.
                 String data = "ST_" + dateFormatGmt.format(new Date());
                 mWriteText.setText(data);
-
-                mBLESerialPortService.send(data + LINE_SEP);
             }
         });
 
@@ -149,8 +147,6 @@ public class DeviceControlActivity extends Activity {
             public void onClick(View v) {
                 String data = "AL_00_1735";
                 mWriteText.setText(data);
-
-                mBLESerialPortService.send(data + LINE_SEP);
             }
         });
 
@@ -159,8 +155,6 @@ public class DeviceControlActivity extends Activity {
             public void onClick(View v) {
                 String data = "RGB_055_129_255";
                 mWriteText.setText(data);
-
-                mBLESerialPortService.send(data + LINE_SEP);
             }
         });
 
