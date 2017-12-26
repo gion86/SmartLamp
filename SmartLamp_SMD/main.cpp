@@ -90,9 +90,9 @@ TimeChangeRule *tcr;            // Pointer to the time change rule, use to get T
 struct tm systemTime;           // Current system time (local timezone)
 
 typedef struct {
+  bool enabled;
   int8_t hh, mm;                // Time of day
   uint16_t fadeTime;            // Fade time in seconds, from the alarm wake up
-  bool enabled;
 } alarm;                        // Alarm structure
 
 alarm alarms[7];                // Alarms array [0...6 as weekdays sun...sat]
@@ -103,34 +103,8 @@ uint8_t ledColor[] = {0, 0, 0}; // LED color
 uint8_t step = STEP_SLEEP;
 
 // ########################################################
-// Time manipulation functions
+// Serial debug functions
 // ########################################################
-
-/*
- * Converts the date/time to standard Unix epoch format, using time.h library (avr-libc)
- *
- * Param:
- * - int16_t YYYY: year (given as ex. 2017)
- * - int8_t MM: month [1, 12]
- * - int8_t DD: day of the month [1, 31]
- * - int8_t hh: hour [0, 23]
- * - int8_t mm: minute [0, 59]
- * - int8_t ss: second [0, 59]
- */
-static time_t tmConvert_t(int16_t YYYY, int8_t MM, int8_t DD, int8_t hh, int8_t mm, int8_t ss) {
-  struct tm tm;
-
-  memset(&tm, 0, sizeof(tm));
-
-  //tm.tm_year = YYYY - 1900 + 30;    // avr-libc time.h: years since 1900 + y2k epoch difference (2000 - 1970)
-  tm.tm_year = YYYY - 1900;         // avr-libc time.h: years since 1900 TODO test
-  tm.tm_mon  = MM - 1;              // avr-libc time.h: months in [0, 11]
-  tm.tm_mday = DD;
-  tm.tm_hour = hh;
-  tm.tm_min  = mm;
-  tm.tm_sec  = ss;
-  return mk_gmtime(&tm);
-}
 
 /*
  * Write to serial a digit with zero padding if needed.
@@ -138,28 +112,32 @@ static time_t tmConvert_t(int16_t YYYY, int8_t MM, int8_t DD, int8_t hh, int8_t 
  * Param:
  * - int digits
  */
-static void printDigits(int digits) {
-  Serial.print(':');
+static void inline printDigits(int digits) {
   if (digits < 10)
     Serial.print('0');
   Serial.print(digits);
 }
 
-/**
- * TODO
+/*
+ * Writes to Serial the clock (date and time) in human readable format.
+ *
+ * Param:
+ * - struct tm  *tm: struct tm from the time.h (avr-libc)
+ * - const char *tz: string for the timezone, if not used set to NULL
  */
 static void digitalClockDisplay(struct tm *tm, const char *tz = NULL) {
   // Digital clock display of the time
-  Serial.print(tm->tm_hour);
+  printDigits(tm->tm_hour);
+  Serial.print(':');
   printDigits(tm->tm_min);
+  Serial.print(':');
   printDigits(tm->tm_sec);
   Serial.print(' ');
   Serial.print(tm->tm_mday);
   Serial.print('/');
   Serial.print(tm->tm_mon + 1);              // avr-libc time.h: months in [0, 11]
   Serial.print('/');
-  //Serial.print(tm->tm_year + 1900 - 30);     // avr-libc time.h: years since 1900 + y2k epoch difference (2000 - 1970)
-  Serial.print(tm->tm_year + 1900);          // avr-libc time.h: years since 1900 TODO test
+  Serial.print(tm->tm_year + 1900);          // avr-libc time.h: years since 1900
 
   Serial.print(' ');
   Serial.print(tm->tm_wday);
@@ -182,14 +160,68 @@ static void digitalClockDisplay(struct tm *tm, const char *tz = NULL) {
 static void digitalClockDisplay(time_t time, const char *tz = NULL) {
   struct tm tm;
 
-  memset(&tm, 0, sizeof(tm));
+  memset((void*) &tm, 0, sizeof(tm));
   gmtime_r(&time, &tm);
 
   digitalClockDisplay(&tm, tz);
 }
 
 /**
- * TODO
+ * Prints the alarm array for debug
+ */
+void printAlarms() {
+  for (int i = 0; i < 7; ++i) {
+    Serial.print("EN[");
+    Serial.print(i);
+    Serial.print("]: ");
+    Serial.print(alarms[i].enabled);
+    Serial.print(", ");
+    printDigits(alarms[i].hh);
+    Serial.print(":");
+    printDigits(alarms[i].mm);
+    Serial.println();
+  }
+  Serial.println();
+}
+
+
+// ########################################################
+// Time manipulation functions
+// ########################################################
+
+/*
+ * Converts the date/time to standard Unix epoch format, using time.h library (avr-libc)
+ *
+ * Param:
+ * - int16_t YYYY: year (given as ex. 2017)
+ * - int8_t MM: month [1, 12]
+ * - int8_t DD: day of the month [1, 31]
+ * - int8_t hh: hour [0, 23]
+ * - int8_t mm: minute [0, 59]
+ * - int8_t ss: second [0, 59]
+ */
+static time_t tmConvert_t(int16_t YYYY, int8_t MM, int8_t DD, int8_t hh, int8_t mm, int8_t ss) {
+  struct tm tm;
+
+  memset((void*) &tm, 0, sizeof(tm));
+
+  tm.tm_year = YYYY - 1900;         // avr-libc time.h: years since 1900
+  tm.tm_mon  = MM - 1;              // avr-libc time.h: months in [0, 11]
+  tm.tm_mday = DD;
+  tm.tm_hour = hh;
+  tm.tm_min  = mm;
+  tm.tm_sec  = ss;
+  return mk_gmtime(&tm);
+}
+
+/**
+ * Select and activate the next alarm in chronological order from the time sys_t.
+ *
+ * Param:
+ * - struct tm *sys_t: system time (struct tm from the time.h avr-libc)
+ *
+ * Returns:
+ * true if at least one alarm is enabled and active (on one weekday).
  */
 static bool setNextAlarm(struct tm *sys_t) {
   if (sys_t->tm_wday < 0 || sys_t->tm_wday > 6) {
@@ -218,14 +250,14 @@ static bool setNextAlarm(struct tm *sys_t) {
       if (c > 0 || (i_m == sys_t->tm_wday &&
                    (sys_t->tm_hour < alarms[i_m].hh || (sys_t->tm_hour == alarms[i_m].hh && sys_t->tm_min < alarms[i_m].mm)))) {
 
-        time_t utc_alarm, alarm;
+        time_t alarm, tc_alarm;
         struct tm al_tm, utc_alarm_tm;
 
         // Length of month, given the year and month, where month is in the range 1 to 12.
         uint8_t m_l = month_length(sys_t->tm_year, sys_t->tm_mon + 1);
 
-        memset(&al_tm, 0, sizeof(al_tm));
-        memset(&utc_alarm_tm, 0, sizeof(utc_alarm_tm));
+        memset((void*) &al_tm, 0, sizeof(al_tm));
+        memset((void*) &utc_alarm_tm, 0, sizeof(utc_alarm_tm));
 
         // Alarm absolute time reconstruction.
         al_tm.tm_year = sys_t->tm_year;
@@ -247,11 +279,11 @@ static bool setNextAlarm(struct tm *sys_t) {
         }
 
 #ifdef DEBUG
-        Serial.print("al_tm.tm_year = ");
-        Serial.println(al_tm.tm_year);
-
-        Serial.print("m_l = ");
-        Serial.println(m_l);
+//        Serial.print("al_tm.tm_year = ");
+//        Serial.println(al_tm.tm_year);
+//
+//        Serial.print("m_l = ");
+//        Serial.println(m_l);
 
 //        Serial.print("m, d = ");
 //        Serial.print(loc_tm.tm_mon);
@@ -261,7 +293,7 @@ static bool setNextAlarm(struct tm *sys_t) {
         digitalClockDisplay(&al_tm, "Local");
 #endif
 
-        // Local to UTC TODO: one function
+        // Local alarm time to UTC time conversion
         alarm     = mk_gmtime(&al_tm);
         utc_alarm = myTZ.toUTC(alarm);
 
@@ -272,6 +304,7 @@ static bool setNextAlarm(struct tm *sys_t) {
 //        Serial.println(utc_alarm);
 #endif
 
+        // time_t to struct tm conversion
         gmtime_r(&utc_alarm, &utc_alarm_tm);
 
 #ifdef DEBUG
@@ -279,6 +312,7 @@ static bool setNextAlarm(struct tm *sys_t) {
         digitalClockDisplay(&utc_alarm_tm, "UTC");
 #endif
 
+        // Set alarm to the RTC clock in UTC format!!
         RTC.setAlarm(ALM1_MATCH_DAY, 00, utc_alarm_tm.tm_min, utc_alarm_tm.tm_hour, utc_alarm_tm.tm_wday);
         RTC.alarmInterrupt(ALARM_1, true);
         return true;
@@ -286,19 +320,28 @@ static bool setNextAlarm(struct tm *sys_t) {
     }
   }
 
+#ifdef DEBUG
+  Serial.print("No alarm enabled!");
+#endif
+
   RTC.alarmInterrupt(ALARM_1, false);
   return false;
 }
 
 /**
- * TODO
+ * Reads system time from RTC clock.
+ *
+ * Param:
+ * - struct tm *tm: the struct tm to be filled.
+ *
+ * Returns:
+ * the system time in binary format (time_t avr-libc).
  */
-static time_t getTime(struct tm *tm) {
-  memset(tm, 0, sizeof(*tm));
+static time_t getSysTime(struct tm *tm) {
+  memset((void*) tm, 0, sizeof(*tm));
   time_t utc = RTC.get();
   time_t local = myTZ.toLocal(utc, &tcr);
   gmtime_r(&local, tm);
-
   return local;
 }
 
@@ -375,6 +418,7 @@ static bool parseCommand(char *buffer) {
 
     if (RTC.set(t) == 0) {
 #ifdef DEBUG
+      // TODO time in UTC or local
       time_t utc = RTC.get();
       Serial.print("UTC:   ");
       digitalClockDisplay(utc, "UTC");
@@ -384,11 +428,10 @@ static bool parseCommand(char *buffer) {
       digitalClockDisplay(local, tcr->abbrev);
 #endif
 
-      // Get the current system time
-      getTime(&systemTime);
-
-      // TODO alarm init flag
+      // Get the current system time and set next alarm
+      getSysTime(&systemTime);
       setNextAlarm(&systemTime);
+
       return true;
     } else {
       return false;
@@ -400,7 +443,7 @@ static bool parseCommand(char *buffer) {
   // ------------------------------------------------------
   s = strstr(buffer, "AL_");
 
-  //buffer = "AL_05_1418"
+  // buffer = "AL_05_1418"
   if (s != NULL && strlen(buffer) == 10) {
     int8_t WD, hh, mm;
 
@@ -431,10 +474,12 @@ static bool parseCommand(char *buffer) {
 
     eeprom_write_block((void*) &alarms, (void*) ALARMS_OFFSET, sizeof(alarms));
 
-    // Get the current system time
-    getTime(&systemTime);
+    printAlarms();
 
+    // Get the current system time and set next alarm
+    getSysTime(&systemTime);
     setNextAlarm(&systemTime);
+
     return true;
   }
 
@@ -443,7 +488,7 @@ static bool parseCommand(char *buffer) {
   // ------------------------------------------------------
   s = strstr(buffer, "AL_DIS_");
 
-  //buffer = "AL_DIS_07"
+  // buffer = "AL_DIS_07"
   if (s != NULL && strlen(buffer) == 9) {
     uint8_t WD;
 
@@ -464,7 +509,7 @@ static bool parseCommand(char *buffer) {
     eeprom_write_block((void*) &alarms, (void*) ALARMS_OFFSET, sizeof(alarms));
 
     // Get the current system time
-    getTime(&systemTime);
+    getSysTime(&systemTime);
 
     setNextAlarm(&systemTime);
     return true;
@@ -475,15 +520,17 @@ static bool parseCommand(char *buffer) {
   // ------------------------------------------------------
   s = strstr(buffer, "FT_");
 
-  //buffer = "FT_1400_1800"
+  // buffer = "FT_1800"
   if (s != NULL && strlen(buffer) == 9) {
+    uint16_t fadeTime = atod(buffer[3]) * 1000 + atod(buffer[4]) * 100 + atod(buffer[5]) * 10 + atod(buffer[6]);
+
+    if (fadeTime > 9999) {
+      return false;
+    }
 
     for (int i = 0; i < 7; ++i) {
-     uint16_t ssb = atod(buffer[3]) * 1000 + atod(buffer[4]) * 100 + atod(buffer[5]) * 10 + atod(buffer[6]);
-     uint16_t ssa = atod(buffer[8]) * 1000 + atod(buffer[9]) * 100 + atod(buffer[10]) * 10 + atod(buffer[11]);
-
-     // TODO set the alarm time
-     alarms[i].fadeTime = ssa + ssb;
+     // Set the alarm fade time
+     alarms[i].fadeTime = fadeTime;
     }
 
     eeprom_write_block((void*) &alarms, (void*) ALARMS_OFFSET, sizeof(alarms));
@@ -501,7 +548,7 @@ static bool parseCommand(char *buffer) {
   // ------------------------------------------------------
   s = strstr(buffer, "RGB_");
 
-  //buffer = "RGB_055_129_255"
+  // buffer = "RGB_055_129_255"
   if (s != NULL && strlen(buffer) == 15) {
     uint8_t ledTemp[] = {0, 0, 0};
 
@@ -632,6 +679,15 @@ void setup() {
     exit(retcode);
   }
 
+  // Read alarms[] array from EEPROM: set bit EESAVE (high fuse byte = D7) to preserve EEPROM
+  // through the chip erase cycle.
+  eeprom_read_block((void*) &alarms, (void*) ALARMS_OFFSET, sizeof(alarms));
+
+#ifdef DEBUG
+  printAlarms();
+  delay(50);
+#endif
+
   // Power settings
   powerReduction();
 
@@ -641,16 +697,6 @@ void setup() {
   PCICR  |= _BV(PCIE2);             // Enable PCINT interrupt on portD
 
   prevMillis = millis();
-
-  // Read alarms[] array from EEPROM
-  eeprom_read_block((void*) &alarms, (void*) ALARMS_OFFSET, sizeof(alarms));
-
-  // Get the current system time
-  getTime(&systemTime);
-
-  for (int i = 0; i < 7; ++i) {
-     alarms[i].enabled = false;
-  }
 }
 
 // ========================================================
@@ -674,8 +720,8 @@ void loop() {
       delay(50);
       system_sleep();
 
-      // Get the current system time
-      getTime(&systemTime);
+      // Get the current system time from RTC
+      getSysTime(&systemTime);
 
 #ifdef DEBUG
       Serial.println("System time");
@@ -702,7 +748,6 @@ void loop() {
     case SET_DAY_ALARM:
       // ######################################################################
       // Set alarm for the day "tm_wday"
-
       setNextAlarm(&systemTime);
 
       step = STEP_SLEEP;

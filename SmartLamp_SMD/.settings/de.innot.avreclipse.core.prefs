@@ -31,6 +31,11 @@ avrtarget/de.innot.avreclipse.configuration.app.debug.381805049.216597436.543410
 avrtarget/de.innot.avreclipse.configuration.app.debug.381805049.216597436.543410479.2008053798.1482811896/avrdude/EEPROMFromConfig=true
 avrtarget/de.innot.avreclipse.configuration.app.debug.381805049.216597436.543410479.2008053798.1482811896/avrdude/FlashFile=
 avrtarget/de.innot.avreclipse.configuration.app.debug.381805049.216597436.543410479.2008053798.1482811896/avrdude/FlashFromConfig=true
+avrtarget/de.innot.avreclipse.configuration.app.debug.381805049.216597436.543410479.2008053798.1482811896/avrdude/Fuses/ByteValues=226\:215\:255
+avrtarget/de.innot.avreclipse.configuration.app.debug.381805049.216597436.543410479.2008053798.1482811896/avrdude/Fuses/FileName=
+avrtarget/de.innot.avreclipse.configuration.app.debug.381805049.216597436.543410479.2008053798.1482811896/avrdude/Fuses/MCUid=atmega328
+avrtarget/de.innot.avreclipse.configuration.app.debug.381805049.216597436.543410479.2008053798.1482811896/avrdude/Fuses/UseFile=false
+avrtarget/de.innot.avreclipse.configuration.app.debug.381805049.216597436.543410479.2008053798.1482811896/avrdude/Fuses/Write=false
 avrtarget/de.innot.avreclipse.configuration.app.debug.381805049.216597436.543410479.2008053798.1482811896/avrdude/NoChipErase=false
 avrtarget/de.innot.avreclipse.configuration.app.debug.381805049.216597436.543410479.2008053798.1482811896/avrdude/NoSigCheck=false
 avrtarget/de.innot.avreclipse.configuration.app.debug.381805049.216597436.543410479.2008053798.1482811896/avrdude/NoVerify=false
