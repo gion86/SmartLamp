@@ -90,7 +90,7 @@ TimeChangeRule *tcr;            // Pointer to the time change rule, use to get T
 struct tm systemTime;           // Current system time (local timezone)
 
 typedef struct {
-  int8_t hh, mm, ss;            // Time of day
+  int8_t hh, mm;                // Time of day
   uint16_t fadeTime;            // Fade time in seconds, from the alarm wake up
   bool enabled;
 } alarm;                        // Alarm structure
@@ -148,21 +148,21 @@ static void printDigits(int digits) {
 /**
  * TODO
  */
-static void digitalClockDisplay(struct tm tm, const char *tz = NULL) {
+static void digitalClockDisplay(struct tm *tm, const char *tz = NULL) {
   // Digital clock display of the time
-  Serial.print(tm.tm_hour);
-  printDigits(tm.tm_min);
-  printDigits(tm.tm_sec);
+  Serial.print(tm->tm_hour);
+  printDigits(tm->tm_min);
+  printDigits(tm->tm_sec);
   Serial.print(' ');
-  Serial.print(tm.tm_mday);
+  Serial.print(tm->tm_mday);
   Serial.print('/');
-  Serial.print(tm.tm_mon + 1);              // avr-libc time.h: months in [0, 11]
+  Serial.print(tm->tm_mon + 1);              // avr-libc time.h: months in [0, 11]
   Serial.print('/');
-  //Serial.print(tm.tm_year + 1900 - 30);     // avr-libc time.h: years since 1900 + y2k epoch difference (2000 - 1970)
-  Serial.print(tm.tm_year + 1900);          // avr-libc time.h: years since 1900 TODO test
+  //Serial.print(tm->tm_year + 1900 - 30);     // avr-libc time.h: years since 1900 + y2k epoch difference (2000 - 1970)
+  Serial.print(tm->tm_year + 1900);          // avr-libc time.h: years since 1900 TODO test
 
   Serial.print(' ');
-  Serial.print(tm.tm_wday);
+  Serial.print(tm->tm_wday);
 
   if (tz != NULL) {
     Serial.print(' ');
@@ -185,33 +185,101 @@ static void digitalClockDisplay(time_t time, const char *tz = NULL) {
   memset(&tm, 0, sizeof(tm));
   gmtime_r(&time, &tm);
 
-  digitalClockDisplay(tm, tz);
+  digitalClockDisplay(&tm, tz);
 }
 
 /**
  * TODO
  */
-static bool setNextAlarm(int8_t hour, int8_t min, int8_t wday) {
-  if (wday < 0 || wday > 6) {
+static bool setNextAlarm(struct tm *sys_t) {
+  if (sys_t->tm_wday < 0 || sys_t->tm_wday > 6) {
     return false;
   }
 
-  for (int i = wday, c = 0; i < wday + 7; ++i, ++c) {
+#ifdef DEBUG
+  Serial.println("NEXT ALARM");
+#endif
+
+  // Check for one day more than a week (8) to account for the next alarm on the same weekday:
+  // case where only on alarm is enable in the entire week.
+  for (int i = sys_t->tm_wday, c = 0; i < sys_t->tm_wday + 8; ++i, ++c) {
     int i_m = i % 7;
 
     if (alarms[i_m].enabled) {
 
-      if (c > 0 || (i_m == wday && (hour < alarms[i_m].hh || (hour == alarms[i_m].hh && min < alarms[i_m].mm)))) {
 #ifdef DEBUG
-        Serial.print("Set alarm on ");
-        Serial.print(alarms[i_m].hh);
-        Serial.print(":");
-        Serial.print(alarms[i_m].mm);
-        Serial.print(" ");
+        Serial.print("c, i_m = ");
+        Serial.print(c);
+        Serial.print(", ");
         Serial.println(i_m);
+        Serial.println();
 #endif
 
-        RTC.setAlarm(ALM1_MATCH_DAY, 00, alarms[i_m].mm, alarms[i_m].hh, i_m);
+      if (c > 0 || (i_m == sys_t->tm_wday &&
+                   (sys_t->tm_hour < alarms[i_m].hh || (sys_t->tm_hour == alarms[i_m].hh && sys_t->tm_min < alarms[i_m].mm)))) {
+
+        time_t utc_alarm, alarm;
+        struct tm al_tm, utc_alarm_tm;
+
+        // Length of month, given the year and month, where month is in the range 1 to 12.
+        uint8_t m_l = month_length(sys_t->tm_year, sys_t->tm_mon + 1);
+
+        memset(&al_tm, 0, sizeof(al_tm));
+        memset(&utc_alarm_tm, 0, sizeof(utc_alarm_tm));
+
+        // Alarm absolute time reconstruction.
+        al_tm.tm_year = sys_t->tm_year;
+        al_tm.tm_mon  = sys_t->tm_mon;
+        al_tm.tm_mday = sys_t->tm_mday + c;
+        al_tm.tm_hour = alarms[i_m].hh;
+        al_tm.tm_min  = alarms[i_m].mm;
+        al_tm.tm_sec  = 0;
+
+        // Check for month and year overflow
+        if (al_tm.tm_mday > m_l) {
+          al_tm.tm_mday = al_tm.tm_mday % m_l;
+          al_tm.tm_mon++;
+
+          if (al_tm.tm_mon > 11) {
+            al_tm.tm_mon = 0;
+            al_tm.tm_year++;
+          }
+        }
+
+#ifdef DEBUG
+        Serial.print("al_tm.tm_year = ");
+        Serial.println(al_tm.tm_year);
+
+        Serial.print("m_l = ");
+        Serial.println(m_l);
+
+//        Serial.print("m, d = ");
+//        Serial.print(loc_tm.tm_mon);
+//        Serial.print(", ");
+//        Serial.println(loc_tm.tm_mday);
+//        Serial.println();
+        digitalClockDisplay(&al_tm, "Local");
+#endif
+
+        // Local to UTC TODO: one function
+        alarm     = mk_gmtime(&al_tm);
+        utc_alarm = myTZ.toUTC(alarm);
+
+#ifdef DEBUG
+//        Serial.print("Alarm local = ");
+//        Serial.println(alarm);
+//        Serial.print("Alarm UTC = ");
+//        Serial.println(utc_alarm);
+#endif
+
+        gmtime_r(&utc_alarm, &utc_alarm_tm);
+
+#ifdef DEBUG
+        Serial.print("Set alarm on ");
+        digitalClockDisplay(&utc_alarm_tm, "UTC");
+#endif
+
+        RTC.setAlarm(ALM1_MATCH_DAY, 00, utc_alarm_tm.tm_min, utc_alarm_tm.tm_hour, utc_alarm_tm.tm_wday);
         RTC.alarmInterrupt(ALARM_1, true);
         return true;
       }
@@ -275,25 +343,25 @@ static bool parseCommand(char *buffer) {
     mm   = atod(buffer[14]) * 10 + atod(buffer[15]);
     ss   = atod(buffer[16]) * 10 + atod(buffer[17]);
 
-#ifdef DEBUG
-    Serial.print("YYYY = ");
-    Serial.println(YYYY);
-
-    Serial.print("MM = ");
-    Serial.println(MM);
-
-    Serial.print("DD = ");
-    Serial.println(DD);
-
-    Serial.print("hh = ");
-    Serial.println(hh);
-
-    Serial.print("mm = ");
-    Serial.println(mm);
-
-    Serial.print("ss = ");
-    Serial.println(ss);
-#endif
+//#ifdef DEBUG
+//    Serial.print("YYYY = ");
+//    Serial.println(YYYY);
+//
+//    Serial.print("MM = ");
+//    Serial.println(MM);
+//
+//    Serial.print("DD = ");
+//    Serial.println(DD);
+//
+//    Serial.print("hh = ");
+//    Serial.println(hh);
+//
+//    Serial.print("mm = ");
+//    Serial.println(mm);
+//
+//    Serial.print("ss = ");
+//    Serial.println(ss);
+//#endif
 
     // Date and time data checks
     if (YYYY < 1900 || MM < 1 || DD < 1 || hh < 0 || mm < 0 || ss < 0
@@ -308,7 +376,7 @@ static bool parseCommand(char *buffer) {
     if (RTC.set(t) == 0) {
 #ifdef DEBUG
       time_t utc = RTC.get();
-      Serial.print("UTC: ");
+      Serial.print("UTC:   ");
       digitalClockDisplay(utc, "UTC");
 
       time_t local = myTZ.toLocal(utc, &tcr);
@@ -320,7 +388,7 @@ static bool parseCommand(char *buffer) {
       getTime(&systemTime);
 
       // TODO alarm init flag
-      setNextAlarm(systemTime.tm_hour, systemTime.tm_min, systemTime.tm_wday);
+      setNextAlarm(&systemTime);
       return true;
     } else {
       return false;
@@ -340,16 +408,16 @@ static bool parseCommand(char *buffer) {
     hh   = atod(buffer[6]) * 10 + atod(buffer[7]);
     mm   = atod(buffer[8]) * 10 + atod(buffer[9]);
 
-#ifdef DEBUG
-    Serial.print("WD = ");
-    Serial.println(WD);
-
-    Serial.print("hh = ");
-    Serial.println(hh);
-
-    Serial.print("mm = ");
-    Serial.println(mm);
-#endif
+//#ifdef DEBUG
+//    Serial.print("WD = ");
+//    Serial.println(WD);
+//
+//    Serial.print("hh = ");
+//    Serial.println(hh);
+//
+//    Serial.print("mm = ");
+//    Serial.println(mm);
+//#endif
 
     // Data checks
     if (WD < 0 || hh < 0 || mm < 0 || WD > 6 || hh > 23 || mm > 59) {
@@ -358,7 +426,6 @@ static bool parseCommand(char *buffer) {
 
     alarms[WD].hh = hh;
     alarms[WD].mm = mm;
-    alarms[WD].ss = 0;
     alarms[WD].fadeTime = FADE_TIME;
     alarms[WD].enabled = true;
 
@@ -367,7 +434,7 @@ static bool parseCommand(char *buffer) {
     // Get the current system time
     getTime(&systemTime);
 
-    setNextAlarm(systemTime.tm_hour, systemTime.tm_min, systemTime.tm_wday);
+    setNextAlarm(&systemTime);
     return true;
   }
 
@@ -399,7 +466,7 @@ static bool parseCommand(char *buffer) {
     // Get the current system time
     getTime(&systemTime);
 
-    setNextAlarm(systemTime.tm_hour, systemTime.tm_min, systemTime.tm_wday);
+    setNextAlarm(&systemTime);
     return true;
   }
 
@@ -601,6 +668,7 @@ void loop() {
       // Sleep state
 #ifdef DEBUG
       Serial.println("Sleeping...");
+      Serial.println();
 #endif
 
       delay(50);
@@ -611,23 +679,18 @@ void loop() {
 
 #ifdef DEBUG
       Serial.println("System time");
-      digitalClockDisplay(systemTime, "Local");
+      digitalClockDisplay(&systemTime, "Local");
 #endif
 
       // Necessary to reset the alarm flag on RTC!
       if (RTC.alarm(ALARM_1)) {
 #ifdef DEBUG
-        Serial.println("From alarm 1");
+        Serial.println("Wake up from alarm 1");
+        Serial.println();
 #endif
         delay(50);
+        step = SET_DAY_ALARM;
         //step = STEP_FADE;
-        step = SET_DAY_ALARM;
-      } else if (RTC.alarm(ALARM_2)) {
-#ifdef DEBUG
-        Serial.println("From alarm 2");
-#endif
-        delay(50);
-        step = SET_DAY_ALARM;
       } else {
         step = STEP_READ_CMD;
       }
@@ -640,10 +703,10 @@ void loop() {
       // ######################################################################
       // Set alarm for the day "tm_wday"
 
-      setNextAlarm(systemTime.tm_hour, systemTime.tm_min, systemTime.tm_wday);
+      setNextAlarm(&systemTime);
 
       step = STEP_SLEEP;
-      // TODO step = STEP_FADE;
+      // step = STEP_FADE;
       break;
 
     case STEP_READ_CMD:
@@ -672,10 +735,10 @@ void loop() {
       }
 
       if (cmd) {
-#ifdef DEBUG
-        Serial.print("COUNT = ");
-        Serial.println(count);
-#endif
+//#ifdef DEBUG
+//        Serial.print("COUNT = ");
+//        Serial.println(count);
+//#endif
 
         // Send back "OK" response as an acknowledge.
         if (parseCommand(buffer)) {
@@ -688,9 +751,8 @@ void loop() {
       }
 
       if (RTC.alarm(ALARM_1)) {
-        step = STEP_FADE;
-      } else if (RTC.alarm(ALARM_2)) {
         step = SET_DAY_ALARM;
+        //step = STEP_FADE;
       } else if (millis() - prevMillis >= SLEEP_TIMEOUT) {
         step = STEP_SLEEP;
       }
