@@ -56,7 +56,7 @@
 #define ALARMS_OFFSET       0   // Alarms array EEPROM start address
 
 // LED defines
-#define FADE_TIME        5000   // LED crossfade total duration
+#define FADE_TIME          10   // LED crossfade total duration  [s]
 #define MAX_ANALOG_V      255   // Analog output max value for RGB
 
 // States
@@ -719,6 +719,9 @@ void loop() {
   uint8_t led_value;
   float x = 0;
 
+  uint16_t fadeTime;
+  unsigned long millTest;
+
   switch (step) {
     case STEP_SLEEP:
       // ######################################################################
@@ -747,7 +750,6 @@ void loop() {
 #endif
         delay(50);
         step = SET_DAY_ALARM;
-        //step = STEP_FADE;
       } else {
         step = STEP_READ_CMD;
       }
@@ -761,8 +763,9 @@ void loop() {
       // Set alarm for the day "tm_wday"
       setNextAlarm(&systemTime);
 
-      step = STEP_SLEEP;
-      // step = STEP_FADE;
+      //step = STEP_SLEEP;
+      prevMillis = millis();
+      step = STEP_FADE;
       break;
 
     case STEP_READ_CMD:
@@ -819,11 +822,21 @@ void loop() {
       // ######################################################################
       // LED fade state
 
-      x = (millis() % FADE_TIME) / (float) FADE_TIME;
+      fadeTime = alarms[systemTime.tm_wday].fadeTime * 1000.0;
+
+      millTest = millis();
+
+      if (RTC.alarm(ALARM_1)) {
+        prevMillis = millis();
+      }
+
+      x = (millis() - prevMillis) / (float) (fadeTime);
       led_value = MAX_ANALOG_V * sin(PI * x);
 
 #ifdef DEBUG
-      Serial.print("x: ");
+      Serial.print("millTest: ");
+      Serial.print(millTest);
+      Serial.print(", x: ");
       Serial.print(x);
       Serial.print(", c: ");
       Serial.println(led_value);
@@ -840,11 +853,7 @@ void loop() {
 
         prevMillis = millis();      // Update prevMillis to reset sleep timeout
 
-        if (RTC.alarm(ALARM_2)) {
-          step = SET_DAY_ALARM;
-        } else {
-          step = STEP_READ_CMD;
-        }
+        step = STEP_READ_CMD;
       }
 
       break;
