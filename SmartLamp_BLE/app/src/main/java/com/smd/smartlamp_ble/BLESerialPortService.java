@@ -31,6 +31,7 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.Queue;
 import java.util.UUID;
@@ -384,6 +385,7 @@ public class BLESerialPortService extends Service {
         mBluetoothGatt.writeCharacteristic(tx);
         while (writeInProgress) {
             if (System.currentTimeMillis() - beginMillis > CommunicationStatus.SEND_TIME_OUT_MILLIS) {
+                Toast.makeText(this, R.string.error_com_timeout, Toast.LENGTH_LONG).show();
                 break;
             }
         }
