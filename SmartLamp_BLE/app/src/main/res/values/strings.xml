@@ -50,6 +50,10 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_settings">Settings</string>
 
+    <!-- Strings related to alarms and days -->
+    <string name="day_1_name">Monday</string>
+    <string name="day_2_name">Tuesday</string>
+
     <!-- Strings related to Settings -->
 
     <!-- Example General settings -->

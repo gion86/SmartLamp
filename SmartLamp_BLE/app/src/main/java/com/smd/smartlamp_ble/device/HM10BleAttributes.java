@@ -15,7 +15,7 @@
  *
  */
 
-package com.smd.smartlamp_ble;
+package com.smd.smartlamp_ble.device;
 
 import java.util.HashMap;
 

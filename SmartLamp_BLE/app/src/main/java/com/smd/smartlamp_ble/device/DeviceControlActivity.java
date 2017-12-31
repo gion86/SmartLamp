@@ -15,7 +15,7 @@
  *
  */
 
-package com.smd.smartlamp_ble;
+package com.smd.smartlamp_ble.device;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -34,6 +34,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import com.smd.smartlamp_ble.R;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

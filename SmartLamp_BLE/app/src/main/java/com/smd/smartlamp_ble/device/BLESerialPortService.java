@@ -15,7 +15,7 @@
  *
  */
 
-package com.smd.smartlamp_ble;
+package com.smd.smartlamp_ble.device;
 
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
@@ -33,9 +33,9 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
-import java.util.Queue;
+import com.smd.smartlamp_ble.R;
+
 import java.util.UUID;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
 /**

@@ -47,17 +47,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".DeviceScanActivity">
+        <activity android:name=".device.DeviceScanActivity">
         </activity>
-        <activity android:name=".DeviceControlActivity" />
+        <activity android:name=".device.DeviceControlActivity" />
 
         <activity
-            android:name=".SettingsActivity"
+            android:name=".settings.SettingsActivity"
             android:label="@string/title_activity_settings">
         </activity>
 
         <service
-            android:name=".BLESerialPortService"
+            android:name=".device.BLESerialPortService"
             android:enabled="true" />
 
     </application>
