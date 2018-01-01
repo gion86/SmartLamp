@@ -24,6 +24,7 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.TimePickerDialog;
+import android.arch.persistence.room.Room;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -41,7 +42,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import com.smd.smartlamp_ble.data.AppDatabase;
 import com.smd.smartlamp_ble.data.DayAlarm;
+import com.smd.smartlamp_ble.data.DayAlarmDAO;
 import com.smd.smartlamp_ble.device.DeviceScanActivity;
 import com.smd.smartlamp_ble.settings.SettingsActivity;
 
@@ -53,6 +56,8 @@ public class AlarmActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks, TimePickerDialog.OnTimeSetListener {
 
     private final static String TAG = AlarmActivity.class.getSimpleName();
+
+    private DayAlarmDAO mDayAlarmDAO;
 
     private ArrayList<DayAlarm> mDayList;
     private DayAdapter mDayAdapter;
@@ -82,13 +87,23 @@ public class AlarmActivity extends Activity
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
-        // TODO StringList for day names
-        DayAlarm d1 = new DayAlarm(getString(R.string.day_1_name), 10, 7, 0, 1);
-        DayAlarm d2 = new DayAlarm(getString(R.string.day_2_name), 10, 8, 0, 2);
+        // Set up database.
+        AppDatabase db = Room.databaseBuilder(getApplicationContext(),
+                AppDatabase.class, "day_alarm_db").allowMainThreadQueries().build(); // FIXME Warning: is not recommend use .allowMainThreadQueries()
 
-        mDayList = new ArrayList<DayAlarm>();
-        mDayList.add(d1);
-        mDayList.add(d2);
+        mDayAlarmDAO = db.dayAlarmDao();
+
+        // TODO StringList for day names
+//        DayAlarm d1 = new DayAlarm(getString(R.string.day_1_name), 10, 7, 0, 1);
+//        DayAlarm d2 = new DayAlarm(getString(R.string.day_2_name), 10, 8, 0, 2);
+
+//        mDayAlarmDAO.insert(new DayAlarm(getString(R.string.day_1_name), 10, 12, 0, 1));
+//        mDayAlarmDAO.insert(new DayAlarm(getString(R.string.day_2_name), 10, 8, 0, 2));
+
+//        mDayList = new ArrayList<DayAlarm>();
+//        mDayList.add(d1);
+//        mDayList.add(d2);
+        mDayList = new ArrayList<DayAlarm>(mDayAlarmDAO.getAll());
         mDayAdapter = new DayAdapter(this, mDayList);
 
         mDayPos = -1;

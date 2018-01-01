@@ -1,0 +1,72 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "14c08de39f8614c6437aec2b4045f991",
+    "entities": [
+      {
+        "tableName": "days",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`wday` INTEGER NOT NULL, `name` TEXT, `enabled` INTEGER NOT NULL, `fadeTime` INTEGER NOT NULL, `hour` INTEGER NOT NULL, `min` INTEGER NOT NULL, PRIMARY KEY(`wday`))",
+        "fields": [
+          {
+            "fieldPath": "wday",
+            "columnName": "wday",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "enabled",
+            "columnName": "enabled",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fadeTime",
+            "columnName": "fadeTime",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hour",
+            "columnName": "hour",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "min",
+            "columnName": "min",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "wday"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [
+          {
+            "name": "index_days_wday",
+            "unique": true,
+            "columnNames": [
+              "wday"
+            ],
+            "createSql": "CREATE UNIQUE INDEX `index_days_wday` ON `${TABLE_NAME}` (`wday`)"
+          }
+        ],
+        "foreignKeys": []
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"14c08de39f8614c6437aec2b4045f991\")"
+    ]
+  }
+}
