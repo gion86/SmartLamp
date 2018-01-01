@@ -15,27 +15,30 @@
  *
  */
 
-package com.smd.smartlamp_ble.Data;
+package com.smd.smartlamp_ble.data;
 
-import java.io.Serializable;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Index;
+import android.arch.persistence.room.PrimaryKey;
 
 /**
  * TODO
  */
-public class DayAlarm implements Serializable {
+@Entity(tableName = "days", indices = {@Index(value = "wday", unique = true)})
+public class DayAlarm {
+
+    @PrimaryKey
+    private int wday;
 
     private String name;
-    private boolean en;
+    private boolean enabled;
     private int fadeTime;
     private int hour;
     private int min;
-    private int wday;
-
-    // TODO StringList for day names
 
     public DayAlarm(String name, int fadeTime, int hour, int min, int wday) {
         this.name = name;
-        this.en = true;
+        this.enabled = true;
         this.fadeTime = fadeTime;
         this.hour = hour;
         this.min = min;
@@ -51,11 +54,11 @@ public class DayAlarm implements Serializable {
     }
 
     public boolean isEnabled() {
-        return en;
+        return enabled;
     }
 
     public void setEnabled(boolean en) {
-        this.en = en;
+        this.enabled = en;
     }
 
     public int getFadeTime() { return fadeTime; }

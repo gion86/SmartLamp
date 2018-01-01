@@ -41,7 +41,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
-import com.smd.smartlamp_ble.Data.DayAlarm;
+import com.smd.smartlamp_ble.data.DayAlarm;
 import com.smd.smartlamp_ble.device.DeviceScanActivity;
 import com.smd.smartlamp_ble.settings.SettingsActivity;
 
@@ -82,6 +82,7 @@ public class AlarmActivity extends Activity
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
+        // TODO StringList for day names
         DayAlarm d1 = new DayAlarm(getString(R.string.day_1_name), 10, 7, 0, 1);
         DayAlarm d2 = new DayAlarm(getString(R.string.day_2_name), 10, 8, 0, 2);
 
