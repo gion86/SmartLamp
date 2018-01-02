@@ -15,7 +15,7 @@
  *
  */
 
-package com.smd.smartlamp_ble.data;
+package com.smd.smartlamp_ble.model;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Index;

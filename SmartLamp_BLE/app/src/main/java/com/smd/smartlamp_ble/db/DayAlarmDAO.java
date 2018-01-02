@@ -15,19 +15,24 @@
  *
  */
 
-package com.smd.smartlamp_ble.data;
+package com.smd.smartlamp_ble.db;
 
+import android.arch.lifecycle.LiveData;
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 
+import com.smd.smartlamp_ble.model.DayAlarm;
+
 import java.util.List;
+
+import static android.arch.persistence.room.OnConflictStrategy.REPLACE;
 
 @Dao
 public interface DayAlarmDAO {
     @Query("SELECT * FROM days")
-    List<DayAlarm> getAll();
+    LiveData<List<DayAlarm>> getAll();
 
     @Query("SELECT * FROM days WHERE wday IS (:wday)")
     DayAlarm findByWeekDay(int wday);
@@ -35,10 +40,10 @@ public interface DayAlarmDAO {
     @Query("SELECT * FROM days WHERE name LIKE :name")
     DayAlarm findByName(String name);
 
-    @Insert
+    @Insert(onConflict = REPLACE)
     public void insert(DayAlarm day);
 
-    @Insert
+    @Insert(onConflict = REPLACE)
     void insertAll(DayAlarm... users);
 
     @Delete

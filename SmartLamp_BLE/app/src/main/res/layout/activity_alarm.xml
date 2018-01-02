@@ -18,14 +18,23 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <ListView
+            <android.support.v7.widget.RecyclerView
                 android:id="@+id/dayList"
                 android:layout_width="match_parent"
-                android:layout_height="462dp" />
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
 
-            <RelativeLayout
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:layout_alignParentStart="true"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <Space
+                    android:layout_width="294dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
 
                 <Button
                     android:id="@+id/sendDayButton"
@@ -34,11 +43,12 @@
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:layout_marginEnd="17dp"
+                    android:layout_weight="1"
                     android:width="100dp"
                     android:text="@string/button_day_send"
                     android:textSize="24sp"
                     android:textStyle="bold" />
-            </RelativeLayout>
+            </LinearLayout>
 
         </LinearLayout>
 

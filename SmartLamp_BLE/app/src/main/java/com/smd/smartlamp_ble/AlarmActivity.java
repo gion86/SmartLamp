@@ -24,43 +24,43 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.TimePickerDialog;
-import android.arch.persistence.room.Room;
-import android.content.Context;
+import android.arch.lifecycle.LifecycleActivity;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.BaseAdapter;
-import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.TimePicker;
 
-import com.smd.smartlamp_ble.data.AppDatabase;
-import com.smd.smartlamp_ble.data.DayAlarm;
-import com.smd.smartlamp_ble.data.DayAlarmDAO;
 import com.smd.smartlamp_ble.device.DeviceScanActivity;
+import com.smd.smartlamp_ble.model.DayAlarm;
 import com.smd.smartlamp_ble.settings.SettingsActivity;
+import com.smd.smartlamp_ble.ui.DayAlarmAdapter;
+import com.smd.smartlamp_ble.viewmodel.DayAlarmViewModel;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-public class AlarmActivity extends Activity
+// TODO AppCompatActivity
+public class AlarmActivity extends LifecycleActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks, TimePickerDialog.OnTimeSetListener {
 
     private final static String TAG = AlarmActivity.class.getSimpleName();
 
-    private DayAlarmDAO mDayAlarmDAO;
+    private DayAlarmAdapter mDayAdapter;
+    private DayAlarmViewModel mViewModel;
+    private RecyclerView mRecyclerView;
 
-    private ArrayList<DayAlarm> mDayList;
-    private DayAdapter mDayAdapter;
     private int mDayPos;
 
     /**
@@ -87,30 +87,24 @@ public class AlarmActivity extends Activity
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
-        // Set up database.
-        AppDatabase db = Room.databaseBuilder(getApplicationContext(),
-                AppDatabase.class, "day_alarm_db").allowMainThreadQueries().build(); // FIXME Warning: is not recommend use .allowMainThreadQueries()
+        mDayAdapter = new DayAlarmAdapter(new ArrayList<DayAlarm>());
+        mRecyclerView = findViewById(R.id.dayList);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerView.setAdapter(mDayAdapter);
 
-        mDayAlarmDAO = db.dayAlarmDao();
+        mViewModel = ViewModelProviders.of(this).get(DayAlarmViewModel.class);
 
-        // TODO StringList for day names
-//        DayAlarm d1 = new DayAlarm(getString(R.string.day_1_name), 10, 7, 0, 1);
-//        DayAlarm d2 = new DayAlarm(getString(R.string.day_2_name), 10, 8, 0, 2);
+        mViewModel.getmDayAlarmList().observe(AlarmActivity.this, new Observer<List<DayAlarm>>() {
+            @Override
+            public void onChanged(@Nullable List<DayAlarm> mDayList) {
+                mDayAdapter.addItems(mDayList);
+            }
+        });
 
-//        mDayAlarmDAO.insert(new DayAlarm(getString(R.string.day_1_name), 10, 12, 0, 1));
-//        mDayAlarmDAO.insert(new DayAlarm(getString(R.string.day_2_name), 10, 8, 0, 2));
-
-//        mDayList = new ArrayList<DayAlarm>();
-//        mDayList.add(d1);
-//        mDayList.add(d2);
-        mDayList = new ArrayList<DayAlarm>(mDayAlarmDAO.getAll());
-        mDayAdapter = new DayAdapter(this, mDayList);
+        mViewModel.addItem(new DayAlarm(getString(R.string.day_1_name), 10, 12, 0, 1));
+        mViewModel.addItem(new DayAlarm(getString(R.string.day_2_name), 10, 8, 0, 2));
 
         mDayPos = -1;
-
-        ListView daysListView = (ListView) findViewById(R.id.dayList);
-        daysListView.setAdapter(mDayAdapter);
-        daysListView.setOnItemClickListener(mDayClickListener);
     }
 
     @Override
@@ -224,9 +218,9 @@ public class AlarmActivity extends Activity
     }
 
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-        if (mDayPos >= 0 && mDayPos < mDayAdapter.getCount()) {
-            mDayList.get(mDayPos).setHour(hourOfDay);
-            mDayList.get(mDayPos).setMin(minute);
+        if (mDayPos >= 0 && mDayPos < mDayAdapter.getItemCount()) {
+//            FIXME mDayList.get(mDayPos).setHour(hourOfDay);
+//            mDayList.get(mDayPos).setMin(minute);
             mDayAdapter.notifyDataSetChanged();
         } else
             Log.e(TAG, "OnTimeSet on position " + mDayPos);
@@ -234,9 +228,11 @@ public class AlarmActivity extends Activity
 
     public void showTimePickerDialog(View v) {
         // Look for the clicked row on the ListView
-        ListView daysListView = (ListView) findViewById(R.id.dayList);
+        RecyclerView daysListView = findViewById(R.id.dayList);
         // Position of the item in the listview and adapter
-        mDayPos = daysListView.getPositionForView(v);
+        // FIXME mDayPos = daysListView.getPositionForView(v);
+
+        mDayPos = 0;
 
         DialogFragment newFragment = new TimePickerFragment();
         newFragment.show(getFragmentManager(), "timePicker");
@@ -249,70 +245,8 @@ public class AlarmActivity extends Activity
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             // TODO remove AdapterView.OnItemClickListener()?
-            mDayList.get(position).setEnabled(! mDayList.get(position).isEnabled());
+//            mDayList.get(position).setEnabled(! mDayList.get(position).isEnabled());
             mDayAdapter.notifyDataSetChanged();
         }
     };
-
-    class DayAdapter extends BaseAdapter {
-        Context context;
-        List<DayAlarm> days;
-        LayoutInflater inflater;
-
-        public DayAdapter(Context context, List<DayAlarm> days) {
-            this.context = context;
-            inflater = LayoutInflater.from(context);
-            this.days = days;
-        }
-
-        @Override
-        public int getCount() {
-            return days.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return days.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        private String digit(int number) {
-            return number <= 9 ? "0" + number : String.valueOf(number);
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            ViewGroup vg;
-
-            if (convertView != null) {
-                vg = (ViewGroup) convertView;
-            } else {
-                vg = (ViewGroup) inflater.inflate(R.layout.day_item, null);
-            }
-
-            DayAlarm day = days.get(position);
-            final TextView dayName = ((TextView) vg.findViewById(R.id.dayName));
-            final EditText fadeTime = ((EditText) vg.findViewById(R.id.fadeTime));
-            final TextView dayTime = (TextView) vg.findViewById(R.id.dayTime);
-            final CheckBox dayEn = (CheckBox) vg.findViewById(R.id.dayEnabled);
-
-            if (dayName != null)
-                dayName.setText(day.getName());
-
-            if (fadeTime != null)
-                fadeTime.setText(Integer.toString(day.getFadeTime()));
-
-            if (dayTime != null)
-                dayTime.setText(digit(day.getHour()) + ":" + digit(day.getMin()));
-
-            if (dayEn != null)
-                dayEn.setChecked(day.isEnabled());
-
-            return vg;
-        }
-    }
 }

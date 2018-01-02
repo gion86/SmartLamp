@@ -5,7 +5,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="horizontal">
 
         <TextView
@@ -30,9 +30,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:onClick="showTimePickerDialog"
             android:text="07:00"
-            android:textSize="18sp"
-            android:onClick="showTimePickerDialog"/>
+            android:textSize="18sp" />
 
         <Space
             android:layout_width="wrap_content"

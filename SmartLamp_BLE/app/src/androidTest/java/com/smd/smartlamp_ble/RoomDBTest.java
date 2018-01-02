@@ -22,9 +22,9 @@ import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
-import com.smd.smartlamp_ble.data.AppDatabase;
-import com.smd.smartlamp_ble.data.DayAlarm;
-import com.smd.smartlamp_ble.data.DayAlarmDAO;
+import com.smd.smartlamp_ble.db.AppDatabase;
+import com.smd.smartlamp_ble.model.DayAlarm;
+import com.smd.smartlamp_ble.db.DayAlarmDAO;
 
 import org.junit.After;
 import org.junit.Before;
@@ -45,7 +45,7 @@ public class RoomDBTest {
     public void createDb() {
         Context context = InstrumentationRegistry.getTargetContext();
         mDb = Room.inMemoryDatabaseBuilder(context, AppDatabase.class).build();
-        mDayAlarmDAO = mDb.dayAlarmDao();
+        mDayAlarmDAO = mDb.dayAlarmDAO();
     }
 
     @After
