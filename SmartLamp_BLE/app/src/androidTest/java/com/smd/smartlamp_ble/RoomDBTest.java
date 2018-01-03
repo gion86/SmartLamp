@@ -32,7 +32,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
+import java.util.List;
 
+import static com.smd.smartlamp_ble.TestData.TEST_DAYS;
+import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
@@ -54,10 +57,24 @@ public class RoomDBTest {
     }
 
     @Test
-    public void testDayCreation() throws Exception {
-        DayAlarm day = new DayAlarm("Monday", 10, 7, 0, 1);;
+    public void getProductsWhenNoProductInserted() throws InterruptedException {
+        List<DayAlarm> testDays = LiveDataTestUtil.getValue(mDayAlarmDAO.getAll());
 
-        mDayAlarmDAO.insert(day);
+        assertTrue(testDays.isEmpty());
+    }
+
+    @Test
+    public void getProductsAfterInserted() throws InterruptedException {
+        mDayAlarmDAO.insertAll(TEST_DAYS);
+
+        List<DayAlarm> products = LiveDataTestUtil.getValue(mDayAlarmDAO.getAll());
+
+        assertThat(products.size(), is(TEST_DAYS.size()));
+    }
+
+    @Test
+    public void testDayCreation() throws Exception {
+        mDayAlarmDAO.insertAll(TEST_DAYS);
 
         DayAlarm byWeekDay = mDayAlarmDAO.findByWeekDay(1);
         assertThat(byWeekDay.getWday(), is(1));

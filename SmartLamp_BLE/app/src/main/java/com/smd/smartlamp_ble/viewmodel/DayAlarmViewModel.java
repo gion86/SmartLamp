@@ -45,6 +45,10 @@ public class DayAlarmViewModel extends AndroidViewModel {
 
     public void addItem(final DayAlarm day) { new addAsyncTask(mAppDatabase).execute(day);}
 
+    public void deleteItem(int wday) {
+        new deleteWdayAsyncTask(mAppDatabase).execute(new Integer(wday));
+    }
+
     public void deleteItem(DayAlarm day) {
         new deleteAsyncTask(mAppDatabase).execute(day);
     }
@@ -60,6 +64,21 @@ public class DayAlarmViewModel extends AndroidViewModel {
         @Override
         protected Void doInBackground(final DayAlarm... params) {
             db.dayAlarmDAO().insert(params[0]);
+            return null;
+        }
+    }
+
+    private static class deleteWdayAsyncTask extends AsyncTask<Integer, Void, Void> {
+
+        private AppDatabase db;
+
+        deleteWdayAsyncTask(AppDatabase appDatabase) {
+            db = appDatabase;
+        }
+
+        @Override
+        protected Void doInBackground(final Integer... params) {
+            db.dayAlarmDAO().delete(params[0]);
             return null;
         }
     }

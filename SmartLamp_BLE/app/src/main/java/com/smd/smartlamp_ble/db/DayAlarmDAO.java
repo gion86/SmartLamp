@@ -31,7 +31,7 @@ import static android.arch.persistence.room.OnConflictStrategy.REPLACE;
 
 @Dao
 public interface DayAlarmDAO {
-    @Query("SELECT * FROM days")
+    @Query("SELECT * FROM days ORDER BY wday ASC")
     LiveData<List<DayAlarm>> getAll();
 
     @Query("SELECT * FROM days WHERE wday IS (:wday)")
@@ -46,6 +46,18 @@ public interface DayAlarmDAO {
     @Insert(onConflict = REPLACE)
     void insertAll(DayAlarm... users);
 
+    @Insert(onConflict = REPLACE)
+    void insertAll(List<DayAlarm> users);
+
+    @Query("DELETE FROM days WHERE wday IS (:wday)")
+    void delete(int wday);
+
+    @Query("DELETE FROM days WHERE name LIKE :name")
+    void delete(String name);
+
     @Delete
     void delete(DayAlarm user);
+
+    @Query("DELETE FROM days")
+    void deleteAll();
 }

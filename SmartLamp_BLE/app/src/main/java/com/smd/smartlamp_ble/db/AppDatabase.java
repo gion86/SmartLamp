@@ -17,10 +17,13 @@
 
 package com.smd.smartlamp_ble.db;
 
+import android.arch.persistence.db.SupportSQLiteDatabase;
 import android.arch.persistence.room.Database;
 import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
 import android.content.Context;
+import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 
 import com.smd.smartlamp_ble.model.DayAlarm;
 
@@ -28,13 +31,50 @@ import com.smd.smartlamp_ble.model.DayAlarm;
 public abstract class AppDatabase extends RoomDatabase {
     private static AppDatabase INSTANCE;
 
-    public static AppDatabase getDatabase(Context context) {
+    public static AppDatabase getDatabase(final Context context) {
         if (INSTANCE == null) {
-            INSTANCE = Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, "day_alarm_db")
-                    .build();
+            synchronized (AppDatabase.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
+                            AppDatabase.class, "day_alarm_db")
+                            .addCallback(sRoomDatabaseCallback)
+                            .build();
+                }
+            }
         }
         return INSTANCE;
     }
 
     public abstract DayAlarmDAO dayAlarmDAO();
+
+    private static RoomDatabase.Callback sRoomDatabaseCallback =
+            new RoomDatabase.Callback(){
+
+                @Override
+                public void onOpen (@NonNull SupportSQLiteDatabase db){
+                    super.onOpen(db);
+                    new PopulateDbAsync(INSTANCE).execute();
+                }
+            };
+
+    private static class PopulateDbAsync extends AsyncTask<Void, Void, Void> {
+
+        private final DayAlarmDAO mDao;
+
+        PopulateDbAsync(AppDatabase db) {
+            mDao = db.dayAlarmDAO();
+        }
+
+        @Override
+        protected Void doInBackground(final Void... params) {
+            mDao.deleteAll();
+
+            // Populate the database with default data
+            mDao.insert(new DayAlarm(0, 10, 12, 0));    // Sunday (wday = 0)
+            mDao.insert(new DayAlarm(1, 10, 8, 0));     // Monday (wday = 1)
+            mDao.insert(new DayAlarm(5, 10, 7, 0));     // Friday (wday = 5)
+
+            return null;
+        }
+    }
 }

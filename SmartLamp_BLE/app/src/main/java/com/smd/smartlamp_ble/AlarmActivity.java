@@ -87,9 +87,10 @@ public class AlarmActivity extends LifecycleActivity
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
-        mDayAdapter = new DayAlarmAdapter(new ArrayList<DayAlarm>());
+        mDayAdapter = new DayAlarmAdapter(new ArrayList<DayAlarm>(),
+                getResources().getStringArray(R.array.day_names));
+
         mRecyclerView = findViewById(R.id.dayList);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setAdapter(mDayAdapter);
 
         mViewModel = ViewModelProviders.of(this).get(DayAlarmViewModel.class);
@@ -97,12 +98,9 @@ public class AlarmActivity extends LifecycleActivity
         mViewModel.getmDayAlarmList().observe(AlarmActivity.this, new Observer<List<DayAlarm>>() {
             @Override
             public void onChanged(@Nullable List<DayAlarm> mDayList) {
-                mDayAdapter.addItems(mDayList);
+                mDayAdapter.setItems(mDayList);
             }
         });
-
-        mViewModel.addItem(new DayAlarm(getString(R.string.day_1_name), 10, 12, 0, 1));
-        mViewModel.addItem(new DayAlarm(getString(R.string.day_2_name), 10, 8, 0, 2));
 
         mDayPos = -1;
     }

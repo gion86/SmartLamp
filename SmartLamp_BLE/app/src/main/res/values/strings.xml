@@ -51,8 +51,16 @@
     <string name="title_activity_settings">Settings</string>
 
     <!-- Strings related to alarms and days -->
-    <string name="day_1_name">Monday</string>
-    <string name="day_2_name">Tuesday</string>
+    <string-array name="day_names">
+        <item>Sunday</item>
+        <item>Monday</item>
+        <item>Tuesday</item>
+        <item>Wednesday</item>
+        <item>Thursday</item>
+        <item>Friday</item>
+        <item>Saturday</item>
+    </string-array>
+
 
     <!-- Strings related to Settings -->
 

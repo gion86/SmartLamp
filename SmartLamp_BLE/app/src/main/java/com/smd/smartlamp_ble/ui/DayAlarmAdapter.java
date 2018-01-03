@@ -33,13 +33,15 @@ import java.util.List;
 public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAlarmViewHolder> {
 
     private List<DayAlarm> mDayAlarmList;
+    private String [] mDayNames;
 
     private String digit(int number) {
         return number <= 9 ? "0" + number : String.valueOf(number);
     }
 
-    public DayAlarmAdapter(List<DayAlarm> dayAlarmList) {
+    public DayAlarmAdapter(List<DayAlarm> dayAlarmList, String [] mDayNames) {
         this.mDayAlarmList = dayAlarmList;
+        this.mDayNames = mDayNames;
     }
 
     @Override
@@ -50,44 +52,46 @@ public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAla
 
     @Override
     public void onBindViewHolder(DayAlarmViewHolder holder, int position) {
-        DayAlarm day = mDayAlarmList.get(position);
+        if (mDayAlarmList != null) {
+            DayAlarm day = mDayAlarmList.get(position);
 
-        if (holder.mDayName != null)
-            holder.mDayName.setText(day.getName());
+            // Set day name based on localized string resources.
+            day.setName(mDayNames[day.getWday()]);
 
-        if (holder.mFadeTime != null)
-            holder.mFadeTime.setText(Integer.toString(day.getFadeTime()));
-
-        if (holder.mDayTime != null)
-            holder.mDayTime.setText(digit(day.getHour()) + ":" + digit(day.getMin()));
-
-        if (holder.mDayEn != null)
-            holder.mDayEn.setChecked(day.isEnabled());
+            holder.dayName.setText(day.getName());
+            holder.fadeTime.setText(Integer.toString(day.getFadeTime()));
+            holder.dayTime.setText(digit(day.getHour()) + ":" + digit(day.getMin()));
+            holder.dayEn.setChecked(day.isEnabled());
+        } else {
+            // TODO Covers the case of data not being ready yet.
+        }
     }
 
     @Override
     public int getItemCount() {
-        return mDayAlarmList.size();
+        if (mDayAlarmList != null)
+            return mDayAlarmList.size();
+        else return 0;
     }
 
-    public void addItems(List<DayAlarm> dayAlarmList) {
+    public void setItems(List<DayAlarm> dayAlarmList) {
         this.mDayAlarmList = dayAlarmList;
         notifyDataSetChanged();
     }
 
     static class DayAlarmViewHolder extends RecyclerView.ViewHolder {
-        TextView mDayName;
-        EditText mFadeTime;
-        TextView mDayTime;
-        CheckBox mDayEn;
+        TextView dayName;
+        EditText fadeTime;
+        TextView dayTime;
+        CheckBox dayEn;
 
         public DayAlarmViewHolder(View itemView) {
             super(itemView);
 
-            mDayName = itemView.findViewById(R.id.dayName);
-            mFadeTime = itemView.findViewById(R.id.fadeTime);
-            mDayTime = itemView.findViewById(R.id.dayTime);
-            mDayEn = itemView.findViewById(R.id.dayEnabled);
+            dayName = itemView.findViewById(R.id.dayName);
+            fadeTime = itemView.findViewById(R.id.fadeTime);
+            dayTime = itemView.findViewById(R.id.dayTime);
+            dayEn = itemView.findViewById(R.id.dayEnabled);
         }
     }
 }

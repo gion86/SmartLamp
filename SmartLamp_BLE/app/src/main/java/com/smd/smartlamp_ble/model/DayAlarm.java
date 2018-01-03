@@ -18,6 +18,7 @@
 package com.smd.smartlamp_ble.model;
 
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 
@@ -36,7 +37,17 @@ public class DayAlarm {
     private int hour;
     private int min;
 
-    public DayAlarm(String name, int fadeTime, int hour, int min, int wday) {
+    public DayAlarm(int wday, int fadeTime, int hour, int min) {
+        this.name = "";
+        this.enabled = true;
+        this.fadeTime = fadeTime;
+        this.hour = hour;
+        this.min = min;
+        this.wday = wday;
+    }
+
+    @Ignore
+    public DayAlarm(String name, int wday, int fadeTime, int hour, int min) {
         this.name = name;
         this.enabled = true;
         this.fadeTime = fadeTime;
