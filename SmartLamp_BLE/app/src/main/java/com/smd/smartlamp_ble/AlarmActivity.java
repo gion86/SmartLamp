@@ -31,14 +31,15 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.TimePicker;
 
 import com.smd.smartlamp_ble.device.DeviceScanActivity;
@@ -52,6 +53,7 @@ import java.util.Calendar;
 import java.util.List;
 
 // TODO AppCompatActivity
+// TODO update fadeTime on user change
 public class AlarmActivity extends LifecycleActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks, TimePickerDialog.OnTimeSetListener {
 
@@ -92,6 +94,35 @@ public class AlarmActivity extends LifecycleActivity
 
         mRecyclerView = findViewById(R.id.dayList);
         mRecyclerView.setAdapter(mDayAdapter);
+
+        // OnItemTouchListener to get the current list position for the TimePickerDialog.
+        mRecyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
+            GestureDetector gestureDetector = new GestureDetector(getApplicationContext(),
+                    new GestureDetector.SimpleOnGestureListener() {
+
+                @Override public boolean onSingleTapUp(MotionEvent e) {
+                    return true;
+                }
+            });
+
+            @Override
+            public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+                View child = rv.findChildViewUnder(e.getX(), e.getY());
+                if (child != null && gestureDetector.onTouchEvent(e)) {
+                    mDayPos = rv.getChildAdapterPosition(child);
+                    // TODO mViewModel.updateItem(mDayPos); change enable only on tap on the checkbox
+                }
+                return false;
+            }
+
+            @Override
+            public void onTouchEvent(RecyclerView rv, MotionEvent e) {
+            }
+
+            @Override
+            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+            }
+        });
 
         mViewModel = ViewModelProviders.of(this).get(DayAlarmViewModel.class);
 
@@ -217,34 +248,21 @@ public class AlarmActivity extends LifecycleActivity
 
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
         if (mDayPos >= 0 && mDayPos < mDayAdapter.getItemCount()) {
-//            FIXME mDayList.get(mDayPos).setHour(hourOfDay);
-//            mDayList.get(mDayPos).setMin(minute);
-            mDayAdapter.notifyDataSetChanged();
-        } else
-            Log.e(TAG, "OnTimeSet on position " + mDayPos);
+            mViewModel.updateItem(mDayPos, hourOfDay, minute);
+
+        } else Log.e(TAG, "OnTimeSet on position " + mDayPos);
     }
 
     public void showTimePickerDialog(View v) {
-        // Look for the clicked row on the ListView
-        RecyclerView daysListView = findViewById(R.id.dayList);
-        // Position of the item in the listview and adapter
-        // FIXME mDayPos = daysListView.getPositionForView(v);
-
-        mDayPos = 0;
-
         DialogFragment newFragment = new TimePickerFragment();
         newFragment.show(getFragmentManager(), "timePicker");
-
-        Log.i(TAG, "pos = " + mDayPos);
     }
 
-    private AdapterView.OnItemClickListener mDayClickListener = new AdapterView.OnItemClickListener() {
+    public void onFadeTimeChange(View v) {
+        if (mDayPos >= 0 && mDayPos < mDayAdapter.getItemCount()) {
+            EditText e = findViewById(R.id.fadeTime);
+            mViewModel.updateItem(mDayPos, Integer.parseInt(e.getText().toString()));   // FIXME database not updated...
 
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            // TODO remove AdapterView.OnItemClickListener()?
-//            mDayList.get(position).setEnabled(! mDayList.get(position).isEnabled());
-            mDayAdapter.notifyDataSetChanged();
-        }
-    };
+        } else Log.e(TAG, "onFadeTimeChange on position " + mDayPos);
+    }
 }

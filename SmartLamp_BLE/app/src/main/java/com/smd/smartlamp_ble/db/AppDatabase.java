@@ -26,6 +26,9 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 
 import com.smd.smartlamp_ble.model.DayAlarm;
+import static com.smd.smartlamp_ble.db.DBData.FRIDAY;
+import static com.smd.smartlamp_ble.db.DBData.MONDAY;
+import static com.smd.smartlamp_ble.db.DBData.SUNDAY;
 
 @Database(entities = {DayAlarm.class}, version = 1)
 public abstract class AppDatabase extends RoomDatabase {
@@ -50,10 +53,14 @@ public abstract class AppDatabase extends RoomDatabase {
     private static RoomDatabase.Callback sRoomDatabaseCallback =
             new RoomDatabase.Callback(){
 
-                @Override
-                public void onOpen (@NonNull SupportSQLiteDatabase db){
-                    super.onOpen(db);
+                public void onCreate (SupportSQLiteDatabase db) {
+                    super.onCreate(db);
                     new PopulateDbAsync(INSTANCE).execute();
+                }
+
+                @Override
+                public void onOpen (@NonNull SupportSQLiteDatabase db) {
+                    super.onOpen(db);
                 }
             };
 
@@ -70,9 +77,9 @@ public abstract class AppDatabase extends RoomDatabase {
             mDao.deleteAll();
 
             // Populate the database with default data
-            mDao.insert(new DayAlarm(0, 10, 12, 0));    // Sunday (wday = 0)
-            mDao.insert(new DayAlarm(1, 10, 8, 0));     // Monday (wday = 1)
-            mDao.insert(new DayAlarm(5, 10, 7, 0));     // Friday (wday = 5)
+            mDao.insert(SUNDAY);     // Sunday (wday = 0)
+            mDao.insert(MONDAY);     // Monday (wday = 1)
+            mDao.insert(FRIDAY);     // Friday (wday = 5)
 
             return null;
         }

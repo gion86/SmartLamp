@@ -23,7 +23,7 @@ import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 
 /**
- * TODO
+ * TODO Doc
  */
 @Entity(tableName = "days", indices = {@Index(value = "wday", unique = true)})
 public class DayAlarm {

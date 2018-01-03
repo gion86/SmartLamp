@@ -23,8 +23,8 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
 import com.smd.smartlamp_ble.db.AppDatabase;
-import com.smd.smartlamp_ble.model.DayAlarm;
 import com.smd.smartlamp_ble.db.DayAlarmDAO;
+import com.smd.smartlamp_ble.model.DayAlarm;
 
 import org.junit.After;
 import org.junit.Before;

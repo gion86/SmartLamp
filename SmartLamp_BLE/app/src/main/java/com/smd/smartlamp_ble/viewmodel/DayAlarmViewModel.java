@@ -43,7 +43,28 @@ public class DayAlarmViewModel extends AndroidViewModel {
         return mDayAlarmList;
     }
 
-    public void addItem(final DayAlarm day) { new addAsyncTask(mAppDatabase).execute(day);}
+    public void addItem(final DayAlarm day) { new addUpdateAsyncTask(mAppDatabase).execute(day); }
+
+    public void updateItem(int position, int hour, int min) {
+        DayAlarm oldDay = mDayAlarmList.getValue().get(position);
+        DayAlarm day = new DayAlarm(oldDay.getWday(), oldDay.getFadeTime(), hour, min);
+
+        new addUpdateAsyncTask(mAppDatabase).execute(day);
+    }
+
+    public void updateItem(int position, int fadeTime) {
+        DayAlarm day = mDayAlarmList.getValue().get(position);
+        day.setFadeTime(fadeTime);
+
+        new addUpdateAsyncTask(mAppDatabase).execute(day);
+    }
+
+    public void updateItem(int position) {
+        DayAlarm day = mDayAlarmList.getValue().get(position);
+        day.setEnabled(!day.isEnabled());
+
+        new addUpdateAsyncTask(mAppDatabase).execute(day);
+    }
 
     public void deleteItem(int wday) {
         new deleteWdayAsyncTask(mAppDatabase).execute(new Integer(wday));
@@ -53,11 +74,11 @@ public class DayAlarmViewModel extends AndroidViewModel {
         new deleteAsyncTask(mAppDatabase).execute(day);
     }
 
-    private static class addAsyncTask extends AsyncTask<DayAlarm, Void, Void> {
+    private static class addUpdateAsyncTask extends AsyncTask<DayAlarm, Void, Void> {
 
         private AppDatabase db;
 
-        addAsyncTask(AppDatabase appDatabase) {
+        addUpdateAsyncTask(AppDatabase appDatabase) {
             db = appDatabase;
         }
 
