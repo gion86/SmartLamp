@@ -22,13 +22,13 @@
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/dayList"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="460dp"
                 android:layout_weight="1"
                 app:layoutManager="android.support.v7.widget.LinearLayoutManager" />
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_weight="1"
                 android:orientation="horizontal">
