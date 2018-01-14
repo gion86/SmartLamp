@@ -49,7 +49,9 @@
                     android:width="100dp"
                     android:text="@string/button_day_send"
                     android:textSize="24sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:onClick="onSendDayClick"
+                    />
             </LinearLayout>
 
         </LinearLayout>

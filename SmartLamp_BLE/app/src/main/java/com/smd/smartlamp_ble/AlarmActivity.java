@@ -25,8 +25,11 @@ import android.app.FragmentManager;
 import android.app.TimePickerDialog;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -39,6 +42,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TimePicker;
 
+import com.smd.smartlamp_ble.device.BLESerialPortService;
 import com.smd.smartlamp_ble.device.DeviceScanActivity;
 import com.smd.smartlamp_ble.model.DayAlarm;
 import com.smd.smartlamp_ble.settings.SettingsActivity;
@@ -50,7 +54,8 @@ import java.util.Calendar;
 import java.util.List;
 
 public class AlarmActivity extends AppCompatActivity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks, TimePickerDialog.OnTimeSetListener, DayAlarmAdapter.OnItemClicked {
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks,
+                   TimePickerDialog.OnTimeSetListener, DayAlarmAdapter.OnItemClicked {
 
     private final static String TAG = AlarmActivity.class.getSimpleName();
     private final static int MENU_POS_SETTING = 0;
@@ -59,6 +64,26 @@ public class AlarmActivity extends AppCompatActivity
     private DayAlarmAdapter mDayAdapter;
     private DayAlarmViewModel mViewModel;
     private RecyclerView mRecyclerView;
+
+    // Code to manage Service lifecycle.
+    private BLESerialPortService mBLESerialPortService;
+    private final ServiceConnection mServiceConnection = new ServiceConnection() {
+
+                @Override
+                public void onServiceConnected(ComponentName componentName, IBinder service) {
+                    Log.i(TAG, "New service connection");
+                    mBLESerialPortService = ((BLESerialPortService.LocalBinder) service).getService();
+                    if (!mBLESerialPortService.initialize()) {
+                        Log.e(TAG, "Unable to initialize Bluetooth");
+                        finish();
+                    }
+                }
+
+                @Override
+                public void onServiceDisconnected(ComponentName componentName) {
+                    mBLESerialPortService = null;
+                }
+            };;
 
     private int mDayPos;
 
@@ -102,6 +127,17 @@ public class AlarmActivity extends AppCompatActivity
         });
 
         mDayPos = -1;
+
+        // Bind and start the bluetooth service
+        Intent gattServiceIntent = new Intent(this, BLESerialPortService.class);
+        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+        Log.d(TAG, "Bind service");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        restoreActionBar();
     }
 
     @Override
@@ -238,7 +274,6 @@ public class AlarmActivity extends AppCompatActivity
      */
     @Override
     public void onFadeTimeClick(int position, int fadeTime) {
-        //
         if (position >= 0 && position < mDayAdapter.getItemCount()) {
             mViewModel.updateItem(position, fadeTime);
         }
@@ -253,7 +288,6 @@ public class AlarmActivity extends AppCompatActivity
      */
     @Override
     public void onEnableClick(int position, boolean enabled) {
-
         if (position >= 0 && position < mDayAdapter.getItemCount()) {
             mViewModel.updateItem(position, enabled);
         }
@@ -274,9 +308,22 @@ public class AlarmActivity extends AppCompatActivity
         newFragment.show(getFragmentManager(), "timePicker");
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        restoreActionBar();
+    private String digit(int number) { return number <= 9 ? "0" + number : String.valueOf(number); }
+
+    public void onSendDayClick(View view) {
+        for (DayAlarm day : mViewModel.getmDayAlarmList().getValue()) {
+            String cmd = "";
+
+            if (day.isEnabled()) {
+                cmd = "AL_" + digit(day.getWday()) + digit(day.getHour()) + digit(day.getMin());
+            } else {
+                cmd = "AL_DIS_" + digit(day.getWday());
+            }
+
+            mBLESerialPortService.addCommand(cmd);
+            Log.i(TAG, "SEND: " + cmd);
+        }
+
+        mBLESerialPortService.sendAll();
     }
 }

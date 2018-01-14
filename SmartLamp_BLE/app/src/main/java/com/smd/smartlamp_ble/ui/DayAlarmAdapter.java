@@ -104,7 +104,7 @@ public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAla
                 @Override
                 public void onClick(View view) {
                     onClick.onTimeClick(position);
-                    notifyDataSetChanged();
+//                    notifyDataSetChanged();
                 }
             });
 
@@ -112,7 +112,9 @@ public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAla
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                     onClick.onEnableClick(position, b);
-                    notifyDataSetChanged();
+                    // FIXME java.lang.IllegalStateException: Cannot call this method while
+                    // RecyclerView is computing a layout or scrolling android.support.v7.widget.RecyclerView
+//                    notifyDataSetChanged();
                 }
             });
 
@@ -122,7 +124,7 @@ public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAla
                     boolean handled = false;
                     if (actionId == EditorInfo.IME_ACTION_SEND || actionId == EditorInfo.IME_ACTION_NEXT) {
                         onClick.onFadeTimeClick(position, Integer.parseInt(holder.fadeTime.getText().toString()));
-                        notifyDataSetChanged();
+//                        notifyDataSetChanged();
                         handled = true;
                     }
                     return handled;

@@ -34,6 +34,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1" />
 
+        <!--TODO actionNext seems not working-->
         <EditText
             android:id="@+id/fadeTime"
             android:layout_width="53dp"

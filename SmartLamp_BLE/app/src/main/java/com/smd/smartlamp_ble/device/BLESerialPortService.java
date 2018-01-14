@@ -35,7 +35,9 @@ import android.widget.Toast;
 
 import com.smd.smartlamp_ble.R;
 
+import java.util.Queue;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -58,6 +60,8 @@ public class BLESerialPortService extends Service {
     public final static String EXTRA_DATA =
             "com.smd.smartlamp_ble.EXTRA_DATA";
 
+    private final static String ACK_DATA = "OK";
+
     private final static String TAG = BLESerialPortService.class.getSimpleName();
     private static final int STATE_DISCONNECTED = 0;
     private static final int STATE_CONNECTING = 1;
@@ -74,6 +78,8 @@ public class BLESerialPortService extends Service {
     private int mConnectionState = STATE_DISCONNECTED;
     private String mBluetoothDeviceAddress;
     private String mRecData;
+
+    private Queue<String> writeQueue;
 
     // Device Information state.
     private BluetoothGattCharacteristic disManuf;
@@ -168,6 +174,7 @@ public class BLESerialPortService extends Service {
         disSWRev = null;
         writeInProgress = false;
         mRecData = "";
+        this.writeQueue = new ConcurrentLinkedQueue<String>();
     }
 
     private void broadcastUpdate(final String action) {
@@ -372,6 +379,18 @@ public class BLESerialPortService extends Service {
         }
     }
 
+    public void addCommand(String command) {
+        this.writeQueue.add(command);
+    }
+
+    public void sendAll() {
+        for (String cmd : writeQueue) {
+            // TODO Wait for "OK" from the module, after each command
+            send(cmd);
+        }
+        writeQueue.clear();
+    }
+
     // Send data to connected ble serial port device.
     public void send(byte[] data) {
         long beginMillis = System.currentTimeMillis();
@@ -433,7 +452,7 @@ public class BLESerialPortService extends Service {
     }
 
     public class LocalBinder extends Binder {
-        BLESerialPortService getService() {
+        public BLESerialPortService getService() {
             return BLESerialPortService.this;
         }
     }
