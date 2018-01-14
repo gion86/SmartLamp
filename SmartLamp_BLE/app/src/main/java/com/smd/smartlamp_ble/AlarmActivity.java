@@ -34,9 +34,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TimePicker;
@@ -84,9 +82,7 @@ public class AlarmActivity extends AppCompatActivity
         mTitle = getTitle();
 
         // Set up the drawer.
-        mNavigationDrawerFragment.setUp(
-                R.id.navigation_drawer,
-                (DrawerLayout) findViewById(R.id.drawer_layout));
+        mNavigationDrawerFragment.setUp(R.id.navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout));
 
         mDayAdapter = new DayAlarmAdapter(new ArrayList<DayAlarm>(),
                 getResources().getStringArray(R.array.day_names));
@@ -97,37 +93,7 @@ public class AlarmActivity extends AppCompatActivity
         mRecyclerView = findViewById(R.id.dayList);
         mRecyclerView.setAdapter(mDayAdapter);
 
-        // OnItemTouchListener to get the current list position for the TimePickerDialog.
-        mRecyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
-            GestureDetector gestureDetector = new GestureDetector(getApplicationContext(),
-                    new GestureDetector.SimpleOnGestureListener() {
-
-                @Override public boolean onSingleTapUp(MotionEvent e) {
-                    return true;
-                }
-            });
-
-            @Override
-            public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
-                View child = rv.findChildViewUnder(e.getX(), e.getY());
-                if (child != null && gestureDetector.onTouchEvent(e)) {
-                    mDayPos = rv.getChildAdapterPosition(child);
-                    // TODO mViewModel.updateItem(mDayPos); change enable only on tap on the checkbox
-                }
-                return false;
-            }
-
-            @Override
-            public void onTouchEvent(RecyclerView rv, MotionEvent e) {
-            }
-
-            @Override
-            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-            }
-        });
-
         mViewModel = ViewModelProviders.of(this).get(DayAlarmViewModel.class);
-
         mViewModel.getmDayAlarmList().observe(AlarmActivity.this, new Observer<List<DayAlarm>>() {
             @Override
             public void onChanged(@Nullable List<DayAlarm> mDayList) {
@@ -136,21 +102,6 @@ public class AlarmActivity extends AppCompatActivity
         });
 
         mDayPos = -1;
-    }
-
-    @Override
-    public void onItemClick(int position, int fadeTime) {
-        // The onClick implementation of the RecyclerView item click
-        if (position >= 0 && position < mDayAdapter.getItemCount()) {
-            mViewModel.updateItem(position, fadeTime);
-        }
-        Log.e(TAG, "onItemClick on position " + position + " = " + fadeTime);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        restoreActionBar();
     }
 
     @Override
@@ -194,7 +145,7 @@ public class AlarmActivity extends AppCompatActivity
     }
 
     /**
-     * A placeholder fragment containing a simple view.
+     * A placeholder fragment containing a simple view for the activity with navigation drawer.
      */
     public static class PlaceholderFragment extends Fragment {
         /**
@@ -231,6 +182,9 @@ public class AlarmActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Time picker fragment for the alarm time of day.
+     */
     public static class TimePickerFragment extends DialogFragment {
 
         private Activity mActivity;
@@ -261,15 +215,68 @@ public class AlarmActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Gets the time of day from the {@link TimePickerDialog} and update the database.
+     *
+     * @param view
+     * @param hourOfDay
+     * @param minute
+     */
+    @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
         if (mDayPos >= 0 && mDayPos < mDayAdapter.getItemCount()) {
             mViewModel.updateItem(mDayPos, hourOfDay, minute);
-
-        } else Log.e(TAG, "OnTimeSet on position " + mDayPos);
+        }
+        Log.e(TAG, "OnTimeSet on position " + mDayPos);
     }
 
-    public void showTimePickerDialog(View v) {
+    /**
+     * The onClick implementation of the RecyclerView fateTime item click
+     *
+     * @param position
+     * @param fadeTime
+     */
+    @Override
+    public void onFadeTimeClick(int position, int fadeTime) {
+        //
+        if (position >= 0 && position < mDayAdapter.getItemCount()) {
+            mViewModel.updateItem(position, fadeTime);
+        }
+        Log.e(TAG, "onFadeTimeClick on position " + position + " = " + fadeTime);
+    }
+
+    /**
+     * The onClick implementation of the RecyclerView enable checkbox item click
+     *
+     * @param position
+     * @param enabled
+     */
+    @Override
+    public void onEnableClick(int position, boolean enabled) {
+
+        if (position >= 0 && position < mDayAdapter.getItemCount()) {
+            mViewModel.updateItem(position, enabled);
+        }
+        Log.e(TAG, "onEnableClick on position " + position + " = " + enabled);
+    }
+
+    /**
+     * The onClick implementation of the RecyclerView  time of day item click
+     *
+     * @param position
+     */
+    @Override
+    public void onTimeClick(int position) {
+        // Current list position for the TimePickerDialog.
+        mDayPos = position;
+
         DialogFragment newFragment = new TimePickerFragment();
         newFragment.show(getFragmentManager(), "timePicker");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        restoreActionBar();
     }
 }

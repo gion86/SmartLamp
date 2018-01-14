@@ -102,7 +102,7 @@ public class NavigationDrawerFragment extends Fragment {
         mActivity = ((AppCompatActivity) getActivity());
 
         // Select either the default item (0) or the last selected item.
-        // TODO selectItem(mCurrentSelectedPosition);
+        // selectItem(mCurrentSelectedPosition);
     }
 
     @Override

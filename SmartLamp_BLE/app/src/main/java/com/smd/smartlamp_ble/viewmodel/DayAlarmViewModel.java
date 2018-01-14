@@ -59,6 +59,13 @@ public class DayAlarmViewModel extends AndroidViewModel {
         new addUpdateAsyncTask(mAppDatabase).execute(day);
     }
 
+    public void updateItem(int position, boolean enabled) {
+        DayAlarm day = mDayAlarmList.getValue().get(position);
+        day.setEnabled(enabled);
+
+        new addUpdateAsyncTask(mAppDatabase).execute(day);
+    }
+
     public void updateItem(int position) {
         DayAlarm day = mDayAlarmList.getValue().get(position);
         day.setEnabled(!day.isEnabled());

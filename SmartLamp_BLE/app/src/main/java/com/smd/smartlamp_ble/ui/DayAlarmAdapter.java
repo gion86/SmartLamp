@@ -18,13 +18,13 @@
 package com.smd.smartlamp_ble.ui;
 
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -44,9 +44,32 @@ public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAla
 
     private String digit(int number) { return number <= 9 ? "0" + number : String.valueOf(number); }
 
-    // Interface for click event on the Activity
+    /**
+     * Interface for click event on the Activity.
+     */
     public interface OnItemClicked {
-        void onItemClick(int position, int fadeTime);
+        /**
+         * Callback for click events on the time of day view.
+         *
+         * @param position
+         */
+        void onTimeClick(int position);
+
+        /**
+         * Callback for click events on the fade time view.
+         *
+         * @param position
+         * @param fadeTime
+         */
+        void onFadeTimeClick(int position, int fadeTime);
+
+        /**
+         * Callback for click events on the enabled checkbox.
+         *
+         * @param position
+         * @param checked
+         */
+        void onEnableClick(int position, boolean checked);
     }
 
     public void setOnClick(OnItemClicked onClick) {
@@ -77,14 +100,29 @@ public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAla
             holder.dayTime.setText(digit(day.getHour()) + ":" + digit(day.getMin()));
             holder.dayEn.setChecked(day.isEnabled());
 
+            holder.dayTime.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    onClick.onTimeClick(position);
+                    notifyDataSetChanged();
+                }
+            });
+
+            holder.dayEn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    onClick.onEnableClick(position, b);
+                    notifyDataSetChanged();
+                }
+            });
+
             holder.fadeTime.setOnEditorActionListener(new TextView.OnEditorActionListener() {
                 @Override
                 public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                     boolean handled = false;
                     if (actionId == EditorInfo.IME_ACTION_SEND || actionId == EditorInfo.IME_ACTION_NEXT) {
-                        onClick.onItemClick(position, Integer.parseInt(holder.fadeTime.getText().toString()));
+                        onClick.onFadeTimeClick(position, Integer.parseInt(holder.fadeTime.getText().toString()));
                         notifyDataSetChanged();
-                        Log.e(TAG, "onBindViewHolder on position " + position + " = " + Integer.parseInt(holder.fadeTime.getText().toString()));
                         handled = true;
                     }
                     return handled;
