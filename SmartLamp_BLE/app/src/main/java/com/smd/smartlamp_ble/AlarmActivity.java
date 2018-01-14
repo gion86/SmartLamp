@@ -17,20 +17,20 @@
 
 package com.smd.smartlamp_ble;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.TimePickerDialog;
-import android.arch.lifecycle.LifecycleActivity;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -39,7 +39,6 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.TimePicker;
 
 import com.smd.smartlamp_ble.device.DeviceScanActivity;
@@ -52,12 +51,12 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-// TODO AppCompatActivity
-// TODO update fadeTime on user change
-public class AlarmActivity extends LifecycleActivity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks, TimePickerDialog.OnTimeSetListener {
+public class AlarmActivity extends AppCompatActivity
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks, TimePickerDialog.OnTimeSetListener, DayAlarmAdapter.OnItemClicked {
 
     private final static String TAG = AlarmActivity.class.getSimpleName();
+    private final static int MENU_POS_SETTING = 0;
+    private final static int MENU_POS_DEV_SCAN = 1;
 
     private DayAlarmAdapter mDayAdapter;
     private DayAlarmViewModel mViewModel;
@@ -81,7 +80,7 @@ public class AlarmActivity extends LifecycleActivity
         setContentView(R.layout.activity_alarm);
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
-                getFragmentManager().findFragmentById(R.id.navigation_drawer);
+                getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
 
         // Set up the drawer.
@@ -91,6 +90,9 @@ public class AlarmActivity extends LifecycleActivity
 
         mDayAdapter = new DayAlarmAdapter(new ArrayList<DayAlarm>(),
                 getResources().getStringArray(R.array.day_names));
+
+        // Bind the listener to the adapter events
+        mDayAdapter.setOnClick(this);
 
         mRecyclerView = findViewById(R.id.dayList);
         mRecyclerView.setAdapter(mDayAdapter);
@@ -137,6 +139,21 @@ public class AlarmActivity extends LifecycleActivity
     }
 
     @Override
+    public void onItemClick(int position, int fadeTime) {
+        // The onClick implementation of the RecyclerView item click
+        if (position >= 0 && position < mDayAdapter.getItemCount()) {
+            mViewModel.updateItem(position, fadeTime);
+        }
+        Log.e(TAG, "onItemClick on position " + position + " = " + fadeTime);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        restoreActionBar();
+    }
+
+    @Override
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
         FragmentManager fragmentManager = getFragmentManager();
@@ -145,11 +162,11 @@ public class AlarmActivity extends LifecycleActivity
                 .commit();
 
         switch (position) {
-            case 0:
+            case MENU_POS_SETTING:
                 startActivity(new Intent(this, SettingsActivity.class));
                 break;
 
-            case 1: // TODO constants?
+            case MENU_POS_DEV_SCAN:
                 startActivity(new Intent(this, DeviceScanActivity.class));
                 break;
         }
@@ -170,8 +187,8 @@ public class AlarmActivity extends LifecycleActivity
     }
 
     public void restoreActionBar() {
-        ActionBar actionBar = getActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+        // TODO actionbar icon??
+        ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setTitle(mTitle);
     }
@@ -202,8 +219,7 @@ public class AlarmActivity extends LifecycleActivity
         }
 
         @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_alarm, container, false);
             return rootView;
         }
@@ -211,8 +227,7 @@ public class AlarmActivity extends LifecycleActivity
         @Override
         public void onAttach(Activity activity) {
             super.onAttach(activity);
-            ((AlarmActivity) activity).onSectionAttached(
-                    getArguments().getInt(ARG_SECTION_NUMBER));
+            ((AlarmActivity) activity).onSectionAttached(getArguments().getInt(ARG_SECTION_NUMBER));
         }
     }
 
@@ -256,13 +271,5 @@ public class AlarmActivity extends LifecycleActivity
     public void showTimePickerDialog(View v) {
         DialogFragment newFragment = new TimePickerFragment();
         newFragment.show(getFragmentManager(), "timePicker");
-    }
-
-    public void onFadeTimeChange(View v) {
-        if (mDayPos >= 0 && mDayPos < mDayAdapter.getItemCount()) {
-            EditText e = findViewById(R.id.fadeTime);
-            mViewModel.updateItem(mDayPos, Integer.parseInt(e.getText().toString()));   // FIXME database not updated...
-
-        } else Log.e(TAG, "onFadeTimeChange on position " + mDayPos);
     }
 }

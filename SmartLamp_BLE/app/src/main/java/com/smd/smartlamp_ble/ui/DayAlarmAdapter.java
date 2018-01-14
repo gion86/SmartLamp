@@ -18,9 +18,12 @@
 package com.smd.smartlamp_ble.ui;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -32,11 +35,22 @@ import java.util.List;
 
 public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAlarmViewHolder> {
 
+    private final static String TAG = DayAlarmAdapter.class.getSimpleName();
     private List<DayAlarm> mDayAlarmList;
     private String [] mDayNames;
 
-    private String digit(int number) {
-        return number <= 9 ? "0" + number : String.valueOf(number);
+    // Interface instance
+    private OnItemClicked onClick;
+
+    private String digit(int number) { return number <= 9 ? "0" + number : String.valueOf(number); }
+
+    // Interface for click event on the Activity
+    public interface OnItemClicked {
+        void onItemClick(int position, int fadeTime);
+    }
+
+    public void setOnClick(OnItemClicked onClick) {
+        this.onClick = onClick;
     }
 
     public DayAlarmAdapter(List<DayAlarm> dayAlarmList, String [] mDayNames) {
@@ -51,7 +65,7 @@ public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAla
     }
 
     @Override
-    public void onBindViewHolder(DayAlarmViewHolder holder, int position) {
+    public void onBindViewHolder(final DayAlarmViewHolder holder, final int position) {
         if (mDayAlarmList != null) {
             DayAlarm day = mDayAlarmList.get(position);
 
@@ -62,6 +76,21 @@ public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAla
             holder.fadeTime.setText(Integer.toString(day.getFadeTime()));
             holder.dayTime.setText(digit(day.getHour()) + ":" + digit(day.getMin()));
             holder.dayEn.setChecked(day.isEnabled());
+
+            holder.fadeTime.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                    boolean handled = false;
+                    if (actionId == EditorInfo.IME_ACTION_SEND || actionId == EditorInfo.IME_ACTION_NEXT) {
+                        onClick.onItemClick(position, Integer.parseInt(holder.fadeTime.getText().toString()));
+                        notifyDataSetChanged();
+                        Log.e(TAG, "onBindViewHolder on position " + position + " = " + Integer.parseInt(holder.fadeTime.getText().toString()));
+                        handled = true;
+                    }
+                    return handled;
+                }
+            });
+
         } else {
             // TODO Covers the case of data not being ready yet.
         }

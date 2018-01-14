@@ -17,7 +17,6 @@
 
 package com.smd.smartlamp_ble.device;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -26,6 +25,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.Menu;
@@ -47,7 +47,7 @@ import java.util.TimeZone;
  * communicates with {@code BLESerialPortService}, which in turn interacts with the
  * Bluetooth LE API.
  */
-public class DeviceControlActivity extends Activity {
+public class DeviceControlActivity extends AppCompatActivity {
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
     private final static String TAG = DeviceControlActivity.class.getSimpleName();
@@ -160,8 +160,8 @@ public class DeviceControlActivity extends Activity {
             }
         });
 
-        getActionBar().setTitle(mDeviceName);
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle(mDeviceName);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Bind and start the bluetooth service
         Intent gattServiceIntent = new Intent(this, BLESerialPortService.class);

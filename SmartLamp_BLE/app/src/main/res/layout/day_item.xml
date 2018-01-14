@@ -41,7 +41,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:inputType="number"
-            android:onClick="onFadeTimeChange"
+            android:imeOptions="actionNext"
             android:textAlignment="center" />
 
         <Space

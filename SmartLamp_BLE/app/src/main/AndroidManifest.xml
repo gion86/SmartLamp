@@ -37,23 +37,35 @@
     <application
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@android:style/Theme.Holo.Light">
+        android:theme="@style/Theme.AppTheme">
         <activity
             android:name=".AlarmActivity"
-            android:label="@string/title_activity_alarm">
+            android:label="@string/title_activity_alarm"
+            android:icon="@drawable/ic_launcher">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".device.DeviceScanActivity">
+        <activity android:name=".device.DeviceScanActivity"
+            android:parentActivityName="com.smd.smartlamp_ble.AlarmActivity">
+            <!-- Parent activity meta-data to support 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.smd.smartlamp_ble.AlarmActivity" />
         </activity>
         <activity android:name=".device.DeviceControlActivity" />
 
         <activity
             android:name=".settings.SettingsActivity"
-            android:label="@string/title_activity_settings">
+            android:label="@string/title_activity_settings"
+            android:parentActivityName="com.smd.smartlamp_ble.AlarmActivity" >
+            <!-- Parent activity meta-data to support 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.smd.smartlamp_ble.AlarmActivity" />
+            >
+
         </activity>
 
         <service

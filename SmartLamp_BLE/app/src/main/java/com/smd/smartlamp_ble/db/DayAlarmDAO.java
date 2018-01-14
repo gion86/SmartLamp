@@ -41,7 +41,7 @@ public interface DayAlarmDAO {
     DayAlarm findByName(String name);
 
     @Insert(onConflict = REPLACE)
-    public void insert(DayAlarm day);
+    void insert(DayAlarm day);
 
     @Insert(onConflict = REPLACE)
     void insertAll(DayAlarm... users);

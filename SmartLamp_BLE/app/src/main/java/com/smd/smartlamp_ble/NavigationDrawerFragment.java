@@ -19,15 +19,16 @@ package com.smd.smartlamp_ble;
 
 
 import android.app.Activity;
-import android.app.ActionBar;
-import android.app.Fragment;
-import android.support.v4.app.ActionBarDrawerToggle;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.app.Fragment;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -63,6 +64,12 @@ public class NavigationDrawerFragment extends Fragment {
     private NavigationDrawerCallbacks mCallbacks;
 
     /**
+     * A pointer to the calling Activity.
+     */
+    private AppCompatActivity mActivity;
+
+
+    /**
      * Helper component that ties the action bar to the navigation drawer.
      */
     private ActionBarDrawerToggle mDrawerToggle;
@@ -92,6 +99,8 @@ public class NavigationDrawerFragment extends Fragment {
             mFromSavedInstanceState = true;
         }
 
+        mActivity = ((AppCompatActivity) getActivity());
+
         // Select either the default item (0) or the last selected item.
         // TODO selectItem(mCurrentSelectedPosition);
     }
@@ -115,7 +124,7 @@ public class NavigationDrawerFragment extends Fragment {
             }
         });
         mDrawerListView.setAdapter(new ArrayAdapter<String>(
-                getActionBar().getThemedContext(),
+                mActivity.getSupportActionBar().getThemedContext(),
                 android.R.layout.simple_list_item_activated_1,
                 android.R.id.text1,
                 new String[]{
@@ -145,7 +154,7 @@ public class NavigationDrawerFragment extends Fragment {
         mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
         // set up the drawer's list view with items and click listener
 
-        ActionBar actionBar = getActionBar();
+        ActionBar actionBar =  mActivity.getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeButtonEnabled(true);
 
@@ -277,14 +286,14 @@ public class NavigationDrawerFragment extends Fragment {
      * 'context', rather than just what's in the current screen.
      */
     private void showGlobalContextActionBar() {
-        ActionBar actionBar = getActionBar();
+        ActionBar actionBar = mActivity.getSupportActionBar();
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
         actionBar.setTitle(R.string.app_name);
     }
 
     private ActionBar getActionBar() {
-        return getActivity().getActionBar();
+        return  mActivity.getSupportActionBar();
     }
 
     /**
