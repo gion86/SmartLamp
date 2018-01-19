@@ -322,7 +322,7 @@ static bool setNextAlarm(struct tm *sys_t) {
   }
 
 #ifdef DEBUG
-  Serial.print("No alarm enabled!");
+  Serial.println("No alarm enabled!");
 #endif
 
   RTC.alarmInterrupt(ALARM_1, false);
@@ -682,6 +682,13 @@ void setup() {
   // Read alarms[] array from EEPROM: set bit EESAVE (high fuse byte = D7) to preserve EEPROM
   // through the chip erase cycle.
   eeprom_read_block((void*) &alarms, (void*) ALARMS_OFFSET, sizeof(alarms));
+
+  // Check for default value of EEPROM (0xFF -> -1 to avoid C compiler signed/unsigned
+  // comparison warning)
+  if (alarms[0].hh == -1 && alarms[0].mm == -1) {
+    memset((void*) &alarms, 0, sizeof(alarms));
+    eeprom_write_block((void*) &alarms, (void*) ALARMS_OFFSET, sizeof(alarms));
+  }
 
 #ifdef DEBUG
   printAlarms();
