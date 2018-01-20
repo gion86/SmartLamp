@@ -61,6 +61,8 @@
         <item>Saturday</item>
     </string-array>
 
+    <string name="fade_time_choose">Select the alarm fade time</string>
+    <string name="actual_fade_time">Current fade time:</string>
 
     <!-- Strings related to Settings -->
 

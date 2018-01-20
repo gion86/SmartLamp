@@ -26,7 +26,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="07:00"
             android:textSize="18sp" />
 
         <Space
@@ -34,15 +33,13 @@
             android:layout_height="wrap_content"
             android:layout_weight="1" />
 
-        <!--TODO actionNext seems not working-->
-        <EditText
+        <TextView
             android:id="@+id/fadeTime"
-            android:layout_width="53dp"
+            android:layout_width="30dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:inputType="number"
-            android:imeOptions="actionNext"
-            android:textAlignment="center" />
+            android:textAlignment="center"
+            android:textSize="18sp" />
 
         <Space
             android:layout_width="wrap_content"

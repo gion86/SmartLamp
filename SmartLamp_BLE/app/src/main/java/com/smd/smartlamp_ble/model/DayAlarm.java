@@ -33,6 +33,10 @@ public class DayAlarm {
 
     private String name;
     private boolean enabled;
+
+    /**
+     * Alarm fade time in minutes [1, 30]
+     */
     private int fadeTime;
     private int hour;
     private int min;

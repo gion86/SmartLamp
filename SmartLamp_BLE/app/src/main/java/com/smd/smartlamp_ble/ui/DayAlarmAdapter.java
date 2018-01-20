@@ -18,14 +18,10 @@
 package com.smd.smartlamp_ble.ui;
 
 import android.support.v7.widget.RecyclerView;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import com.smd.smartlamp_ble.R;
@@ -40,20 +36,20 @@ public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAla
     private String [] mDayNames;
 
     // Interface instance
-    private OnItemClicked onClick;
+    private final DayAlarmAdapter.OnItemClickListener mListener;
 
     private String digit(int number) { return number <= 9 ? "0" + number : String.valueOf(number); }
 
     /**
      * Interface for click event on the Activity.
      */
-    public interface OnItemClicked {
+    public interface OnItemClickListener {
         /**
          * Callback for click events on the time of day view.
          *
          * @param position
          */
-        void onTimeClick(int position);
+        void onTimeClick(final int position);
 
         /**
          * Callback for click events on the fade time view.
@@ -61,7 +57,7 @@ public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAla
          * @param position
          * @param fadeTime
          */
-        void onFadeTimeClick(int position, int fadeTime);
+        void onFadeTimeClick(final int position, final int fadeTime);
 
         /**
          * Callback for click events on the enabled checkbox.
@@ -69,16 +65,13 @@ public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAla
          * @param position
          * @param checked
          */
-        void onEnableClick(int position, boolean checked);
+        void onEnableClick(final int position, final boolean checked);
     }
 
-    public void setOnClick(OnItemClicked onClick) {
-        this.onClick = onClick;
-    }
-
-    public DayAlarmAdapter(List<DayAlarm> dayAlarmList, String [] mDayNames) {
+    public DayAlarmAdapter(List<DayAlarm> dayAlarmList, String[] mDayNames, OnItemClickListener listener) {
         this.mDayAlarmList = dayAlarmList;
         this.mDayNames = mDayNames;
+        this.mListener = listener;
     }
 
     @Override
@@ -92,6 +85,9 @@ public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAla
         if (mDayAlarmList != null) {
             DayAlarm day = mDayAlarmList.get(position);
 
+            // Binds the listener to the current holder
+            holder.bind(position, day, mListener);
+
             // Set day name based on localized string resources.
             day.setName(mDayNames[day.getWday()]);
 
@@ -99,37 +95,6 @@ public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAla
             holder.fadeTime.setText(Integer.toString(day.getFadeTime()));
             holder.dayTime.setText(digit(day.getHour()) + ":" + digit(day.getMin()));
             holder.dayEn.setChecked(day.isEnabled());
-
-            holder.dayTime.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    onClick.onTimeClick(position);
-//                    notifyDataSetChanged();
-                }
-            });
-
-            holder.dayEn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                    onClick.onEnableClick(position, b);
-                    // FIXME java.lang.IllegalStateException: Cannot call this method while
-                    // RecyclerView is computing a layout or scrolling android.support.v7.widget.RecyclerView
-//                    notifyDataSetChanged();
-                }
-            });
-
-            holder.fadeTime.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-                @Override
-                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                    boolean handled = false;
-                    if (actionId == EditorInfo.IME_ACTION_SEND || actionId == EditorInfo.IME_ACTION_NEXT) {
-                        onClick.onFadeTimeClick(position, Integer.parseInt(holder.fadeTime.getText().toString()));
-//                        notifyDataSetChanged();
-                        handled = true;
-                    }
-                    return handled;
-                }
-            });
 
         } else {
             // TODO Covers the case of data not being ready yet.
@@ -150,7 +115,7 @@ public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAla
 
     static class DayAlarmViewHolder extends RecyclerView.ViewHolder {
         TextView dayName;
-        EditText fadeTime;
+        TextView fadeTime;
         TextView dayTime;
         CheckBox dayEn;
 
@@ -161,6 +126,30 @@ public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAla
             fadeTime = itemView.findViewById(R.id.fadeTime);
             dayTime = itemView.findViewById(R.id.dayTime);
             dayEn = itemView.findViewById(R.id.dayEnabled);
+        }
+
+        public void bind(final int position, final DayAlarm day, final OnItemClickListener listener) {
+
+            dayTime.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    listener.onTimeClick(position);
+                }
+            });
+
+            dayEn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    listener.onEnableClick(position, dayEn.isChecked());
+                }
+            });
+
+            fadeTime.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    listener.onFadeTimeClick(position, Integer.parseInt(fadeTime.getText().toString()));
+                }
+            });
         }
     }
 }

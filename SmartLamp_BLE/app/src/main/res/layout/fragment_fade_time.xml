@@ -1,0 +1,27 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/currentFadeTime"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingBottom="15dp"
+        android:paddingLeft="20dp"
+        android:paddingTop="20dp"
+        android:text="@string/actual_fade_time"
+        android:textAlignment="viewStart"
+        android:textSize="18sp" />
+
+    <SeekBar
+        android:id="@+id/fadeTimeBar"
+        style="@android:style/Widget.DeviceDefault.SeekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="@integer/max_fade_min"
+        android:min="1"
+        android:progress="1" />
+
+</LinearLayout>

@@ -26,6 +26,7 @@ import android.app.TimePickerDialog;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
@@ -33,6 +34,7 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
@@ -40,6 +42,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.TimePicker;
 
 import com.smd.smartlamp_ble.device.BLESerialPortService;
@@ -54,8 +58,7 @@ import java.util.Calendar;
 import java.util.List;
 
 public class AlarmActivity extends AppCompatActivity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks,
-                   TimePickerDialog.OnTimeSetListener, DayAlarmAdapter.OnItemClicked {
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks, TimePickerDialog.OnTimeSetListener {
 
     private final static String TAG = AlarmActivity.class.getSimpleName();
     private final static int MENU_POS_SETTING = 0;
@@ -83,7 +86,75 @@ public class AlarmActivity extends AppCompatActivity
                 public void onServiceDisconnected(ComponentName componentName) {
                     mBLESerialPortService = null;
                 }
-            };;
+            };
+
+    private DayAlarmAdapter.OnItemClickListener mAdpaterListerner = new DayAlarmAdapter.OnItemClickListener() {
+        @Override
+        public void onTimeClick(int position) {
+            // Current list position for the TimePickerDialog.
+            mDayPos = position;
+
+            DialogFragment newFragment = new TimePickerFragment();
+            newFragment.show(getFragmentManager(), "timePicker");
+        }
+
+        @Override
+        public void onFadeTimeClick(final int position, final int fadeTime) {
+
+            AlertDialog.Builder alert = new AlertDialog.Builder(AlarmActivity.this);
+            alert.setTitle(R.string.fade_time_choose);
+
+            LayoutInflater inflater = getLayoutInflater();
+            View alertLayout = inflater.inflate(R.layout.fragment_fade_time, null);
+
+            // This is set the view from XML inside AlertDialog
+            alert.setView(alertLayout);
+
+            final TextView currentFadeTime = alertLayout.findViewById(R.id.currentFadeTime);
+            currentFadeTime.setText(getString(R.string.actual_fade_time) + " " + fadeTime);
+
+            final SeekBar fadeTimeBar = alertLayout.findViewById(R.id.fadeTimeBar);
+
+            fadeTimeBar.setProgress(fadeTime);
+
+            fadeTimeBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                    currentFadeTime.setText(getString(R.string.actual_fade_time) + " " + i);
+                }
+
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
+
+                }
+
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
+
+                }
+            });
+
+            alert.setPositiveButton("Done", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if (position >= 0 && position < mDayAdapter.getItemCount()) {
+                        mViewModel.updateItem(position, fadeTimeBar.getProgress());
+                    }
+                    Log.e(TAG, "onFadeTimeClick on position " + position + " = " + fadeTimeBar.getProgress());
+                }
+            });
+            AlertDialog dialog = alert.create();
+            dialog.show();
+        }
+
+        @Override
+        public void onEnableClick(int position, boolean checked) {
+            if (position >= 0 && position < mDayAdapter.getItemCount()) {
+                mViewModel.updateItem(position, checked);
+            }
+            Log.e(TAG, "onEnableClick on position " + position + " = " + checked);
+        }
+    };
 
     private int mDayPos;
 
@@ -109,11 +180,9 @@ public class AlarmActivity extends AppCompatActivity
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(R.id.navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout));
 
+        // The listener is passed to the adapter
         mDayAdapter = new DayAlarmAdapter(new ArrayList<DayAlarm>(),
-                getResources().getStringArray(R.array.day_names));
-
-        // Bind the listener to the adapter events
-        mDayAdapter.setOnClick(this);
+                getResources().getStringArray(R.array.day_names), mAdpaterListerner); // TODO mAdpaterListerner
 
         mRecyclerView = findViewById(R.id.dayList);
         mRecyclerView.setAdapter(mDayAdapter);
@@ -133,6 +202,7 @@ public class AlarmActivity extends AppCompatActivity
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
         Log.d(TAG, "Bind service");
     }
+
 
     @Override
     protected void onResume() {
@@ -264,48 +334,6 @@ public class AlarmActivity extends AppCompatActivity
             mViewModel.updateItem(mDayPos, hourOfDay, minute);
         }
         Log.e(TAG, "OnTimeSet on position " + mDayPos);
-    }
-
-    /**
-     * The onClick implementation of the RecyclerView fateTime item click
-     *
-     * @param position
-     * @param fadeTime
-     */
-    @Override
-    public void onFadeTimeClick(int position, int fadeTime) {
-        if (position >= 0 && position < mDayAdapter.getItemCount()) {
-            mViewModel.updateItem(position, fadeTime);
-        }
-        Log.e(TAG, "onFadeTimeClick on position " + position + " = " + fadeTime);
-    }
-
-    /**
-     * The onClick implementation of the RecyclerView enable checkbox item click
-     *
-     * @param position
-     * @param enabled
-     */
-    @Override
-    public void onEnableClick(int position, boolean enabled) {
-        if (position >= 0 && position < mDayAdapter.getItemCount()) {
-            mViewModel.updateItem(position, enabled);
-        }
-        Log.e(TAG, "onEnableClick on position " + position + " = " + enabled);
-    }
-
-    /**
-     * The onClick implementation of the RecyclerView  time of day item click
-     *
-     * @param position
-     */
-    @Override
-    public void onTimeClick(int position) {
-        // Current list position for the TimePickerDialog.
-        mDayPos = position;
-
-        DialogFragment newFragment = new TimePickerFragment();
-        newFragment.show(getFragmentManager(), "timePicker");
     }
 
     private String digit(int number) { return number <= 9 ? "0" + number : String.valueOf(number); }
