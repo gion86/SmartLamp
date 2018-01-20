@@ -182,7 +182,7 @@ public class AlarmActivity extends AppCompatActivity
 
         // The listener is passed to the adapter
         mDayAdapter = new DayAlarmAdapter(new ArrayList<DayAlarm>(),
-                getResources().getStringArray(R.array.day_names), mAdpaterListerner); // TODO mAdpaterListerner
+                getResources().getStringArray(R.array.day_names), mAdpaterListerner);
 
         mRecyclerView = findViewById(R.id.dayList);
         mRecyclerView.setAdapter(mDayAdapter);
@@ -338,12 +338,13 @@ public class AlarmActivity extends AppCompatActivity
 
     private String digit(int number) { return number <= 9 ? "0" + number : String.valueOf(number); }
 
+    // TODO Model utility class to convert
     public void onSendDayClick(View view) {
         for (DayAlarm day : mViewModel.getmDayAlarmList().getValue()) {
             String cmd = "";
 
             if (day.isEnabled()) {
-                cmd = "AL_" + digit(day.getWday()) + digit(day.getHour()) + digit(day.getMin());
+                cmd = "AL_" + digit(day.getWday()) + "_" + digit(day.getHour()) + digit(day.getMin()) + "_" +  day.getFadeTime();
             } else {
                 cmd = "AL_DIS_" + digit(day.getWday());
             }

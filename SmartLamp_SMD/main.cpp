@@ -56,7 +56,7 @@
 #define ALARMS_OFFSET       0   // Alarms array EEPROM start address
 
 // LED defines
-#define FADE_TIME          10   // LED crossfade total duration  [s]
+#define FADE_TIME          10   // LED crossfade total duration [m]
 #define MAX_ANALOG_V      255   // Analog output max value for RGB
 
 // States
@@ -91,7 +91,7 @@ struct tm systemTime;           // Current system time (local timezone)
 typedef struct {
   bool enabled;
   int8_t hh, mm;                // Time of day
-  uint16_t fadeTime;            // Fade time in seconds, from the alarm wake up
+  uint8_t fadeTime;             // Fade time in minutes, from the alarm wake up
 } alarm;                        // Alarm structure
 
 alarm alarms[7];                // Alarms array [0...6 as weekdays sun...sat]
@@ -443,13 +443,22 @@ static bool parseCommand(char *buffer) {
   // ------------------------------------------------------
   s = strstr(buffer, "AL_");
 
-  // buffer = "AL_05_1418"
-  if (s != NULL && strlen(buffer) == 10) {
+  // buffer = "AL_05_1418" or buffer = "AL_05_1418_10"
+  if (s != NULL && strlen(buffer) >= 10) {
     int8_t WD, hh, mm;
+    uint8_t fadeTime = FADE_TIME;
 
-    WD   = atod(buffer[3]) * 10 + atod(buffer[4]);
-    hh   = atod(buffer[6]) * 10 + atod(buffer[7]);
-    mm   = atod(buffer[8]) * 10 + atod(buffer[9]);
+    WD = atod(buffer[3]) * 10 + atod(buffer[4]);
+    hh = atod(buffer[6]) * 10 + atod(buffer[7]);
+    mm = atod(buffer[8]) * 10 + atod(buffer[9]);
+
+    if (strlen(buffer) == 13) {
+      uint8_t fadeTime = atod(buffer[11]) * 10 + atod(buffer[12]);
+
+      if (fadeTime > 99) {
+        return false;
+      }
+    }
 
 //#ifdef DEBUG
 //    Serial.print("WD = ");
@@ -460,6 +469,9 @@ static bool parseCommand(char *buffer) {
 //
 //    Serial.print("mm = ");
 //    Serial.println(mm);
+//
+//    Serial.print("ft = ");
+//    Serial.println(fadeTime);
 //#endif
 
     // Data checks
@@ -469,7 +481,7 @@ static bool parseCommand(char *buffer) {
 
     alarms[WD].hh = hh;
     alarms[WD].mm = mm;
-    alarms[WD].fadeTime = FADE_TIME;
+    alarms[WD].fadeTime = fadeTime;
     alarms[WD].enabled = true;
 
     eeprom_write_block((void*) &alarms, (void*) ALARMS_OFFSET, sizeof(alarms));
@@ -488,7 +500,7 @@ static bool parseCommand(char *buffer) {
   // ------------------------------------------------------
   s = strstr(buffer, "AL_DIS_");
 
-  // buffer = "AL_DIS_07"
+  // buffer = "AL_DIS_06"
   if (s != NULL && strlen(buffer) == 9) {
     uint8_t WD;
 
@@ -520,25 +532,31 @@ static bool parseCommand(char *buffer) {
   // ------------------------------------------------------
   s = strstr(buffer, "FT_");
 
-  // buffer = "FT_1800"
-  if (s != NULL && strlen(buffer) == 7) {
-    uint16_t fadeTime = atod(buffer[3]) * 1000 + atod(buffer[4]) * 100 + atod(buffer[5]) * 10 + atod(buffer[6]);
+  // buffer = "FT_05_10"
+  if (s != NULL && strlen(buffer) == 8) {
+    uint8_t WD;
+    uint8_t fadeTime;
 
-    if (fadeTime > 9999) {
+    WD       = atod(buffer[3]) * 10 + atod(buffer[4]);
+    fadeTime = atod(buffer[6]) * 10 + atod(buffer[7]);
+
+//#ifdef DEBUG
+//    Serial.print("WD = ");
+//    Serial.println(WD);
+//
+//    Serial.print("ft = ");
+//    Serial.println(fadeTime);
+//#endif
+
+    // Data checks
+    if (WD < 0 || WD > 6 || fadeTime > 99) {
       return false;
     }
 
-    for (int i = 0; i < 7; ++i) {
-     // Set the alarm fade time
-     alarms[i].fadeTime = fadeTime;
-    }
+    // Set the alarm fade time
+    alarms[WD].fadeTime = fadeTime;
 
     eeprom_write_block((void*) &alarms, (void*) ALARMS_OFFSET, sizeof(alarms));
-
-//#ifdef DEBUG
-//    Serial.print("ss = ");
-//    Serial.println(alarms[0].fadeTime);
-//#endif
 
     return true;
   }
@@ -726,7 +744,7 @@ void loop() {
   uint8_t led_value;
   float x = 0;
 
-  uint16_t fadeTime;
+  float fadeTime;
   unsigned long millTest;
 
   switch (step) {
@@ -829,7 +847,8 @@ void loop() {
       // ######################################################################
       // LED fade state
 
-      fadeTime = alarms[systemTime.tm_wday].fadeTime * 1000.0;
+      // Fade time in millisecond
+      fadeTime = alarms[systemTime.tm_wday].fadeTime * 60000.0;
 
       millTest = millis();
 
@@ -837,7 +856,7 @@ void loop() {
         prevMillis = millis();
       }
 
-      x = (millis() - prevMillis) / (float) (fadeTime);
+      x = (millis() - prevMillis) / fadeTime;
       led_value = MAX_ANALOG_V * sin(PI * x);
 
 #ifdef DEBUG
