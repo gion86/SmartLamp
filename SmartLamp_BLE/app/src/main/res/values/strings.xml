@@ -36,11 +36,10 @@
     <string name="menu_disconnect">Disconnect</string>
     <string name="menu_scan">Scan</string>
     <string name="menu_stop">Stop</string>
-    <string name="title_activity_alarm">AlarmActivity</string>
+    <string name="menu_refresh">Refresh</string>
 
     <string name="title_section1">Settings</string>
     <string name="title_section2">Scan</string>
-    <string name="title_section3">Section 3</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>

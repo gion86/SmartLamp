@@ -48,6 +48,7 @@ import android.widget.TimePicker;
 
 import com.smd.smartlamp_ble.device.BLESerialPortService;
 import com.smd.smartlamp_ble.device.DeviceScanActivity;
+import com.smd.smartlamp_ble.device.ProtocolUtil;
 import com.smd.smartlamp_ble.model.DayAlarm;
 import com.smd.smartlamp_ble.settings.SettingsActivity;
 import com.smd.smartlamp_ble.ui.DayAlarmAdapter;
@@ -156,6 +157,13 @@ public class AlarmActivity extends AppCompatActivity
         }
     };
 
+    private Observer mDayListObserver = new Observer<List<DayAlarm>>() {
+        @Override
+        public void onChanged(@Nullable List<DayAlarm> mDayList) {
+            mDayAdapter.setItems(mDayList);
+        }
+    };
+
     private int mDayPos;
 
     /**
@@ -188,17 +196,13 @@ public class AlarmActivity extends AppCompatActivity
         mRecyclerView.setAdapter(mDayAdapter);
 
         mViewModel = ViewModelProviders.of(this).get(DayAlarmViewModel.class);
-        mViewModel.getmDayAlarmList().observe(AlarmActivity.this, new Observer<List<DayAlarm>>() {
-            @Override
-            public void onChanged(@Nullable List<DayAlarm> mDayList) {
-                mDayAdapter.setItems(mDayList);
-            }
-        });
+        mViewModel.getmDayAlarmList().observe(AlarmActivity.this, mDayListObserver);
 
         mDayPos = -1;
 
         // Bind and start the bluetooth service
         Intent gattServiceIntent = new Intent(this, BLESerialPortService.class);
+        // FIXME mServiceConnection leak??
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
         Log.d(TAG, "Bind service");
     }
@@ -237,15 +241,16 @@ public class AlarmActivity extends AppCompatActivity
             case 2:
                 mTitle = getString(R.string.title_section2);
                 break;
-            case 3:
-                mTitle = getString(R.string.title_section3);
-                break;
         }
     }
 
     public void restoreActionBar() {
-        // TODO actionbar icon??
         ActionBar actionBar = getSupportActionBar();
+
+        // Enable ActionBar app icon to behave as action to toggle nav drawer
+        actionBar.setDisplayShowHomeEnabled(true);
+        actionBar.setHomeButtonEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setTitle(mTitle);
     }
@@ -336,21 +341,10 @@ public class AlarmActivity extends AppCompatActivity
         Log.e(TAG, "OnTimeSet on position " + mDayPos);
     }
 
-    private String digit(int number) { return number <= 9 ? "0" + number : String.valueOf(number); }
-
-    // TODO Model utility class to convert
     public void onSendDayClick(View view) {
         for (DayAlarm day : mViewModel.getmDayAlarmList().getValue()) {
-            String cmd = "";
-
-            if (day.isEnabled()) {
-                cmd = "AL_" + digit(day.getWday()) + "_" + digit(day.getHour()) + digit(day.getMin()) + "_" +  day.getFadeTime();
-            } else {
-                cmd = "AL_DIS_" + digit(day.getWday());
-            }
-
-            mBLESerialPortService.addCommand(cmd);
-            Log.i(TAG, "SEND: " + cmd);
+            mBLESerialPortService.addCommand(ProtocolUtil.cmdSetAlarmFull(day));
+            Log.i(TAG, "SEND: " + ProtocolUtil.cmdSetAlarmFull(day));
         }
 
         mBLESerialPortService.sendAll();

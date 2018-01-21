@@ -36,10 +36,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.smd.smartlamp_ble.R;
+import com.smd.smartlamp_ble.model.DayAlarm;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.TimeZone;
 
 /**
  * For a given BLE device, this Activity provides the user interface to connect, display data,
@@ -135,28 +134,23 @@ public class DeviceControlActivity extends AppCompatActivity {
         final Button timeButton = findViewById(R.id.timeButton);
         timeButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                SimpleDateFormat dateFormatGmt = new SimpleDateFormat("yyyyMMdd_HHmmss");
-                dateFormatGmt.setTimeZone(TimeZone.getTimeZone("GMT"));
-
                 // Send date in command as the UTC actual time.
-                String data = "ST_" + dateFormatGmt.format(new Date());
-                mWriteText.setText(data);
+                mWriteText.setText(ProtocolUtil.cmdSendTime(new Date()));
             }
         });
 
         final Button alarmButton = findViewById(R.id.alarmButton);
         alarmButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                String data = "AL_00_1735";
-                mWriteText.setText(data);
+                DayAlarm day = new DayAlarm(0, 10, 17, 35);
+                mWriteText.setText(ProtocolUtil.cmdSetAlarm(day));
             }
         });
 
         final Button colorButton = findViewById(R.id.colorButton);
         colorButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                String data = "RGB_055_129_255";
-                mWriteText.setText(data);
+                mWriteText.setText(ProtocolUtil.cmdSendRGB((short) 55, (short) 129,  (short) 255));
             }
         });
 

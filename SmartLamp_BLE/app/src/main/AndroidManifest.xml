@@ -40,7 +40,7 @@
         android:theme="@style/Theme.AppTheme">
         <activity
             android:name=".AlarmActivity"
-            android:label="@string/title_activity_alarm"
+            android:label="@string/app_name"
             android:icon="@drawable/ic_launcher">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
