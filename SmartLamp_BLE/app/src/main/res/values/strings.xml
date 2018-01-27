@@ -21,8 +21,10 @@
     <string name="connected">Connected</string>
     <string name="disconnected">Disconnected</string>
     <string name="title_devices">BLE Device Scan</string>
-    <string name="error_bluetooth_not_supported">Bluetooth not supported.</string>
-    <string name="error_com_timeout">Timeout on write GATT characteristic</string>
+    <string name="error_bluetooth_not_supported">Bluetooth not supported</string>
+    <string name="error_write_timeout">Timeout on write GATT characteristic</string>
+    <string name="error_ack_timeout">Timeout on ack for command:</string>
+    <string name="error_no_conn">No connection to BLE characteristic</string>
 
     <string name="unknown_device">Unknown device</string>
     <string name="unknown_characteristic">Unknown characteristic</string>

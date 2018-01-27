@@ -55,7 +55,10 @@ public class DeviceControlActivity extends AppCompatActivity {
     private EditText mWriteText;
     private String mDeviceName;
     private String mDeviceAddress;
+    private boolean mConnected = false;
+
     private BLESerialPortService mBLESerialPortService;
+
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
@@ -76,7 +79,7 @@ public class DeviceControlActivity extends AppCompatActivity {
             mBLESerialPortService = null;
         }
     };
-    private boolean mConnected = false;
+
     // Handles various events fired by the Service.
     // ACTION_GATT_CONNECTED: connected to a GATT server.
     // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
@@ -127,7 +130,9 @@ public class DeviceControlActivity extends AppCompatActivity {
         final Button sendButton = findViewById(R.id.sendButton);
         sendButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                mBLESerialPortService.send(mWriteText.getText().toString() + LINE_SEP);
+                mBLESerialPortService.addCommand(mWriteText.getText().toString() + LINE_SEP);
+                mBLESerialPortService.addCommand("RGB_001_002_003" + LINE_SEP);
+                mBLESerialPortService.sendAll();
             }
         });
 

@@ -54,7 +54,9 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.smd.smartlamp_ble.AlarmActivity" />
         </activity>
-        <activity android:name=".device.DeviceControlActivity" />
+        <activity android:name=".device.DeviceControlActivity"
+            android:windowSoftInputMode="stateHidden|adjustResize" >
+        </activity>
 
         <activity
             android:name=".settings.SettingsActivity"

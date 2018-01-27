@@ -202,7 +202,6 @@ public class AlarmActivity extends AppCompatActivity
 
         // Bind and start the bluetooth service
         Intent gattServiceIntent = new Intent(this, BLESerialPortService.class);
-        // FIXME mServiceConnection leak??
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
         Log.d(TAG, "Bind service");
     }
@@ -212,6 +211,15 @@ public class AlarmActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
         restoreActionBar();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        if (mServiceConnection != null) {
+            unbindService(mServiceConnection);
+        }
     }
 
     @Override
