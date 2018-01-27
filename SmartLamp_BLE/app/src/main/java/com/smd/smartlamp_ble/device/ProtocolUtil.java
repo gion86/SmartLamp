@@ -27,8 +27,10 @@ import java.util.Date;
 import java.util.TimeZone;
 
 public class ProtocolUtil {
-    private static final String DATE_FORMAT = "yyyyMMdd_HHmmss";
-    private static final String TIME_ZONE = "GMT";
+    public static final String DATE_FORMAT = "yyyyMMdd_HHmmss";
+    public static final String TIME_ZONE = "GMT";
+
+    public final static String LINE_SEP = "\r\n";
 
     private static String digit(int number) { return number <= 9 ? "0" + number : String.valueOf(number); }
 
@@ -47,19 +49,19 @@ public class ProtocolUtil {
         SimpleDateFormat dateFormatGmt = new SimpleDateFormat(DATE_FORMAT);
         dateFormatGmt.setTimeZone(TimeZone.getTimeZone(TIME_ZONE));
 
-        return "ST_" + dateFormatGmt.format(date);
+        return "ST_" + dateFormatGmt.format(date) + LINE_SEP;
     }
 
     @NonNull
     public static String cmdDisableAlarm(DayAlarm day) {
-        return "AL_DIS_" + digit(day.getWday());
+        return "AL_DIS_" + digit(day.getWday()) + LINE_SEP;
     }
 
     @NonNull
     public static String cmdSetAlarmFull(DayAlarm day) {
         if (day.isEnabled()) {
             return "AL_" + digit(day.getWday()) + "_" + digit(day.getHour()) + digit(day.getMin()) +
-                    "_" +  digit(day.getFadeTime());
+                    "_" +  digit(day.getFadeTime()) + LINE_SEP;
         } else {
             return cmdDisableAlarm(day);
         }
@@ -68,7 +70,7 @@ public class ProtocolUtil {
     @NonNull
     public static String cmdSetAlarm(DayAlarm day) {
         if (day.isEnabled()) {
-            return "AL_" + digit(day.getWday()) + "_" + digit(day.getHour()) + digit(day.getMin());
+            return "AL_" + digit(day.getWday()) + "_" + digit(day.getHour()) + digit(day.getMin()) + LINE_SEP;
         } else {
             return cmdDisableAlarm(day);
         }
@@ -76,11 +78,11 @@ public class ProtocolUtil {
 
     @NonNull
     public static String toCmdSetFadeTime(DayAlarm day) {
-        return "FT_" + digit(day.getWday()) + "_" + day.getFadeTime();
+        return "FT_" + digit(day.getWday()) + "_" + day.getFadeTime() + LINE_SEP;
     }
 
     @NonNull
     public static String cmdSendRGB(short r, short g, short b) {
-        return "RGB_" + digit2(r) + "_" + digit2(g) + "_" + digit2(b);
+        return "RGB_" + digit2(r) + "_" + digit2(g) + "_" + digit2(b) + LINE_SEP;
     }
 }

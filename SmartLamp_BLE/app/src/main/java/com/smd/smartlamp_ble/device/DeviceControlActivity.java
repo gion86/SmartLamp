@@ -40,6 +40,8 @@ import com.smd.smartlamp_ble.model.DayAlarm;
 
 import java.util.Date;
 
+import static com.smd.smartlamp_ble.device.ProtocolUtil.LINE_SEP;
+
 /**
  * For a given BLE device, this Activity provides the user interface to connect, display data,
  * and display GATT services and characteristics supported by the device.  The Activity
@@ -50,7 +52,6 @@ public class DeviceControlActivity extends AppCompatActivity {
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
     private final static String TAG = DeviceControlActivity.class.getSimpleName();
-    private final static String LINE_SEP = "\r\n";
     private TextView mReadTextView;
     private EditText mWriteText;
     private String mDeviceName;
@@ -130,8 +131,13 @@ public class DeviceControlActivity extends AppCompatActivity {
         final Button sendButton = findViewById(R.id.sendButton);
         sendButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                mBLESerialPortService.addCommand(mWriteText.getText().toString() + LINE_SEP);
-                mBLESerialPortService.addCommand("RGB_001_002_003" + LINE_SEP);
+                String cmd = mWriteText.getText().toString();
+
+                if (!cmd.contains(LINE_SEP))
+                    mBLESerialPortService.addCommand(cmd + LINE_SEP);
+                else
+                    mBLESerialPortService.addCommand(cmd);
+
                 mBLESerialPortService.sendAll();
             }
         });
@@ -148,7 +154,7 @@ public class DeviceControlActivity extends AppCompatActivity {
         alarmButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 DayAlarm day = new DayAlarm(0, 10, 17, 35);
-                mWriteText.setText(ProtocolUtil.cmdSetAlarm(day));
+                mWriteText.setText(ProtocolUtil.cmdSetAlarmFull(day));
             }
         });
 
@@ -187,8 +193,11 @@ public class DeviceControlActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unbindService(mServiceConnection);
-        mBLESerialPortService = null;
+
+        if (mServiceConnection != null) {
+            unbindService(mServiceConnection);
+            mBLESerialPortService = null;
+        }
     }
 
     @Override

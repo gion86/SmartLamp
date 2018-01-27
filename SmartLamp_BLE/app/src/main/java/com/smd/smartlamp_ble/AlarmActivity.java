@@ -141,7 +141,7 @@ public class AlarmActivity extends AppCompatActivity
                     if (position >= 0 && position < mDayAdapter.getItemCount()) {
                         mViewModel.updateItem(position, fadeTimeBar.getProgress());
                     }
-                    Log.e(TAG, "onFadeTimeClick on position " + position + " = " + fadeTimeBar.getProgress());
+                    Log.i(TAG, "onFadeTimeClick on position " + position + " = " + fadeTimeBar.getProgress());
                 }
             });
             AlertDialog dialog = alert.create();
@@ -153,7 +153,7 @@ public class AlarmActivity extends AppCompatActivity
             if (position >= 0 && position < mDayAdapter.getItemCount()) {
                 mViewModel.updateItem(position, checked);
             }
-            Log.e(TAG, "onEnableClick on position " + position + " = " + checked);
+            Log.i(TAG, "onEnableClick on position " + position + " = " + checked);
         }
     };
 
@@ -219,6 +219,7 @@ public class AlarmActivity extends AppCompatActivity
 
         if (mServiceConnection != null) {
             unbindService(mServiceConnection);
+            mBLESerialPortService = null;
         }
     }
 
@@ -346,7 +347,7 @@ public class AlarmActivity extends AppCompatActivity
         if (mDayPos >= 0 && mDayPos < mDayAdapter.getItemCount()) {
             mViewModel.updateItem(mDayPos, hourOfDay, minute);
         }
-        Log.e(TAG, "OnTimeSet on position " + mDayPos);
+        Log.i(TAG, "OnTimeSet on position " + mDayPos);
     }
 
     public void onSendDayClick(View view) {
@@ -355,6 +356,9 @@ public class AlarmActivity extends AppCompatActivity
             Log.i(TAG, "SEND: " + ProtocolUtil.cmdSetAlarmFull(day));
         }
 
+//        mBLESerialPortService.addCommand("RGB_111_222_333" + "\r\n");
+//        mBLESerialPortService.addCommand("RGB_101_202_303" + "\r\n");
+//        mBLESerialPortService.addCommand("RGB_121_122_233" + "\r\n");
         mBLESerialPortService.sendAll();
     }
 }
