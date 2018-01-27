@@ -228,10 +228,10 @@ static bool setNextAlarm(struct tm *sys_t) {
     return false;
   }
 
-#ifdef DEBUG
-  Serial.println();
-  Serial.println("NEXT ALARM");
-#endif
+//#ifdef DEBUG
+//  Serial.println();
+//  Serial.println("NEXT ALARM");
+//#endif
 
   // Check for one day more than a week (8) to account for the next alarm on the same weekday:
   // case where only on alarm is enable in the entire week.
@@ -240,13 +240,13 @@ static bool setNextAlarm(struct tm *sys_t) {
 
     if (alarms[i_m].enabled) {
 
-#ifdef DEBUG
-        Serial.print("c, i_m = ");
-        Serial.print(c);
-        Serial.print(", ");
-        Serial.println(i_m);
-        Serial.println();
-#endif
+//#ifdef DEBUG
+//        Serial.print("c, i_m = ");
+//        Serial.print(c);
+//        Serial.print(", ");
+//        Serial.println(i_m);
+//        Serial.println();
+//#endif
 
       if (c > 0 || (i_m == sys_t->tm_wday &&
                    (sys_t->tm_hour < alarms[i_m].hh || (sys_t->tm_hour == alarms[i_m].hh && sys_t->tm_min < alarms[i_m].mm)))) {
@@ -754,6 +754,7 @@ void loop() {
 #ifdef DEBUG
       Serial.println("Sleeping...");
       Serial.println();
+      Serial.println();
 #endif
 
       delay(50);
@@ -771,7 +772,6 @@ void loop() {
       if (RTC.alarm(ALARM_1)) {
 #ifdef DEBUG
         Serial.println("Wake up from alarm 1");
-        Serial.println();
 #endif
         delay(50);
         step = SET_DAY_ALARM;
@@ -788,9 +788,9 @@ void loop() {
       // Set alarm for the day "tm_wday"
       setNextAlarm(&systemTime);
 
-      //step = STEP_SLEEP;
+      step = STEP_SLEEP;
       prevMillis = millis();
-      step = STEP_FADE;
+      //step = STEP_FADE;
       break;
 
     case STEP_READ_CMD:
