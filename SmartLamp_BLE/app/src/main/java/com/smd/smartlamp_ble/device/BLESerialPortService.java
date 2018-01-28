@@ -77,7 +77,10 @@ public class BLESerialPortService extends Service {
     private BluetoothGattCharacteristic mTx;
     private boolean writeInProgress; // Flag to indicate a write is currently in progress
     private boolean ackReceived;
+
     private int mConnectionState = STATE_DISCONNECTED;
+    private boolean mFirstConnection = false;
+
     private String mBluetoothDeviceAddress;
     private String mRecData;
 
@@ -139,12 +142,12 @@ public class BLESerialPortService extends Service {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
-            //Log.w(TAG, "onCharacteristicChanged");
+            //Log.d(TAG, "onCharacteristicChanged");
 
             broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
 
             String data = characteristic.getStringValue(0);
-            Log.i(TAG, data);
+            Log.d(TAG, data);
 
             if (data.contains(ACK_DATA)) {
                 Log.w(TAG, "DATA_OK");
@@ -155,20 +158,22 @@ public class BLESerialPortService extends Service {
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicRead(gatt, characteristic, status);
-            Log.w(TAG, "onCharacteristicRead");
+            Log.d(TAG, "onCharacteristicRead");
 
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
-                Log.i(TAG, characteristic.getStringValue(0));
+                Log.d(TAG, characteristic.getStringValue(0));
             }
         }
 
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicWrite(gatt, characteristic, status);
+            Log.d(TAG, "onCharacteristicWrite: " + characteristic.getStringValue(0));
             writeInProgress = false;
         }
     };
+
 
     /**
      * Default public constructor
@@ -364,6 +369,13 @@ public class BLESerialPortService extends Service {
         if (mTx == null) return;
 
         setCharacteristicNotification(mTx, true);
+
+        // TODO Write something to have device reply on first message...
+        if (!mFirstConnection) {
+            mFirstConnection = true;
+            mTx.setValue("Hello".getBytes());
+            mBluetoothGatt.writeCharacteristic(mTx);
+        }
     }
 
     /**

@@ -101,7 +101,7 @@ public class DeviceScanActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
+        getMenuInflater().inflate(R.menu.activity_scan_menu, menu);
         if (!mScanning) {
             menu.findItem(R.id.menu_stop).setEnabled(false);
             menu.findItem(R.id.menu_scan).setEnabled(true);

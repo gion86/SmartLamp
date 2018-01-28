@@ -25,9 +25,13 @@ import android.app.FragmentManager;
 import android.app.TimePickerDialog;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.bluetooth.BluetoothAdapter;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -40,11 +44,15 @@ import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import com.smd.smartlamp_ble.device.BLESerialPortService;
 import com.smd.smartlamp_ble.device.DeviceScanActivity;
@@ -62,12 +70,27 @@ public class AlarmActivity extends AppCompatActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks, TimePickerDialog.OnTimeSetListener {
 
     private final static String TAG = AlarmActivity.class.getSimpleName();
+
+    private static final int REQUEST_ENABLE_BT = 2;
+
     private final static int MENU_POS_SETTING = 0;
     private final static int MENU_POS_DEV_SCAN = 1;
 
     private DayAlarmAdapter mDayAdapter;
     private DayAlarmViewModel mViewModel;
     private RecyclerView mRecyclerView;
+
+    /**
+     *
+     */
+    private BluetoothAdapter mBtAdapter = null;
+
+    /**
+     *
+     */
+    private boolean mConnected;     // True if connected to a BLE device
+    private String mDeviceName;
+    private String mDeviceAddress;
 
     // Code to manage Service lifecycle.
     private BLESerialPortService mBLESerialPortService;
@@ -181,6 +204,20 @@ public class AlarmActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_alarm);
 
+        Button sendAllButton = findViewById(R.id.sendAllButton);
+        sendAllButton.setEnabled(mConnected);
+
+        mBtAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (mBtAdapter == null) {
+            Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+
+        // TODO preference for mDeviceAddress
+        mDeviceName = "HM10";
+        mDeviceAddress = "34:15:13:1A:E1:AD";
+
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
@@ -199,6 +236,7 @@ public class AlarmActivity extends AppCompatActivity
         mViewModel.getmDayAlarmList().observe(AlarmActivity.this, mDayListObserver);
 
         mDayPos = -1;
+        mConnected = false;
 
         // Bind and start the bluetooth service
         Intent gattServiceIntent = new Intent(this, BLESerialPortService.class);
@@ -206,11 +244,22 @@ public class AlarmActivity extends AppCompatActivity
         Log.d(TAG, "Bind service");
     }
 
-
     @Override
     protected void onResume() {
         super.onResume();
         restoreActionBar();
+
+        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+        if (mBLESerialPortService != null) {
+            final boolean result = mBLESerialPortService.connect(mDeviceAddress);
+            Log.d(TAG, "Connect request result=" + result);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(mGattUpdateReceiver);
     }
 
     @Override
@@ -262,6 +311,73 @@ public class AlarmActivity extends AppCompatActivity
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setTitle(mTitle);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.activity_alarm_menu, menu);
+
+        if (mConnected) {
+            menu.findItem(R.id.menu_connect).setEnabled(false);
+            menu.findItem(R.id.menu_disconnect).setEnabled(true);
+        } else {
+            menu.findItem(R.id.menu_connect).setEnabled(true);
+            menu.findItem(R.id.menu_disconnect).setEnabled(false);
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_connect:
+                if (!mBtAdapter.isEnabled()) {
+                    Log.i(TAG, "onClick - BT not enabled yet");
+                    Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                    startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
+                } else {
+                    Log.i(TAG, "Device address: " + mDeviceAddress);
+                    mBLESerialPortService.connect(mDeviceAddress);
+                }
+                return true;
+
+            case R.id.menu_disconnect:
+                mBLESerialPortService.disconnect();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    // Handles various events fired by the Service.
+    // ACTION_GATT_CONNECTED: connected to a GATT server.
+    // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
+    //                        or notification operations.
+    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+
+            if (BLESerialPortService.ACTION_GATT_CONNECTED.equals(action)) {
+                mConnected = true;
+                invalidateOptionsMenu();
+            } else if (BLESerialPortService.ACTION_GATT_DISCONNECTED.equals(action)) {
+                mConnected = false;
+                invalidateOptionsMenu();
+            }
+
+            Button sendAllButton = findViewById(R.id.sendAllButton);
+            sendAllButton.setEnabled(mConnected);
+        }
+    };
+
+    private static IntentFilter makeGattUpdateIntentFilter() {
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BLESerialPortService.ACTION_GATT_CONNECTED);
+        intentFilter.addAction(BLESerialPortService.ACTION_GATT_DISCONNECTED);
+        //intentFilter.addAction(BLESerialPortService.ACTION_DATA_AVAILABLE);
+        return intentFilter;
     }
 
     /**
