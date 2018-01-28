@@ -410,6 +410,7 @@ public class BLESerialPortService extends Service {
             // Do nothing if there is no connection.
             Log.e(TAG, "No connection: tx characteristic == null");
             Toast.makeText(getApplicationContext(), R.string.error_no_conn, Toast.LENGTH_LONG).show();
+            writeQueue.clear();     // Clear queue in any case
             return;
         }
 
@@ -465,8 +466,7 @@ public class BLESerialPortService extends Service {
             if (mTx == null)
                 return ERR_CODE_NO_CONNECTION;
 
-            writeInProgress = true;             // FIXME Set the write in progress flag
-
+            writeInProgress = true;
             mTx.setValue(data);
             mBluetoothGatt.writeCharacteristic(mTx);
 

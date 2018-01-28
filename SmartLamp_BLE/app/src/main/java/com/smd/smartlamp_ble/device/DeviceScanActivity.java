@@ -40,6 +40,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.smd.smartlamp_ble.AlarmActivity;
 import com.smd.smartlamp_ble.R;
 
 import java.util.ArrayList;
@@ -49,12 +50,14 @@ import java.util.ArrayList;
  */
 public class DeviceScanActivity extends AppCompatActivity {
     private static final int REQUEST_ENABLE_BT = 1;
+
     // Stops scanning after 10 seconds.
     private static final long SCAN_PERIOD = 10000;
     private LeDeviceListAdapter mLeDeviceListAdapter;
     private BluetoothAdapter mBluetoothAdapter;
     private boolean mScanning;
     private Handler mHandler;
+
     // Device scan callback.
     private BluetoothAdapter.LeScanCallback mLeScanCallback =
             new BluetoothAdapter.LeScanCallback() {
@@ -97,6 +100,31 @@ public class DeviceScanActivity extends AppCompatActivity {
             finish();
             return;
         }
+
+        // Initializes list view adapter.
+        mLeDeviceListAdapter = new LeDeviceListAdapter();
+
+        ListView listView = findViewById(R.id.deviceList);
+        listView.setAdapter(mLeDeviceListAdapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                final BluetoothDevice device = mLeDeviceListAdapter.getDevice(position);
+                if (device == null) return;
+
+                if (mScanning) {
+                    mBluetoothAdapter.stopLeScan(mLeScanCallback);
+                    mScanning = false;
+                }
+
+                Intent returnIntent = new Intent();
+                returnIntent.putExtra(AlarmActivity.EXTRAS_DEVICE_NAME, device.getName());
+                returnIntent.putExtra(AlarmActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
+                setResult(Activity.RESULT_OK, returnIntent);
+                finish();
+            }
+        });
     }
 
     @Override
@@ -143,28 +171,6 @@ public class DeviceScanActivity extends AppCompatActivity {
                 startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
             }
         }
-
-        // Initializes list view adapter.
-        mLeDeviceListAdapter = new LeDeviceListAdapter();
-
-        ListView listView = findViewById(R.id.deviceList);
-        listView.setAdapter(mLeDeviceListAdapter);
-
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                final BluetoothDevice device = mLeDeviceListAdapter.getDevice(position);
-                if (device == null) return;
-                final Intent intent = new Intent(getBaseContext(), DeviceControlActivity.class);
-                intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
-                intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
-                if (mScanning) {
-                    mBluetoothAdapter.stopLeScan(mLeScanCallback);
-                    mScanning = false;
-                }
-                startActivity(intent);
-            }
-        });
 
         scanLeDevice(true);
     }

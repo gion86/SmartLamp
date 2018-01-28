@@ -22,6 +22,7 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
@@ -55,6 +56,7 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.smd.smartlamp_ble.device.BLESerialPortService;
+import com.smd.smartlamp_ble.device.DeviceControlActivity;
 import com.smd.smartlamp_ble.device.DeviceScanActivity;
 import com.smd.smartlamp_ble.device.ProtocolUtil;
 import com.smd.smartlamp_ble.model.DayAlarm;
@@ -71,10 +73,15 @@ public class AlarmActivity extends AppCompatActivity
 
     private final static String TAG = AlarmActivity.class.getSimpleName();
 
-    private static final int REQUEST_ENABLE_BT = 2;
+    public static final int REQUEST_ENABLE_BT = 2;      // Request to enable BlueTooth adapter
+    public static final int REQUEST_DEVICE = 1;         // Request to find a new device to connect (scan)
+
+    public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
+    public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
 
     private final static int MENU_POS_SETTING = 0;
     private final static int MENU_POS_DEV_SCAN = 1;
+    private final static int MENU_POS_DEV_DEBUG = 2;
 
     private DayAlarmAdapter mDayAdapter;
     private DayAlarmViewModel mViewModel;
@@ -93,6 +100,7 @@ public class AlarmActivity extends AppCompatActivity
     private String mDeviceAddress;
 
     // Code to manage Service lifecycle.
+    private ProgressDialog mConnectDialog = null;
     private BLESerialPortService mBLESerialPortService;
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
@@ -215,8 +223,8 @@ public class AlarmActivity extends AppCompatActivity
         }
 
         // TODO preference for mDeviceAddress
-        mDeviceName = "HM10";
-        mDeviceAddress = "34:15:13:1A:E1:AD";
+        //mDeviceName = "HM10";
+        //mDeviceAddress = "34:15:13:1A:E1:AD";
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
@@ -237,6 +245,11 @@ public class AlarmActivity extends AppCompatActivity
 
         mDayPos = -1;
         mConnected = false;
+
+        mConnectDialog = new ProgressDialog(this);
+        mConnectDialog.setTitle(getString(R.string.connect_load_title));
+        mConnectDialog.setMessage(getString(R.string.connect_load_msg));
+        mConnectDialog.setCancelable(false); // Disable dismiss by tapping outside of the dialog
 
         // Bind and start the bluetooth service
         Intent gattServiceIntent = new Intent(this, BLESerialPortService.class);
@@ -286,18 +299,28 @@ public class AlarmActivity extends AppCompatActivity
                 break;
 
             case MENU_POS_DEV_SCAN:
-                startActivity(new Intent(this, DeviceScanActivity.class));
+                // Start scan activity
+                Intent deviceScanIntent = new Intent(this, DeviceScanActivity.class);
+                startActivityForResult(deviceScanIntent, REQUEST_DEVICE);
+                break;
+
+            case MENU_POS_DEV_DEBUG:
+                // Start serial debug activity
+                startActivity(new Intent(this, DeviceControlActivity.class));
                 break;
         }
     }
 
     public void onSectionAttached(int number) {
         switch (number) {
-            case 1:
+            case MENU_POS_SETTING + 1:
                 mTitle = getString(R.string.title_section1);
                 break;
-            case 2:
+            case MENU_POS_DEV_SCAN + 1:
                 mTitle = getString(R.string.title_section2);
+                break;
+            case MENU_POS_DEV_DEBUG + 1:
+                mTitle = getString(R.string.title_section3);
                 break;
         }
     }
@@ -336,9 +359,14 @@ public class AlarmActivity extends AppCompatActivity
                     Log.i(TAG, "onClick - BT not enabled yet");
                     Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                     startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
+                } else if (mDeviceAddress == null || mDeviceAddress.isEmpty()) {
+                    // Start scan activity
+                    Intent deviceScanIntent = new Intent(this, DeviceScanActivity.class);
+                    startActivityForResult(deviceScanIntent, REQUEST_DEVICE);
                 } else {
                     Log.i(TAG, "Device address: " + mDeviceAddress);
                     mBLESerialPortService.connect(mDeviceAddress);
+                    mConnectDialog.show();
                 }
                 return true;
 
@@ -353,7 +381,6 @@ public class AlarmActivity extends AppCompatActivity
     // Handles various events fired by the Service.
     // ACTION_GATT_CONNECTED: connected to a GATT server.
     // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
-    //                        or notification operations.
     private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -366,9 +393,13 @@ public class AlarmActivity extends AppCompatActivity
                 mConnected = false;
                 invalidateOptionsMenu();
             }
+            // TODO ACTION DEVICE_DOES_NOT_SUPPORT_UART
 
             Button sendAllButton = findViewById(R.id.sendAllButton);
             sendAllButton.setEnabled(mConnected);
+
+            if (mConnectDialog != null && mConnectDialog.isShowing())
+                mConnectDialog.dismiss();
         }
     };
 
@@ -376,8 +407,22 @@ public class AlarmActivity extends AppCompatActivity
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(BLESerialPortService.ACTION_GATT_CONNECTED);
         intentFilter.addAction(BLESerialPortService.ACTION_GATT_DISCONNECTED);
-        //intentFilter.addAction(BLESerialPortService.ACTION_DATA_AVAILABLE);
         return intentFilter;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // Responding to request device
+        if (requestCode == REQUEST_DEVICE) {
+            if (resultCode == RESULT_OK) {
+                mDeviceAddress = data.getStringExtra(EXTRAS_DEVICE_ADDRESS);
+                mDeviceName = data.getStringExtra(EXTRAS_DEVICE_NAME);
+
+                Log.i(TAG, "Device address: " + mDeviceAddress);
+                mBLESerialPortService.connect(mDeviceAddress);
+                mConnectDialog.show();
+            }
+        }
     }
 
     /**
@@ -472,9 +517,6 @@ public class AlarmActivity extends AppCompatActivity
             Log.i(TAG, "SEND: " + ProtocolUtil.cmdSetAlarmFull(day));
         }
 
-//        mBLESerialPortService.addCommand("RGB_111_222_333" + "\r\n");
-//        mBLESerialPortService.addCommand("RGB_101_202_303" + "\r\n");
-//        mBLESerialPortService.addCommand("RGB_121_122_233" + "\r\n");
         mBLESerialPortService.sendAll();
     }
 }
