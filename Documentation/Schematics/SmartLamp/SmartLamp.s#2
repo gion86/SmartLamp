@@ -7492,6 +7492,20 @@ Holes are offset 0.005" from center, to hold pins in place during soldering.
 </library>
 <library name="CuSTOM_GB">
 <packages>
+<package name="CR2032_AMAZON">
+<wire x1="-0.535" y1="10.915" x2="0.535" y2="10.915" width="0.254" layer="21"/>
+<wire x1="0" y1="11.45" x2="0" y2="10.38" width="0.254" layer="21"/>
+<wire x1="-0.535" y1="-7.56" x2="0.535" y2="-7.56" width="0.254" layer="21"/>
+<pad name="+" x="0" y="14" drill="0.9" diameter="1.9304" shape="square"/>
+<pad name="-" x="0" y="-6" drill="0.9" diameter="1.9304" shape="octagon"/>
+<text x="-2.84" y="6.26" size="1.27" layer="21" ratio="10">&gt;NAME</text>
+<text x="3.375" y="3.48" size="1.27" layer="21" ratio="10" rot="R180">&gt;VALUE</text>
+<text x="-2.821" y="-3.45" size="1.27" layer="21" ratio="10">Lit.3V</text>
+<wire x1="-3.25" y1="16" x2="3.25" y2="16" width="0.127" layer="21"/>
+<circle x="0" y="2.27" radius="11" width="0.127" layer="21"/>
+<wire x1="-3.3" y1="16" x2="-3.3" y2="12.8" width="0.127" layer="21"/>
+<wire x1="3.3" y1="16" x2="3.3" y2="12.8" width="0.127" layer="21"/>
+</package>
 <package name="CR2032_EBM">
 <description>Battery holder CR2032 from EbmStore</description>
 <wire x1="-0.535" y1="12.185" x2="0.535" y2="12.185" width="0.254" layer="21"/>
@@ -7524,13 +7538,24 @@ Holes are offset 0.005" from center, to hold pins in place during soldering.
 </symbol>
 </symbols>
 <devicesets>
-<deviceset name="CR2032_EBM">
-<description>Battery holder CR2032 from EbmStore</description>
+<deviceset name="CR2032">
+<description>Battery holder CR2032 from:
+ - EbmStore
+ - Amazon</description>
 <gates>
 <gate name="G$1" symbol="CR2032H" x="0" y="0"/>
 </gates>
 <devices>
-<device name="" package="CR2032_EBM">
+<device name="'EBM'" package="CR2032_EBM">
+<connects>
+<connect gate="G$1" pin="+" pad="+"/>
+<connect gate="G$1" pin="-" pad="-"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="AMAZON" package="CR2032_AMAZON">
 <connects>
 <connect gate="G$1" pin="+" pad="+"/>
 <connect gate="G$1" pin="-" pad="-"/>
@@ -9391,7 +9416,7 @@ Type: &lt;b&gt;SPC4077 / SPC 4078&lt;/b&gt;&lt;p&gt;</description>
 </library>
 </libraries>
 <attributes>
-<attribute name="VERSION" value="1.0"/>
+<attribute name="VERSION" value="1.1"/>
 </attributes>
 <variantdefs>
 </variantdefs>
@@ -9415,7 +9440,7 @@ Type: &lt;b&gt;SPC4077 / SPC 4078&lt;/b&gt;&lt;p&gt;</description>
 <part name="+3V2" library="supply1" deviceset="+3V3" device=""/>
 <part name="+3V3" library="supply1" deviceset="+3V3" device=""/>
 <part name="+3V4" library="supply1" deviceset="+3V3" device=""/>
-<part name="G1" library="CuSTOM_GB" deviceset="CR2032_EBM" device=""/>
+<part name="G1" library="CuSTOM_GB" deviceset="CR2032" device="AMAZON"/>
 <part name="U2" library="Maxim_RTC" deviceset="DS3231MZ" device=""/>
 <part name="R9" library="rcl" deviceset="R-US_" device="R1206" value="18K"/>
 <part name="FRAME2" library="frames" deviceset="DOCFIELD" device=""/>
@@ -10072,8 +10097,6 @@ Type: &lt;b&gt;SPC4077 / SPC 4078&lt;/b&gt;&lt;p&gt;</description>
 </net>
 <net name="BLU_SWITCH" class="0">
 <segment>
-<pinref part="U4" gate="G$1" pin="GND@1"/>
-<wire x1="116.84" y1="38.1" x2="121.92" y2="38.1" width="0.1524" layer="91"/>
 <pinref part="S1" gate="G$1" pin="1"/>
 <wire x1="116.84" y1="38.1" x2="116.84" y2="33.02" width="0.1524" layer="91"/>
 </segment>
