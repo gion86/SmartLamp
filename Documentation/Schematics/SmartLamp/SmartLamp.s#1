@@ -10085,7 +10085,7 @@ Type: &lt;b&gt;SPC4077 / SPC 4078&lt;/b&gt;&lt;p&gt;</description>
 <label x="220.98" y="101.6" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
-<net name="BLU_GND" class="0">
+<net name="BLU_GND" class="1">
 <segment>
 <pinref part="U4" gate="G$1" pin="GND@2"/>
 <wire x1="132.08" y1="20.32" x2="132.08" y2="17.78" width="0.1524" layer="91"/>
