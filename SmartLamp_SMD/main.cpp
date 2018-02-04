@@ -56,8 +56,8 @@
 #define ALARMS_OFFSET       0   // Alarms array EEPROM start address
 
 // LED defines
-#define FADE_TIME          10   // LED crossfade total duration [m]
-#define MAX_ANALOG_V      255   // Analog output max value for RGB
+#define FADE_TIME          10   // Default LED fade total duration [m]
+#define MAX_PWM_CNT       655   // PWM timer max count (<= 65535 @ 16 bit) -> frequency = ? TODO
 
 // States
 #define STEP_SLEEP         0
@@ -659,7 +659,39 @@ static void powerReduction() {
     // - USART0: for serial communications
     // - TWI module: for I2C communications
     // - TIMER0: for millis()
-    PRR = 0xFF & (~(1 << PRUSART0)) & (~(1 << PRTWI)) & (~(1 << PRTIM0));
+    // - TIMER1: for Fast PWM
+    PRR = 0xFF & (~(1 << PRUSART0)) & (~(1 << PRTWI)) & (~(1 << PRTIM0)) & (~(1 << PRTIM1));
+}
+
+/*
+ * Set PWM operation mode
+ */
+static void setupPWM() {
+  // Set up counter1 A output at 25% and B output at 75%
+  // using ICR1 as top (16bit), Fast PWM.
+
+  // PB1 and PB2 output mode... done
+  // DDRB |= (1 << DDB1)|(1 << DDB2);
+
+  // Setup Fast PWM mode using ICR1 as TOP
+  TCCR1A |= (1 << WGM11);
+  TCCR1A &= ~(1 << WGM10);
+  TCCR1B |= (1 << WGM12);
+  TCCR1B |= (1 << WGM13);
+
+  // Set none-inverting mode
+  TCCR1A |= (1 << COM1A1)|(1 << COM1B1);
+
+  // Set TOP to 16bit
+  ICR1 = MAX_PWM_CNT;
+
+  // Set PWM for 25% duty cycle @ 16bit
+  OCR1A = MAX_PWM_CNT;
+
+  // Set PWM for 75% duty cycle @ 16bit
+  OCR1B = MAX_PWM_CNT;
+
+  // Start timer...
 }
 
 
@@ -682,6 +714,9 @@ void setup() {
   pinMode(RTC_INT_SQW, INPUT);
   pinMode(BLU_LED, OUTPUT);
 
+  // Reset high
+  digitalWrite(BLU_RESET, HIGH);
+
   // RTC connection check
   if ((retcode = RTC.checkCon()) != 0) {
     Serial.print("RTC err: ");
@@ -689,7 +724,9 @@ void setup() {
 
     // Signal the error with "retcode" number of flash on the LED
     for (int i = 0; i < retcode; ++i) {
-      digitalWrite(BLU_LED, (i % 2 ? HIGH : LOW));
+      digitalWrite(BLU_LED, HIGH);
+      delay(500);
+      digitalWrite(BLU_LED, LOW);
       delay(500);
     }
 
@@ -731,6 +768,9 @@ void setup() {
   PCMSK2 |= _BV(PCINT16);           // Pin change mask: listen to portD bit 0 (D0) (Serial RX)
   PCICR  |= _BV(PCIE2);             // Enable PCINT interrupt on portD
 
+  // Setup hardware Fast PWM
+  setupPWM();
+
   prevMillis = millis();
   delay(50);
 }
@@ -741,7 +781,7 @@ void setup() {
 
 void loop() {
   char buffer[CMD_LENGTH];
-  uint8_t led_value;
+  uint16_t led_value;
   float x = 0;
 
   float fadeTime;
@@ -847,6 +887,9 @@ void loop() {
       // ######################################################################
       // LED fade state
 
+      // Start the timer with no prescaler
+      TCCR1B |= (1 << CS10);
+
       // Fade time in millisecond
       fadeTime = alarms[systemTime.tm_wday].fadeTime * 60000.0;
 
@@ -857,7 +900,7 @@ void loop() {
       }
 
       x = (millis() - prevMillis) / fadeTime;
-      led_value = MAX_ANALOG_V * sin(PI * x);
+      led_value = MAX_PWM_CNT * sin(PI * x);
 
 #ifdef DEBUG
       Serial.print("millTest: ");
@@ -868,14 +911,19 @@ void loop() {
       Serial.println(led_value);
 #endif
 
-      analogWrite(LED_BLUE, led_value);
-      analogWrite(LED_RED, led_value);
-      analogWrite(LED_GR, led_value);
+      // PWM duty cicle on pins PB1 and PB2
+      OCR1A = led_value;
+      OCR1B = led_value;
+
+      // Software pin set (the PWM at PB3 is only 8 bit of resolution)
+      if (PINB & (1 << PINB1))
+        PORTB |= (1 << PORTB3);
+      else
+        PORTB &= ~(1 << PORTB3);
 
       if (x >= 0.99) {
-        analogWrite(LED_BLUE, 0);
-        analogWrite(LED_RED, 0);
-        analogWrite(LED_GR, 0);
+        // Stop the PWM timer
+        TCCR1B &= ~(1 << CS10);
 
         prevMillis = millis();      // Update prevMillis to reset sleep timeout
 
