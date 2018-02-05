@@ -57,7 +57,7 @@
 
 // LED defines
 #define FADE_TIME          10   // Default LED fade total duration [m]
-#define MAX_PWM_CNT       655   // PWM timer max count (<= 65535 @ 16 bit) -> frequency = ? TODO
+#define MAX_PWM_CNT       255   // PWM timer max count (<= 255 @ 8 bit) -> frequency = ? TODO
 
 // States
 #define STEP_SLEEP         0
@@ -99,7 +99,8 @@ alarm alarms[7];                // Alarms array [0...6 as weekdays sun...sat]
 // LED variables
 uint8_t ledColor[] = {0, 0, 0}; // LED color
 
-uint8_t step = STEP_SLEEP;
+//uint8_t step = STEP_SLEEP;
+uint8_t step = STEP_FADE;
 
 
 // ########################################################
@@ -660,38 +661,55 @@ static void powerReduction() {
     // - TWI module: for I2C communications
     // - TIMER0: for millis()
     // - TIMER1: for Fast PWM
-    PRR = 0xFF & (~(1 << PRUSART0)) & (~(1 << PRTWI)) & (~(1 << PRTIM0)) & (~(1 << PRTIM1));
+    // - TIMER2: for Fast PWM
+    PRR = 0xFF & (~(1 << PRUSART0)) & (~(1 << PRTWI)) & (~(1 << PRTIM0)) & (~(1 << PRTIM1)) & (~(1 << PRTIM2));
 }
 
 /*
  * Set PWM operation mode
  */
 static void setupPWM() {
-  // Set up counter1 A output at 25% and B output at 75%
-  // using ICR1 as top (16bit), Fast PWM.
+  // Fast PWM
+  
+  // PB1, PB2, PB3 output mode done in setup()
 
-  // PB1 and PB2 output mode... done
-  // DDRB |= (1 << DDB1)|(1 << DDB2);
-
-  // Setup Fast PWM mode using ICR1 as TOP
-  TCCR1A |= (1 << WGM11);
-  TCCR1A &= ~(1 << WGM10);
+  // Setup Fast PWM mode using MAX as TOP (8bit) 
+  TCCR1A &= ~(1 << WGM11);
+  TCCR1A |= (1 << WGM10);
   TCCR1B |= (1 << WGM12);
-  TCCR1B |= (1 << WGM13);
+  TCCR1B &= ~(1 << WGM13);
 
   // Set none-inverting mode
-  TCCR1A |= (1 << COM1A1)|(1 << COM1B1);
+  TCCR1A |= (1 << COM1A1) | (1 << COM1B1);
 
-  // Set TOP to 16bit
+  // Set TOP count value
   ICR1 = MAX_PWM_CNT;
 
-  // Set PWM for 25% duty cycle @ 16bit
-  OCR1A = MAX_PWM_CNT;
+  // Set PWM duty cycle @ 8bit
+  OCR1A = 0;
 
-  // Set PWM for 75% duty cycle @ 16bit
-  OCR1B = MAX_PWM_CNT;
+  // Set PWM duty cycle @ 8bit
+  OCR1B = 0;
 
-  // Start timer...
+  TCCR1B &= ~((1 << CS10) | (1 << CS11) | (1 << CS12));
+
+  // Set up counter2 A output using MAX as TOP (8bit)
+  TCCR2A = 0;
+  TCCR2B = 0;
+
+  TCCR2A |=  _BV(WGM20);
+  TCCR2A |=  _BV(WGM21);
+  TCCR2B &= ~_BV(WGM22);
+
+  TCCR2A &= ~_BV(COM2A0);
+  TCCR2A |=  _BV(COM2A1);
+
+  // Set PWM duty cycle @ 8bit
+  OCR2A = 0;
+
+  TCCR2B &= ~((1 << CS20) | (1 << CS21) | (1 << CS22));
+
+  // Start timer in loop() code
 }
 
 
@@ -781,7 +799,7 @@ void setup() {
 
 void loop() {
   char buffer[CMD_LENGTH];
-  uint16_t led_value;
+  uint8_t led_value;
   float x = 0;
 
   float fadeTime;
@@ -887,11 +905,13 @@ void loop() {
       // ######################################################################
       // LED fade state
 
-      // Start the timer with no prescaler
+      // Start the timers with no prescaler
       TCCR1B |= (1 << CS10);
+      TCCR2B |= (1 << CS20);
 
       // Fade time in millisecond
-      fadeTime = alarms[systemTime.tm_wday].fadeTime * 60000.0;
+      //fadeTime = alarms[systemTime.tm_wday].fadeTime * 60000.0;
+      fadeTime = 600000.0;
 
       millTest = millis();
 
@@ -900,7 +920,8 @@ void loop() {
       }
 
       x = (millis() - prevMillis) / fadeTime;
-      led_value = MAX_PWM_CNT * sin(PI * x);
+      //led_value = MAX_PWM_CNT * sin(PI * x);
+      led_value = 1 + MAX_PWM_CNT * (log(1.0 + x));
 
 #ifdef DEBUG
       Serial.print("millTest: ");
@@ -911,23 +932,19 @@ void loop() {
       Serial.println(led_value);
 #endif
 
-      // PWM duty cicle on pins PB1 and PB2
+      // PWM duty cycle on pins PB1, PB2, PB3
       OCR1A = led_value;
       OCR1B = led_value;
-
-      // Software pin set (the PWM at PB3 is only 8 bit of resolution)
-      if (PINB & (1 << PINB1))
-        PORTB |= (1 << PORTB3);
-      else
-        PORTB &= ~(1 << PORTB3);
+      OCR2A = led_value;
 
       if (x >= 0.99) {
         // Stop the PWM timer
-        TCCR1B &= ~(1 << CS10);
+//        TCCR1B &= ~(1 << CS10);
+//        TCCR2B &= ~(1 << CS20);
 
         prevMillis = millis();      // Update prevMillis to reset sleep timeout
 
-        step = STEP_READ_CMD;
+//        step = STEP_READ_CMD;
       }
 
       break;
