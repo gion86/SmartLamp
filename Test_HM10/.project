@@ -3,7 +3,7 @@
 	<name>Test_HM10</name>
 	<comment></comment>
 	<projects>
-		<project>ArduinoCore</project>
+		<project>ATMegaCore</project>
 		<project>SoftwareSerial</project>
 	</projects>
 	<buildSpec>
