@@ -10018,9 +10018,9 @@ Type: &lt;b&gt;SPC4077 / SPC 4078&lt;/b&gt;&lt;p&gt;</description>
 <label x="327.66" y="132.08" size="1.778" layer="95" font="vector"/>
 </segment>
 <segment>
-<pinref part="J2" gate="G$1" pin="GND@2"/>
-<wire x1="248.92" y1="106.68" x2="256.54" y2="106.68" width="0.1524" layer="91"/>
-<label x="248.92" y="106.68" size="1.778" layer="95" font="vector"/>
+<pinref part="J2" gate="G$1" pin="GND@1"/>
+<wire x1="248.92" y1="109.22" x2="256.54" y2="109.22" width="0.1524" layer="91"/>
+<label x="248.92" y="109.22" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="SCK" class="0">
@@ -10061,9 +10061,9 @@ Type: &lt;b&gt;SPC4077 / SPC 4078&lt;/b&gt;&lt;p&gt;</description>
 <label x="327.66" y="129.54" size="1.778" layer="95" font="vector"/>
 </segment>
 <segment>
-<pinref part="J2" gate="G$1" pin="GND@1"/>
-<wire x1="248.92" y1="109.22" x2="256.54" y2="109.22" width="0.1524" layer="91"/>
-<label x="248.92" y="109.22" size="1.778" layer="95" font="vector"/>
+<pinref part="J2" gate="G$1" pin="GND@2"/>
+<wire x1="248.92" y1="106.68" x2="256.54" y2="106.68" width="0.1524" layer="91"/>
+<label x="248.92" y="106.68" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
 <net name="N$1" class="0">
@@ -10085,7 +10085,7 @@ Type: &lt;b&gt;SPC4077 / SPC 4078&lt;/b&gt;&lt;p&gt;</description>
 <label x="220.98" y="101.6" size="1.778" layer="95" font="vector"/>
 </segment>
 </net>
-<net name="BLU_GND" class="0">
+<net name="BLU_GND" class="1">
 <segment>
 <pinref part="U4" gate="G$1" pin="GND@2"/>
 <wire x1="132.08" y1="20.32" x2="132.08" y2="17.78" width="0.1524" layer="91"/>
@@ -10116,8 +10116,8 @@ Type: &lt;b&gt;SPC4077 / SPC 4078&lt;/b&gt;&lt;p&gt;</description>
 <approved hash="104,1,271.78,200.66,U2,VCC,+3V3,,,"/>
 <approved hash="104,1,162.56,205.74,U1,OUTPUT,+3V3,,,"/>
 <approved hash="104,1,248.92,111.76,J2,VCC,+3V3,,,"/>
-<approved hash="104,1,248.92,109.22,J2,GND,S_IN,,,"/>
-<approved hash="104,1,248.92,106.68,J2,GND,S_OUT,,,"/>
+<approved hash="104,1,248.92,109.22,J2,GND,S_OUT,,,"/>
+<approved hash="104,1,248.92,106.68,J2,GND,S_IN,,,"/>
 <approved hash="113,1,312.191,22.6314,FRAME2,,,,,"/>
 <approved hash="113,1,139.569,148.064,LED_STRIP,,,,,"/>
 <approved hash="113,1,97.1127,204.716,J3,,,,,"/>
