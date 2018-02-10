@@ -17,7 +17,7 @@
 
 /*
  * Built for ATMega328P 8Mhz, using AVR USBasp programmer.
- * VERSION 0.2
+ * VERSION 0.5
  */
 
 #include <avr/io.h>
@@ -57,7 +57,9 @@
 
 // LED defines
 #define FADE_TIME          10   // Default LED fade total duration [m]
-#define MAX_PWM_CNT       255   // PWM timer max count (<= 255 @ 8 bit) -> frequency = ? TODO
+#define MAX_PWM_CNT        80   // PWM timer max count TOP (<= 255 @ 8 bit)
+                                // PWM frequency = F_CPU / (N * (1 + TOP)) ~ 98 KHz
+#define MAX_BRIGTH       50.0   // Max brightness in percent [1 - 100 %]
 
 // States
 #define STEP_SLEEP         0
@@ -99,8 +101,7 @@ alarm alarms[7];                // Alarms array [0...6 as weekdays sun...sat]
 // LED variables
 uint8_t ledColor[] = {0, 0, 0}; // LED color
 
-//uint8_t step = STEP_SLEEP;
-uint8_t step = STEP_FADE;
+uint8_t step = STEP_SLEEP;
 
 
 // ########################################################
@@ -803,7 +804,6 @@ void loop() {
   float x = 0;
 
   float fadeTime;
-  unsigned long millTest;
 
   switch (step) {
     case STEP_SLEEP:
@@ -846,9 +846,8 @@ void loop() {
       // Set alarm for the day "tm_wday"
       setNextAlarm(&systemTime);
 
-      step = STEP_SLEEP;
       prevMillis = millis();
-      //step = STEP_FADE;
+      step = STEP_FADE;
       break;
 
     case STEP_READ_CMD:
@@ -877,11 +876,6 @@ void loop() {
       }
 
       if (cmd) {
-//#ifdef DEBUG
-//        Serial.print("COUNT = ");
-//        Serial.println(count);
-//#endif
-
         // Send back "OK" response as an acknowledge.
         if (parseCommand(buffer)) {
           Serial.println("OK");
@@ -894,7 +888,6 @@ void loop() {
 
       if (RTC.alarm(ALARM_1)) {
         step = SET_DAY_ALARM;
-        //step = STEP_FADE;
       } else if (millis() - prevMillis >= SLEEP_TIMEOUT) {
         step = STEP_SLEEP;
       }
@@ -910,24 +903,18 @@ void loop() {
       TCCR2B |= (1 << CS20);
 
       // Fade time in millisecond
-      //fadeTime = alarms[systemTime.tm_wday].fadeTime * 60000.0;
-      fadeTime = 600000.0;
-
-      millTest = millis();
+      fadeTime = alarms[systemTime.tm_wday].fadeTime * 60000.0;
 
       if (RTC.alarm(ALARM_1)) {
         prevMillis = millis();
       }
 
       x = (millis() - prevMillis) / fadeTime;
-      //led_value = MAX_PWM_CNT * sin(PI * x);
-      led_value = 1 + MAX_PWM_CNT * (log(1.0 + x));
+      led_value = (uint8_t) MAX_BRIGTH / 100.0 * MAX_PWM_CNT * (x * x * x);
 
 #ifdef DEBUG
-      Serial.print("millTest: ");
-      Serial.print(millTest);
-      Serial.print(", x: ");
-      Serial.print(x);
+      Serial.print("x: ");
+      Serial.print(x, 5);
       Serial.print(", c: ");
       Serial.println(led_value);
 #endif
@@ -937,14 +924,14 @@ void loop() {
       OCR1B = led_value;
       OCR2A = led_value;
 
-      if (x >= 0.99) {
+      if (x >= 1.0) {
         // Stop the PWM timer
-//        TCCR1B &= ~(1 << CS10);
-//        TCCR2B &= ~(1 << CS20);
+        TCCR1B &= ~(1 << CS10);
+        TCCR2B &= ~(1 << CS20);
 
         prevMillis = millis();      // Update prevMillis to reset sleep timeout
 
-//        step = STEP_READ_CMD;
+        step = STEP_SLEEP;
       }
 
       break;
