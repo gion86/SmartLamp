@@ -83,6 +83,10 @@ unsigned long prevMillis = 0;   // Millis counter to sleep
 size_t count = 0;               // Char count on buffer (data parsing)
 bool cmd = false;               // Command present on serial interface (BLE)
 
+typedef enum
+  {NO_CMD, CMD_TEST, CMD_RGB}
+command;                        // Supported command from BLE
+
 // Time variables
 Timezone TZ(CEST, CET);         // Constructor to build object with TimeChangeRule
 
@@ -181,6 +185,8 @@ void printAlarms() {
     printDigits(alarms[i].hh);
     Serial.print(":");
     printDigits(alarms[i].mm);
+    Serial.print(", fade time = ");
+    Serial.print(alarms[i].fadeTime);
     Serial.println();
   }
   Serial.println();
@@ -369,7 +375,7 @@ static inline int8_t atod(char data) {
  * Param:
  * - char *buffer: pointer to the char array, NULL-terminated.
  */
-static bool parseCommand(char *buffer) {
+static bool parseCommand(char *buffer, char *command) {
   Serial.println(buffer);
 
   // ------------------------------------------------------
@@ -455,7 +461,7 @@ static bool parseCommand(char *buffer) {
     mm = atod(buffer[8]) * 10 + atod(buffer[9]);
 
     if (strlen(buffer) == 13) {
-      uint8_t fadeTime = atod(buffer[11]) * 10 + atod(buffer[12]);
+      fadeTime = atod(buffer[11]) * 10 + atod(buffer[12]);
 
       if (fadeTime > 99) {
         return false;
@@ -605,6 +611,17 @@ static bool parseCommand(char *buffer) {
     }
 #endif
 
+    return true;
+  }
+
+  // ------------------------------------------------------
+  // Test command
+  // ------------------------------------------------------
+  s = strstr(buffer, "TEST");
+
+  // buffer = "TEST"
+  if (s != NULL && strlen(buffer) == 4) {
+    *command = CMD_TEST;
     return true;
   }
 
@@ -799,7 +816,7 @@ void setup() {
 // ========================================================
 
 void loop() {
-  char buffer[CMD_LENGTH];
+  char buffer[CMD_LENGTH], command = NO_CMD;
   uint8_t led_value;
   float x = 0;
 
@@ -877,19 +894,22 @@ void loop() {
 
       if (cmd) {
         // Send back "OK" response as an acknowledge.
-        if (parseCommand(buffer)) {
+        if (parseCommand(buffer, &command)) {
           Serial.println("OK");
         }
 
         count = 0;
         cmd = false;
-        delay(50);
       }
 
       if (RTC.alarm(ALARM_1)) {
         step = SET_DAY_ALARM;
       } else if (millis() - prevMillis >= SLEEP_TIMEOUT) {
         step = STEP_SLEEP;
+      }
+
+      if (command == CMD_TEST) {
+        step = STEP_FADE;
       }
 
       break;
