@@ -81,7 +81,8 @@ public class AlarmActivity extends AppCompatActivity
 
     private final static int MENU_POS_SETTING = 0;
     private final static int MENU_POS_DEV_SCAN = 1;
-    private final static int MENU_POS_DEV_DEBUG = 2;
+    private final static int MENU_POS_RBG = 2;
+    private final static int MENU_POS_DEV_DEBUG = 3;
 
     private DayAlarmAdapter mDayAdapter;
     private DayAlarmViewModel mViewModel;
@@ -302,8 +303,13 @@ public class AlarmActivity extends AppCompatActivity
                 // Start scan activity
                 Intent deviceScanIntent = new Intent(this, DeviceScanActivity.class);
                 startActivityForResult(deviceScanIntent, REQUEST_DEVICE);
+            break;
+
+            case MENU_POS_RBG:
+                startActivity(new Intent(this, RGBActivity.class));
                 break;
 
+            // Start RGB test activity
             case MENU_POS_DEV_DEBUG:
                 // Start serial debug activity
                 startActivity(new Intent(this, DeviceControlActivity.class));
@@ -319,8 +325,11 @@ public class AlarmActivity extends AppCompatActivity
             case MENU_POS_DEV_SCAN + 1:
                 mTitle = getString(R.string.title_section2);
                 break;
-            case MENU_POS_DEV_DEBUG + 1:
+            case MENU_POS_RBG + 1:
                 mTitle = getString(R.string.title_section3);
+                break;
+            case MENU_POS_DEV_DEBUG + 1:
+                mTitle = getString(R.string.title_section4);
                 break;
         }
     }

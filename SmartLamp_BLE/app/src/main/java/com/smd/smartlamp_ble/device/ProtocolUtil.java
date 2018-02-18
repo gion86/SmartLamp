@@ -82,7 +82,7 @@ public class ProtocolUtil {
     }
 
     @NonNull
-    public static String cmdSendRGB(short r, short g, short b) {
+    public static String cmdSendRGB(int r, int g, int b) {
         return "RGB_" + digit2(r) + "_" + digit2(g) + "_" + digit2(b) + LINE_SEP;
     }
 }
