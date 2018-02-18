@@ -9562,6 +9562,7 @@ Type: &lt;b&gt;SPC4077 / SPC 4078&lt;/b&gt;&lt;p&gt;</description>
 <part name="GND5" library="supply2" deviceset="GND" device=""/>
 <part name="J3" library="con-jack" deviceset="JACK-PLUG" device="0"/>
 <part name="S2" library="switch-tact" deviceset="DTSM-6" device=""/>
+<part name="FRAME1" library="frames" deviceset="DOCFIELD" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -9579,6 +9580,8 @@ Type: &lt;b&gt;SPC4077 / SPC 4078&lt;/b&gt;&lt;p&gt;</description>
 <text x="233.68" y="119.38" size="3.81" layer="97" ratio="10">ICSP</text>
 <text x="127" y="81.28" size="2.54" layer="97" font="vector" ratio="16">Bluetooth module</text>
 <wire x1="213.36" y1="86.36" x2="213.36" y2="5.08" width="0.3048" layer="94"/>
+<frame x1="411.48" y1="251.46" x2="703.58" y2="480.06" columns="8" rows="5" layer="94"/>
+<text x="688.34" y="264.16" size="2.1844" layer="94">&gt;VERSION</text>
 </plain>
 <instances>
 <instance part="R2" gate="G$1" x="314.96" y="210.82" rot="R270"/>
@@ -9673,6 +9676,7 @@ Type: &lt;b&gt;SPC4077 / SPC 4078&lt;/b&gt;&lt;p&gt;</description>
 <instance part="S2" gate="G$1" x="269.24" y="157.48" smashed="yes">
 <attribute name="NAME" x="262.89" y="154.94" size="1.778" layer="95" rot="R90"/>
 </instance>
+<instance part="FRAME1" gate="G$1" x="596.9" y="256.54"/>
 </instances>
 <busses>
 </busses>

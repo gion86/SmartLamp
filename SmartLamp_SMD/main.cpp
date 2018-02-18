@@ -34,9 +34,9 @@
 #include <Timezone.h>           // Timezone library
 
 // Input/output pin defines
-#define LED_RED             9   // RGB strip: red pin
-#define LED_GR             10   // RGB strip: green pin
-#define LED_BLUE           11   // RGB strip: blue pin
+#define LED_RED             9   // RGB strip: red pin (PWM OCR1A)
+#define LED_GR             10   // RGB strip: green pin (PWM OCR1B)
+#define LED_BLUE           11   // RGB strip: blue pin (PWM OCR2A)
 
 #define BLU_STATE           2   // BLE module state pin
 #define BLU_RESET           3   // BLE module reset pin
@@ -66,6 +66,7 @@
 #define SET_DAY_ALARM      5
 #define STEP_READ_CMD      10
 #define STEP_FADE          15
+#define STEP_RGB           20
 
 // Global constants
 // CET Time Zone (Rome, Berlin) -> UTC/GMT + 1
@@ -84,7 +85,7 @@ size_t count = 0;               // Char count on buffer (data parsing)
 bool cmd = false;               // Command present on serial interface (BLE)
 
 typedef enum
-  {NO_CMD, CMD_TEST, CMD_RGB}
+  {NO_CMD, CMD_TEST, CMD_RGB, CMD_EXIT}
 command;                        // Supported command from BLE
 
 // Time variables
@@ -109,8 +110,23 @@ uint8_t step = STEP_SLEEP;
 
 
 // ########################################################
-// Serial debug functions
+// Debug functions
 // ########################################################
+
+/*
+ * Signal an error flashing a digital output
+ *
+ * Param:
+ * -
+ */
+static void inline sigError(uint8_t pin, uint8_t retcode) {
+  for (uint8_t i = 0; i < retcode; ++i) {
+    digitalWrite(pin, HIGH);
+    delay(300);
+    digitalWrite(pin, LOW);
+    delay(300);
+  }
+}
 
 /*
  * Write to serial a digit with zero padding if needed.
@@ -510,7 +526,7 @@ static bool parseCommand(char *buffer, char *command) {
 
   // buffer = "AL_DIS_06"
   if (s != NULL && strlen(buffer) == 9) {
-    uint8_t WD;
+    int8_t WD;
 
     WD = atod(buffer[7]) * 10 + atod(buffer[8]);
 
@@ -542,7 +558,7 @@ static bool parseCommand(char *buffer, char *command) {
 
   // buffer = "FT_05_10"
   if (s != NULL && strlen(buffer) == 8) {
-    uint8_t WD;
+    int8_t WD;
     uint8_t fadeTime;
 
     WD       = atod(buffer[3]) * 10 + atod(buffer[4]);
@@ -611,8 +627,22 @@ static bool parseCommand(char *buffer, char *command) {
     }
 #endif
 
+    *command = CMD_RGB;
+
     return true;
   }
+
+  // ------------------------------------------------------
+  // Exit command
+  // ------------------------------------------------------
+  s = strstr(buffer, "EXIT");
+
+  // buffer = "TEST"
+  if (s != NULL && strlen(buffer) == 4) {
+    *command = CMD_EXIT;
+    return true;
+  }
+
 
   // ------------------------------------------------------
   // Test command
@@ -727,7 +757,9 @@ static void setupPWM() {
 
   TCCR2B &= ~((1 << CS20) | (1 << CS21) | (1 << CS22));
 
-  // Start timer in loop() code
+  // Start the timers with no prescaler
+  TCCR1B |= (1 << CS10);
+  TCCR2B |= (1 << CS20);
 }
 
 
@@ -759,12 +791,7 @@ void setup() {
     Serial.println(retcode);
 
     // Signal the error with "retcode" number of flash on the LED
-    for (int i = 0; i < retcode; ++i) {
-      digitalWrite(BLU_LED, HIGH);
-      delay(500);
-      digitalWrite(BLU_LED, LOW);
-      delay(500);
-    }
+    sigError(BLU_LED, retcode);
 
     // Exit application code to infinite loop
     exit(retcode);
@@ -832,6 +859,10 @@ void loop() {
       Serial.println();
 #endif
 
+      OCR1A = 0;
+      OCR1B = 0;
+      OCR2A = 0;
+
       delay(50);
       system_sleep();
 
@@ -876,16 +907,15 @@ void loop() {
 
         prevMillis = millis();      // Update prevMillis to reset sleep timeout
 
-        if (c == '\r' || c == '\n') {
-          if (c == '\n') {
-            // Command present
-            cmd = true;
-
-            // Set string delimiter
-            buffer[count] = '\0';
-            break;
-          }
+        if (c == '\r') {
           continue;
+        } else if (c == '\n') {
+          // String complete
+          cmd = true;
+
+          // Set string delimiter
+          buffer[count] = '\0';
+          break;
         }
 
         buffer[count] = c;
@@ -910,7 +940,34 @@ void loop() {
 
       if (command == CMD_TEST) {
         step = STEP_FADE;
+      } else if (command == CMD_RGB) {
+        step = STEP_RGB;
+      } else if (command == CMD_EXIT) {
+        OCR1A = 0;
+        OCR1B = 0;
+        OCR2A = 0;
       }
+
+      break;
+
+    case STEP_RGB:
+      // ######################################################################
+      // RGB LED
+
+      OCR1A = (uint8_t) ledColor[0] / 255.0 * MAX_PWM_CNT;
+      OCR1B = (uint8_t) ledColor[1] / 255.0 * MAX_PWM_CNT;
+      OCR2A = (uint8_t) ledColor[2] / 255.0 * MAX_PWM_CNT;
+
+#ifdef DEBUG
+        Serial.print("OCR1A: ");
+        Serial.println(OCR1A);
+        Serial.print("OCR1B: ");
+        Serial.println(OCR1B);
+        Serial.print("OCR2A: ");
+        Serial.println(OCR2A);
+#endif
+
+        step = STEP_READ_CMD;
 
       break;
 
@@ -918,16 +975,18 @@ void loop() {
       // ######################################################################
       // LED fade state
 
-      // Start the timers with no prescaler
-      TCCR1B |= (1 << CS10);
-      TCCR2B |= (1 << CS20);
-
-      // Fade time in millisecond
-      fadeTime = alarms[systemTime.tm_wday].fadeTime * 60000.0;
-
       if (RTC.alarm(ALARM_1)) {
         prevMillis = millis();
       }
+
+      if (alarms[systemTime.tm_wday].fadeTime == 0) {
+        sigError(BLU_LED, 5);
+        step = STEP_SLEEP;
+        break;
+      }
+
+      // Fade time in millisecond
+      fadeTime = alarms[systemTime.tm_wday].fadeTime * 60000.0;
 
       x = (millis() - prevMillis) / fadeTime;
       led_value = (uint8_t) MAX_BRIGTH / 100.0 * MAX_PWM_CNT * (x * x * x);
@@ -945,9 +1004,10 @@ void loop() {
       OCR2A = led_value;
 
       if (x >= 1.0) {
-        // Stop the PWM timer
-        TCCR1B &= ~(1 << CS10);
-        TCCR2B &= ~(1 << CS20);
+        // Don't stop the PWM timer: just set duty cycle to 0
+        OCR1A = 0;
+        OCR1B = 0;
+        OCR2A = 0;
 
         prevMillis = millis();      // Update prevMillis to reset sleep timeout
 
