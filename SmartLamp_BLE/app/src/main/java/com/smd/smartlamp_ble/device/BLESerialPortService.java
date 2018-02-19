@@ -41,6 +41,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
+import static com.smd.smartlamp_ble.device.ProtocolUtil.LINE_SEP;
+
 /**
  * Service for managing connection and serial data communication with a GATT server hosted on a
  * given Bluetooth LE device.
@@ -82,7 +84,7 @@ public class BLESerialPortService extends Service {
     private boolean mFirstConnection = false;
 
     private String mBluetoothDeviceAddress;
-    private String mRecData;
+    private String mBLEData;
 
     private Queue<String> writeQueue;
 
@@ -144,14 +146,23 @@ public class BLESerialPortService extends Service {
             super.onCharacteristicChanged(gatt, characteristic);
             //Log.d(TAG, "onCharacteristicChanged");
 
-            broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
-
             String data = characteristic.getStringValue(0);
-            Log.d(TAG, data);
 
-            if (data.contains(ACK_DATA)) {
-                Log.w(TAG, "DATA_OK");
-                ackReceived = true;
+            broadcastUpdate(ACTION_DATA_AVAILABLE, data);
+
+            mBLEData += data;
+
+            int idx = mBLEData.lastIndexOf(LINE_SEP);
+
+            if (idx >= 0) {
+                //Log.d(TAG, mBLEData.substring(0, idx) + " idx = " + idx);
+                Log.d(TAG, mBLEData.substring(0, idx));
+
+                if (mBLEData.substring(0, idx).contains(ACK_DATA)) {
+                    Log.w(TAG, "DATA_OK");
+                    ackReceived = true;
+                }
+                mBLEData = mBLEData.substring(idx + 1);
             }
         }
 
@@ -161,7 +172,7 @@ public class BLESerialPortService extends Service {
             Log.d(TAG, "onCharacteristicRead");
 
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
+                broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic.getStringValue(0));
                 Log.d(TAG, characteristic.getStringValue(0));
             }
         }
@@ -169,11 +180,10 @@ public class BLESerialPortService extends Service {
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicWrite(gatt, characteristic, status);
-            Log.d(TAG, "onCharacteristicWrite: " + characteristic.getStringValue(0));
+            //Log.d(TAG, "onCharacteristicWrite: " + characteristic.getStringValue(0));
             writeInProgress = false;
         }
     };
-
 
     /**
      * Default public constructor
@@ -188,7 +198,7 @@ public class BLESerialPortService extends Service {
         disSWRev = null;
         writeInProgress = false;
         ackReceived = false;
-        mRecData = "";
+        mBLEData = "";
         writeQueue = new ConcurrentLinkedQueue<String>();
     }
 
@@ -198,22 +208,10 @@ public class BLESerialPortService extends Service {
     }
 
     private void broadcastUpdate(final String action,
-                                 final BluetoothGattCharacteristic characteristic) {
+                                 final String data) {
         final Intent intent = new Intent(action);
-
-        // For all profiles, writes the data in ASCII.
-        final byte[] data = characteristic.getValue();
-
-        if (data != null && data.length > 0) {
-            mRecData += new String(data);
-
-            if (data.length < 20) {
-                //Log.i(TAG, mRecData);
-                intent.putExtra(EXTRA_DATA, mRecData);
-                sendBroadcast(intent);
-                mRecData = "";
-            }
-        }
+        intent.putExtra(EXTRA_DATA, data);
+        sendBroadcast(intent);
     }
 
     @Override
@@ -530,7 +528,7 @@ public class BLESerialPortService extends Service {
                         return ERR_CODE_TIMEOUT_READ;   // TODO retry once..
                     }
                 }
-                Log.i(TAG, "Read RRTT = " + (System.currentTimeMillis() - beginMillis));
+                //Log.i(TAG, "Read RRTT = " + (System.currentTimeMillis() - beginMillis));
             }
 
             queue[0].clear();
