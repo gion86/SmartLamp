@@ -17,7 +17,7 @@
 
 /*
  * Built for ATMega328P 8Mhz, using AVR USBasp programmer.
- * VERSION 0.5
+ * VERSION 0.6
  */
 
 #include <avr/io.h>
@@ -97,14 +97,15 @@ struct tm systemTime;           // Current system time (local timezone)
 
 typedef struct {
   bool enabled;
-  int8_t hh, mm;                // Time of day
-  uint8_t fadeTime;             // Fade time in minutes, from the alarm wake up
-} alarm;                        // Alarm structure
+  int8_t hh, mm;                   // Time of day
+  uint8_t fadeTime;                // Fade time in minutes, from the alarm wake up
+  uint8_t ledColor[3] = {0, 0, 0}; // LED color
+} alarm;                           // Alarm structure
 
 alarm alarms[7];                // Alarms array [0...6 as weekdays sun...sat]
 
-// LED variables
-uint8_t ledColor[] = {0, 0, 0}; // LED color
+// RGB LED variables
+uint8_t ledColor[3] = {0, 0, 0}; // LED color for RGB command
 
 uint8_t step = STEP_SLEEP;
 
@@ -114,10 +115,11 @@ uint8_t step = STEP_SLEEP;
 // ########################################################
 
 /*
- * Signal an error flashing a digital output
+ * Signal an error flashing a digital output.
  *
  * Param:
- * -
+ * - uint8_t pin: digital pin
+ * - uint8_t retcode: error code to flash
  */
 static void inline sigError(uint8_t pin, uint8_t retcode) {
   for (uint8_t i = 0; i < retcode; ++i) {
@@ -148,7 +150,6 @@ static void inline printDigits(int digits) {
  * - const char *tz: string for the timezone, if not used set to NULL
  */
 static void digitalClockDisplay(struct tm *tm, const char *tz = NULL) {
-  // Digital clock display of the time
   printDigits(tm->tm_hour);
   Serial.print(':');
   printDigits(tm->tm_min);
@@ -203,7 +204,13 @@ void printAlarms() {
     printDigits(alarms[i].mm);
     Serial.print(", fade time = ");
     Serial.print(alarms[i].fadeTime);
-    Serial.println();
+    Serial.print(", colors = [");
+    Serial.print(alarms[i].ledColor[0]);
+    Serial.print(", ");
+    Serial.print(alarms[i].ledColor[1]);
+    Serial.print(", ");
+    Serial.print(alarms[i].ledColor[2]);
+    Serial.println("]");
   }
   Serial.println();
 }
@@ -463,11 +470,12 @@ static bool parseCommand(char *buffer, char *command) {
   }
 
   // ------------------------------------------------------
-  // Set alarm on weekday
+  // Set alarm on weekday, set fadetime and LED time
   // ------------------------------------------------------
   s = strstr(buffer, "AL_");
 
-  // buffer = "AL_05_1418" or buffer = "AL_05_1418_10"
+  // buffer = "AL_05_1418" or buffer = "AL_05_1418_10" or
+  // buffer = "AL_05_1418_10_255_250_130"
   if (s != NULL && strlen(buffer) >= 10) {
     int8_t WD, hh, mm;
     uint8_t fadeTime = FADE_TIME;
@@ -476,12 +484,19 @@ static bool parseCommand(char *buffer, char *command) {
     hh = atod(buffer[6]) * 10 + atod(buffer[7]);
     mm = atod(buffer[8]) * 10 + atod(buffer[9]);
 
-    if (strlen(buffer) == 13) {
-      fadeTime = atod(buffer[11]) * 10 + atod(buffer[12]);
+    // Data checks
+    if (WD < 0 || hh < 0 || mm < 0 || WD > 6 || hh > 23 || mm > 59) {
+      return false;
+    }
 
-      if (fadeTime > 99) {
-        return false;
-      }
+    if (strlen(buffer) >= 13) {
+      fadeTime = atod(buffer[11]) * 10 + atod(buffer[12]);
+    }
+
+    if (strlen(buffer) == 25) {
+      alarms[WD].ledColor[0] = atod(buffer[14]) * 100 + atod(buffer[15]) * 10 + atod(buffer[16]);
+      alarms[WD].ledColor[1] = atod(buffer[18]) * 100 + atod(buffer[19]) * 10 + atod(buffer[20]);
+      alarms[WD].ledColor[2] = atod(buffer[22]) * 100 + atod(buffer[23]) * 10 + atod(buffer[24]);
     }
 
 //#ifdef DEBUG
@@ -498,11 +513,6 @@ static bool parseCommand(char *buffer, char *command) {
 //    Serial.println(fadeTime);
 //#endif
 
-    // Data checks
-    if (WD < 0 || hh < 0 || mm < 0 || WD > 6 || hh > 23 || mm > 59) {
-      return false;
-    }
-
     alarms[WD].hh = hh;
     alarms[WD].mm = mm;
     alarms[WD].fadeTime = fadeTime;
@@ -510,7 +520,9 @@ static bool parseCommand(char *buffer, char *command) {
 
     eeprom_write_block((void*) &alarms, (void*) ALARMS_OFFSET, sizeof(alarms));
 
+#ifdef DEBUG
     printAlarms();
+#endif
 
     // Get the current system time and set next alarm
     getSysTime(&systemTime);
@@ -573,7 +585,7 @@ static bool parseCommand(char *buffer, char *command) {
 //#endif
 
     // Data checks
-    if (WD < 0 || WD > 6 || fadeTime > 99) {
+    if (WD < 0 || WD > 6) {
       return false;
     }
 
@@ -592,31 +604,10 @@ static bool parseCommand(char *buffer, char *command) {
 
   // buffer = "RGB_055_129_255"
   if (s != NULL && strlen(buffer) == 15) {
-    uint8_t ledTemp[] = {0, 0, 0};
 
-    ledTemp[0] = atod(buffer[4]) * 100 + atod(buffer[5]) * 10 + atod(buffer[6]);
-    ledTemp[1] = atod(buffer[8]) * 100 + atod(buffer[9]) * 10 + atod(buffer[10]);
-    ledTemp[2] = atod(buffer[12]) * 100 + atod(buffer[13]) * 10 + atod(buffer[14]);
-
-//#ifdef DEBUG
-//    Serial.print("red = ");
-//    Serial.println(ledTemp[0]);
-//
-//    Serial.print("green = ");
-//    Serial.println(ledTemp[1]);
-//
-//    Serial.print("blue = ");
-//    Serial.println(ledTemp[2]);
-//#endif
-
-    // Data checks
-    if (ledTemp[0] < 0 || ledTemp[1] < 0 || ledTemp[2] < 0
-        ||
-        ledTemp[0] > 255 || ledTemp[1] > 255 || ledTemp[2] > 255) {
-      return false;
-    }
-
-    memcpy((void*) ledColor, (void*) ledTemp, sizeof(ledColor));
+    ledColor[0] = atod(buffer[4]) * 100 + atod(buffer[5]) * 10 + atod(buffer[6]);
+    ledColor[1] = atod(buffer[8]) * 100 + atod(buffer[9]) * 10 + atod(buffer[10]);
+    ledColor[2] = atod(buffer[12]) * 100 + atod(buffer[13]) * 10 + atod(buffer[14]);
 
 #ifdef DEBUG
     for (int i = 0; i < 3; ++i) {
@@ -939,10 +930,11 @@ void loop() {
       }
 
       if (command == CMD_TEST) {
-        step = STEP_FADE;
+        step = SET_DAY_ALARM;
       } else if (command == CMD_RGB) {
         step = STEP_RGB;
       } else if (command == CMD_EXIT) {
+        // Exit from all command mode
         OCR1A = 0;
         OCR1B = 0;
         OCR2A = 0;
@@ -999,9 +991,9 @@ void loop() {
 #endif
 
       // PWM duty cycle on pins PB1, PB2, PB3
-      OCR1A = led_value;
-      OCR1B = led_value;
-      OCR2A = led_value;
+      OCR1A = led_value * alarms[systemTime.tm_wday].ledColor[0] / 255;
+      OCR1B = led_value * alarms[systemTime.tm_wday].ledColor[1] / 255;
+      OCR2A = led_value * alarms[systemTime.tm_wday].ledColor[2] / 255;
 
       if (x >= 1.0) {
         // Don't stop the PWM timer: just set duty cycle to 0
