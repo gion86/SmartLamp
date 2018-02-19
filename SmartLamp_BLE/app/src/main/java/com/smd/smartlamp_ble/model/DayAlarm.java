@@ -41,6 +41,10 @@ public class DayAlarm {
     private int hour;
     private int min;
 
+    private int red;
+    private int green;
+    private int blue;
+
     public DayAlarm(int wday, int fadeTime, int hour, int min) {
         this.name = "";
         this.enabled = true;
@@ -48,6 +52,9 @@ public class DayAlarm {
         this.hour = hour;
         this.min = min;
         this.wday = wday;
+        this.setRed(0);
+        this.setGreen(0);
+        this.setBlue(0);
     }
 
     @Ignore
@@ -58,6 +65,23 @@ public class DayAlarm {
         this.hour = hour;
         this.min = min;
         this.wday = wday;
+        this.setRed(0);
+        this.setGreen(0);
+        this.setBlue(0);
+    }
+
+    // TODO checks for value in the constructors
+    @Ignore
+    public DayAlarm(String name, int wday, int fadeTime, int hour, int min, int red, int green, int blue) {
+        this.name = name;
+        this.enabled = true;
+        this.fadeTime = fadeTime;
+        this.hour = hour;
+        this.min = min;
+        this.wday = wday;
+        this.setRed(red);
+        this.setGreen(green);
+        this.setBlue(blue);
     }
 
     public String getName() {
@@ -90,9 +114,7 @@ public class DayAlarm {
         this.hour = hour;
     }
 
-    public int getMin() {
-        return min;
-    }
+    public int getMin() { return min; }
 
     public void setMin(int min) { this.min = min;  }
 
@@ -103,4 +125,16 @@ public class DayAlarm {
     public void setWday(int wday) {
         this.wday = wday;
     }
+
+    public int getRed() { return red; }
+
+    public int getGreen() { return green; }
+
+    public int getBlue() { return blue; }
+
+    public void setRed(int red) { this.red = red; }
+
+    public void setGreen(int green) { this.green = green; }
+
+    public void setBlue(int blue) { this.blue = blue; }
 }

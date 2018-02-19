@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "14c08de39f8614c6437aec2b4045f991",
+    "identityHash": "eb236a6c6b88a88a76e3c2a0b4d3392d",
     "entities": [
       {
         "tableName": "days",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`wday` INTEGER NOT NULL, `name` TEXT, `enabled` INTEGER NOT NULL, `fadeTime` INTEGER NOT NULL, `hour` INTEGER NOT NULL, `min` INTEGER NOT NULL, PRIMARY KEY(`wday`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`wday` INTEGER NOT NULL, `name` TEXT, `enabled` INTEGER NOT NULL, `fadeTime` INTEGER NOT NULL, `hour` INTEGER NOT NULL, `min` INTEGER NOT NULL, `red` INTEGER NOT NULL, `green` INTEGER NOT NULL, `blue` INTEGER NOT NULL, PRIMARY KEY(`wday`))",
         "fields": [
           {
             "fieldPath": "wday",
@@ -43,6 +43,24 @@
             "columnName": "min",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "red",
+            "columnName": "red",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "green",
+            "columnName": "green",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "blue",
+            "columnName": "blue",
+            "affinity": "INTEGER",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -66,7 +84,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"14c08de39f8614c6437aec2b4045f991\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"eb236a6c6b88a88a76e3c2a0b4d3392d\")"
     ]
   }
 }

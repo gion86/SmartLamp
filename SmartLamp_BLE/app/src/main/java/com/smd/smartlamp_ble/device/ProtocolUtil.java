@@ -61,7 +61,8 @@ public class ProtocolUtil {
     public static String cmdSetAlarmFull(DayAlarm day) {
         if (day.isEnabled()) {
             return "AL_" + digit(day.getWday()) + "_" + digit(day.getHour()) + digit(day.getMin()) +
-                    "_" +  digit(day.getFadeTime()) + LINE_SEP;
+                    "_" +  digit(day.getFadeTime()) + "_" + digit2(day.getRed()) +
+                    "_" + digit2(day.getGreen()) + "_" + digit2(day.getBlue())+ LINE_SEP;
         } else {
             return cmdDisableAlarm(day);
         }
