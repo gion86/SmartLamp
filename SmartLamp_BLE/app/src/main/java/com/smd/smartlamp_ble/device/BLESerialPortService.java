@@ -77,8 +77,8 @@ public class BLESerialPortService extends Service {
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothGatt mBluetoothGatt;
     private BluetoothGattCharacteristic mTx;
-    private boolean writeInProgress; // Flag to indicate a write is currently in progress
-    private boolean ackReceived;
+    private boolean mWriteInProgress; // Flag to indicate a write is currently in progress
+    private boolean mAckReceived;
 
     private int mConnectionState = STATE_DISCONNECTED;
     private boolean mFirstConnection = false;
@@ -86,7 +86,7 @@ public class BLESerialPortService extends Service {
     private String mBluetoothDeviceAddress;
     private String mBLEData;
 
-    private Queue<String> writeQueue;
+    private Queue<String> mWriteQueue;
 
     // Device Information state.
     private BluetoothGattCharacteristic disManuf;
@@ -160,7 +160,7 @@ public class BLESerialPortService extends Service {
 
                 if (mBLEData.substring(0, idx).contains(ACK_DATA)) {
                     Log.w(TAG, "DATA_OK");
-                    ackReceived = true;
+                    mAckReceived = true;
                 }
                 mBLEData = mBLEData.substring(idx + 1);
             }
@@ -181,7 +181,7 @@ public class BLESerialPortService extends Service {
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicWrite(gatt, characteristic, status);
             //Log.d(TAG, "onCharacteristicWrite: " + characteristic.getStringValue(0));
-            writeInProgress = false;
+            mWriteInProgress = false;
         }
     };
 
@@ -196,10 +196,10 @@ public class BLESerialPortService extends Service {
         disManuf = null;
         disModel = null;
         disSWRev = null;
-        writeInProgress = false;
-        ackReceived = false;
+        mWriteInProgress = false;
+        mAckReceived = false;
         mBLEData = "";
-        writeQueue = new ConcurrentLinkedQueue<String>();
+        mWriteQueue = new ConcurrentLinkedQueue<String>();
     }
 
     private void broadcastUpdate(final String action) {
@@ -400,7 +400,7 @@ public class BLESerialPortService extends Service {
     }
 
     public void addCommand(String command) {
-        writeQueue.add(command);
+        mWriteQueue.add(command);
     }
 
     public void sendAll() {
@@ -408,18 +408,18 @@ public class BLESerialPortService extends Service {
             // Do nothing if there is no connection.
             Log.e(TAG, "No connection: tx characteristic == null");
             Toast.makeText(getApplicationContext(), R.string.error_no_conn, Toast.LENGTH_LONG).show();
-            writeQueue.clear();     // Clear queue in any case
+            mWriteQueue.clear();     // Clear queue in any case
             return;
         }
 
-        if (writeQueue.isEmpty())
+        if (mWriteQueue.isEmpty())
             return;
 
-        new SendCmdTask().execute(writeQueue);
+        new SendCmdTask().execute(mWriteQueue);
     }
 
 
-    public String getDeviceInfo() {
+    public String getDeviceInfo() { // TODO delete getDeviceInfo??
         if (mTx == null) {
             // Do nothing if there is no connection.
             return "";
@@ -464,11 +464,11 @@ public class BLESerialPortService extends Service {
             if (mTx == null)
                 return ERR_CODE_NO_CONNECTION;
 
-            writeInProgress = true;
+            mWriteInProgress = true;
             mTx.setValue(data);
             mBluetoothGatt.writeCharacteristic(mTx);
 
-            while (writeInProgress) {           // Wait for the flag to clear in onCharacteristicWrite
+            while (mWriteInProgress) {           // Wait for the flag to clear in onCharacteristicWrite
                 if (System.currentTimeMillis() - beginMillis > CommunicationStatus.SEND_TIME_OUT_MILLIS) {
                     Log.e(TAG, "current - begin = " + (System.currentTimeMillis() - beginMillis));
                     return ERR_CODE_TIMEOUT_WRITE;
@@ -518,10 +518,10 @@ public class BLESerialPortService extends Service {
                     return errCode;
                 }
 
-                ackReceived = false;
+                mAckReceived = false;
                 beginMillis = System.currentTimeMillis();
 
-                while (!ackReceived) {                  // Wait for the flag to clear in onCharacteristicWrite
+                while (!mAckReceived) {                  // Wait for the flag to clear in onCharacteristicWrite
                     if (System.currentTimeMillis() - beginMillis > CommunicationStatus.RECV_TIME_OUT_MILLIS) {
                         mErrCmd = cmd;                  // Set the command for the error message
                         queue[0].clear();
