@@ -7,22 +7,36 @@
 
     <TextView
         android:id="@+id/readTextView"
-        android:layout_width="355dp"
-        android:layout_height="350dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:scrollbars="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="332dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
         android:gravity="bottom"
+        android:scrollbars="vertical"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <EditText
+        android:id="@+id/writeText"
+        android:layout_width="match_parent"
+        android:layout_height="49dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="ST_20171225_173200"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/readTextView" />
+
     <Button
         android:id="@+id/sendButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="90dp"
+        android:layout_height="45dp"
         android:layout_marginBottom="252dp"
         android:layout_marginEnd="16dp"
         android:layout_marginTop="8dp"
@@ -32,39 +46,40 @@
         app:layout_constraintTop_toBottomOf="@+id/writeText"
         app:layout_constraintVertical_bias="0.0" />
 
-    <EditText
-        android:id="@+id/writeText"
-        android:layout_width="352dp"
-        android:layout_height="49dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:ems="10"
-        android:inputType="textPersonName"
-        android:text="ST_20171225_173200"
-        app:layout_constraintEnd_toEndOf="parent"
+    <Button
+        android:id="@+id/exitButton"
+        android:layout_width="58dp"
+        android:layout_height="45dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="52dp"
+        android:text="EXIT"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/readTextView" />
+        app:layout_constraintTop_toBottomOf="@+id/writeText" />
+
+    <Button
+        android:id="@+id/testButton"
+        android:layout_width="58dp"
+        android:layout_height="45dp"
+        android:layout_marginTop="8dp"
+        android:text="TEST"
+        app:layout_constraintStart_toEndOf="@+id/colorButton"
+        app:layout_constraintTop_toBottomOf="@+id/writeText" />
 
     <Button
         android:id="@+id/colorButton"
         android:layout_width="58dp"
         android:layout_height="45dp"
-        android:layout_marginEnd="96dp"
         android:layout_marginTop="8dp"
         android:text="CL"
-        app:layout_constraintEnd_toStartOf="@+id/sendButton"
+        app:layout_constraintStart_toEndOf="@+id/alarmButton"
         app:layout_constraintTop_toBottomOf="@+id/writeText" />
 
     <Button
         android:id="@+id/alarmButton"
         android:layout_width="57dp"
         android:layout_height="45dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:text="AL"
-        app:layout_constraintEnd_toStartOf="@+id/colorButton"
         app:layout_constraintStart_toEndOf="@+id/timeButton"
         app:layout_constraintTop_toBottomOf="@+id/writeText" />
 

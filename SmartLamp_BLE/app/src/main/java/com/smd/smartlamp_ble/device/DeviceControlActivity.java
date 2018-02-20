@@ -84,7 +84,6 @@ public class DeviceControlActivity extends AppCompatActivity {
     // Handles various events fired by the Service.
     // ACTION_GATT_CONNECTED: connected to a GATT server.
     // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
-    // ACTION_GATT_SERVICES_DISCOVERED: discovered GATT services.
     // ACTION_DATA_AVAILABLE: received data from the device.  This can be a result of read
     //                        or notification operations.
     private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
@@ -97,8 +96,6 @@ public class DeviceControlActivity extends AppCompatActivity {
             } else if (BLESerialPortService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 mConnected = false;
                 invalidateOptionsMenu();
-            //} else if (BLESerialPortService.ACTION_GATT_SERVICES_DISCOVERED.equals(action))
-                // Show all the supported services and characteristics on the user interface.
             } else if (BLESerialPortService.ACTION_DATA_AVAILABLE.equals(action)) {
                 displayData(intent.getStringExtra(BLESerialPortService.EXTRA_DATA));
             }
@@ -161,7 +158,21 @@ public class DeviceControlActivity extends AppCompatActivity {
         final Button colorButton = findViewById(R.id.colorButton);
         colorButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                mWriteText.setText(ProtocolUtil.cmdSendRGB((short) 55, (short) 129,  (short) 255));
+                mWriteText.setText(ProtocolUtil.cmdSendRGB(55, 129, 255));
+            }
+        });
+
+        final Button testButton = findViewById(R.id.testButton);
+        testButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                mWriteText.setText(ProtocolUtil.cmdTest());
+            }
+        });
+
+        final Button exitButton = findViewById(R.id.exitButton);
+        exitButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                mWriteText.setText(ProtocolUtil.cmdExit());
             }
         });
 

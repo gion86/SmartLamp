@@ -38,6 +38,7 @@ import com.smd.smartlamp_ble.device.ProtocolUtil;
 public class RGBActivity extends AppCompatActivity implements ColorPickerView.OnColorChangedListener {
 
     private final static String TAG = RGBActivity.class.getSimpleName();
+    public static final int INITIAL_COLOR = 0xFF0000;
 
     private ColorPickerView mColorPickerView;
     private ColorPanelView mColorPanelView;
@@ -68,10 +69,6 @@ public class RGBActivity extends AppCompatActivity implements ColorPickerView.On
 
         getWindow().setFormat(PixelFormat.RGBA_8888);
 
-        //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        //int initialColor = prefs.getInt("color_3", 0xFF000000);
-        int initialColor = 0xFF000000;
-
         mColorPickerView = findViewById(R.id.cpv_color_picker_view);
         ColorPanelView colorPanelView = findViewById(R.id.cpv_color_panel_old);
         mColorPanelView = findViewById(R.id.cpv_color_panel_new);
@@ -82,8 +79,8 @@ public class RGBActivity extends AppCompatActivity implements ColorPickerView.On
                 .setPadding(mColorPickerView.getPaddingLeft(), 0, mColorPickerView.getPaddingRight(), 0);
 
         mColorPickerView.setOnColorChangedListener(this);
-        mColorPickerView.setColor(initialColor, true);
-        colorPanelView.setColor(initialColor);
+        mColorPickerView.setColor(INITIAL_COLOR, true);
+        colorPanelView.setColor(INITIAL_COLOR);
 
         btnOK.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -92,7 +89,7 @@ public class RGBActivity extends AppCompatActivity implements ColorPickerView.On
                     mBLESerialPortService.addCommand(ProtocolUtil.cmdExit());
                     mBLESerialPortService.sendAll();
                 }
-                finish();  // TODO
+                finish();
             }
         });
 
