@@ -32,6 +32,8 @@
 
     <!-- Buttons -->
     <string name="button_day_send">Send</string>
+    <string name="OK">OK</string>
+    <string name="Cancel">Cancel</string>
 
     <!-- Menu items -->
     <string name="menu_connect">Connect</string>
@@ -68,6 +70,9 @@
 
     <string name="fade_time_choose">Select the alarm fade time</string>
     <string name="actual_fade_time">Current fade time:</string>
+
+    <!-- Strings related to image content descriptions -->
+    <string name="daycolor_desc">Day alarm color</string>
 
     <!-- Strings related to Settings -->
 
@@ -141,6 +146,4 @@
 
     <string name="pref_title_vibrate">Vibrate</string>
 
-    <string name="OK">OK</string>
-    <string name="Cancel">Cancel</string>
 </resources>

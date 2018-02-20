@@ -54,5 +54,5 @@ dependencies {
     compile 'junit:junit:4.12'
 
     // Color picker
-    compile 'com.larswerkman:HoloColorPicker:1.5'
+    compile 'com.jaredrummler:colorpicker:1.0.2'
 }

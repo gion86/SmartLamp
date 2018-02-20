@@ -1,49 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:divider="?android:attr/dividerHorizontal"
+    android:orientation="vertical"
+    android:showDividers="middle">
 
-    <com.larswerkman.holocolorpicker.ColorPicker
-        android:id="@+id/picker"
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="25dp">
+
+        <com.jaredrummler.android.colorpicker.ColorPickerView
+            android:id="@id/cpv_color_picker_view"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            app:cpv_alphaChannelVisible="true"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_alignLeft="@id/cpv_color_picker_view"
+            android:layout_alignRight="@id/cpv_color_picker_view"
+            android:layout_below="@id/cpv_color_picker_view"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal">
+
+            <com.jaredrummler.android.colorpicker.ColorPanelView
+                android:id="@id/cpv_color_panel_old"
+                android:layout_width="0px"
+                android:layout_height="fill_parent"
+                android:layout_weight="0.5"
+                app:cpv_borderColor="#0099cc"
+                app:cpv_colorShape="square"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:gravity="center"
+                android:text="→"
+                android:textSize="20sp"/>
+
+            <com.jaredrummler.android.colorpicker.ColorPanelView
+                android:id="@id/cpv_color_panel_new"
+                android:layout_width="0px"
+                android:layout_height="fill_parent"
+                android:layout_weight="0.5"
+                app:cpv_colorShape="square"/>
+        </LinearLayout>
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/buttonbar"
+        style="?android:attr/buttonBarStyle"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:orientation="horizontal">
 
-    <com.larswerkman.holocolorpicker.SaturationBar
-        android:id="@+id/saturationbar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/picker" />
+        <Button
+            android:id="@+id/okRGBButton"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@android:string/ok" />
+    </LinearLayout>
 
-    <Button
-        android:id="@+id/cancelRGBButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="50dp"
-        android:layout_marginTop="32dp"
-        android:text="@string/Cancel"
-        android:onClick="onCancelClick"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/saturationbar" />
-
-    <Button
-        android:id="@+id/OKRGBButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="50dp"
-        android:layout_marginTop="32dp"
-        android:text="@string/OK"
-        android:onClick="onOKClick"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/saturationbar" />
-
-</android.support.constraint.ConstraintLayout>
+</LinearLayout>

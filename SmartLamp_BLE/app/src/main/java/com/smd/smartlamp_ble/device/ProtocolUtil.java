@@ -78,12 +78,22 @@ public class ProtocolUtil {
     }
 
     @NonNull
-    public static String toCmdSetFadeTime(DayAlarm day) {
+    public static String cmdSetFadeTime(DayAlarm day) {
         return "FT_" + digit(day.getWday()) + "_" + day.getFadeTime() + LINE_SEP;
     }
 
     @NonNull
     public static String cmdSendRGB(int r, int g, int b) {
         return "RGB_" + digit2(r) + "_" + digit2(g) + "_" + digit2(b) + LINE_SEP;
+    }
+
+    @NonNull
+    public static String cmdTest() {
+        return "TEST" + LINE_SEP;
+    }
+
+    @NonNull
+    public static String cmdExit() {
+        return "EXIT" + LINE_SEP;
     }
 }

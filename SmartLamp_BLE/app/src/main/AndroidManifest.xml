@@ -75,8 +75,6 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.smd.smartlamp_ble.AlarmActivity" />
-            >
-
         </activity>
 
         <service

@@ -17,11 +17,14 @@
 
 package com.smd.smartlamp_ble.ui;
 
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.smd.smartlamp_ble.R;
@@ -32,6 +35,8 @@ import java.util.List;
 public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAlarmViewHolder> {
 
     private final static String TAG = DayAlarmAdapter.class.getSimpleName();
+    private final static int COLOR_ALPHA = 180;
+
     private List<DayAlarm> mDayAlarmList;
     private String [] mDayNames;
 
@@ -66,6 +71,14 @@ public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAla
          * @param checked
          */
         void onEnableClick(final int position, final boolean checked);
+
+        /**
+         * Callback for click events on the color view.
+         *
+         * @param position
+         * @param color
+         */
+        void onColorClick(final int position, final int color);
     }
 
     public DayAlarmAdapter(List<DayAlarm> dayAlarmList, String[] mDayNames, OnItemClickListener listener) {
@@ -95,6 +108,9 @@ public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAla
             holder.fadeTime.setText(Integer.toString(day.getFadeTime()));
             holder.dayTime.setText(digit(day.getHour()) + ":" + digit(day.getMin()));
             holder.dayEn.setChecked(day.isEnabled());
+            holder.dayColor.getDrawable()
+                    .setColorFilter(Color.argb(COLOR_ALPHA, day.getRed(), day.getGreen(), day.getBlue()),
+                            PorterDuff.Mode.SRC_IN);
 
         } else {
             // TODO Covers the case of data not being ready yet.
@@ -118,6 +134,7 @@ public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAla
         TextView fadeTime;
         TextView dayTime;
         CheckBox dayEn;
+        ImageView dayColor;
 
         public DayAlarmViewHolder(View itemView) {
             super(itemView);
@@ -126,6 +143,7 @@ public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAla
             fadeTime = itemView.findViewById(R.id.fadeTime);
             dayTime = itemView.findViewById(R.id.dayTime);
             dayEn = itemView.findViewById(R.id.dayEnabled);
+            dayColor = itemView.findViewById(R.id.dayColor);
         }
 
         public void bind(final int position, final DayAlarm day, final OnItemClickListener listener) {
@@ -150,6 +168,13 @@ public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAla
                     listener.onFadeTimeClick(position, Integer.parseInt(fadeTime.getText().toString()));
                 }
             });
+
+            dayColor.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    listener.onColorClick(position, Color.argb(COLOR_ALPHA, day.getRed(), day.getGreen(), day.getBlue()));
+                }
+            });;
         }
     }
 }

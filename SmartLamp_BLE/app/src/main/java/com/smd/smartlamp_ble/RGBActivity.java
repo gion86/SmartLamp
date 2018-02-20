@@ -21,22 +21,26 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Color;
+import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
 
-import com.larswerkman.holocolorpicker.ColorPicker;
-import com.larswerkman.holocolorpicker.SaturationBar;
+import com.jaredrummler.android.colorpicker.ColorPanelView;
+import com.jaredrummler.android.colorpicker.ColorPickerView;
 import com.smd.smartlamp_ble.device.BLESerialPortService;
 import com.smd.smartlamp_ble.device.ProtocolUtil;
 
-public class RGBActivity extends AppCompatActivity {
+public class RGBActivity extends AppCompatActivity implements ColorPickerView.OnColorChangedListener {
 
     private final static String TAG = RGBActivity.class.getSimpleName();
 
-    private ColorPicker mPicker;
+    private ColorPickerView mColorPickerView;
+    private ColorPanelView mColorPanelView;
 
     private BLESerialPortService mBLESerialPortService;
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -57,63 +61,40 @@ public class RGBActivity extends AppCompatActivity {
                 }
             };
 
-
-    /**
-     *
-     * @param color
-     */
-    private void colorChanged(int color) {
-        Log.d(TAG, "Color = " + color);
-        int red = Color.red(color);
-        int green = Color.green(color);
-        int blue = Color.blue(color);
-
-        Log.d(TAG, "RGB = " + red + ", " + green + ", " + blue);
-
-        if (mBLESerialPortService != null) {
-            mBLESerialPortService.addCommand(ProtocolUtil.cmdSendRGB(red, green, blue));
-            mBLESerialPortService.sendAll();
-        }
-    }
-
-    public void onCancelClick(View view) {
-        finish();
-    }
-
-    public void onOKClick(View view) {
-        // TODO set color preference
-        finish();
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rgb);
 
-        mPicker = findViewById(R.id.picker);
+        getWindow().setFormat(PixelFormat.RGBA_8888);
 
-        // Set the old selected color
-        mPicker.setOldCenterColor(mPicker.getColor());
+        //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        //int initialColor = prefs.getInt("color_3", 0xFF000000);
+        int initialColor = 0xFF000000;
 
-        // Turn of showing the old color
-        mPicker.setShowOldCenterColor(false);
+        mColorPickerView = findViewById(R.id.cpv_color_picker_view);
+        ColorPanelView colorPanelView = findViewById(R.id.cpv_color_panel_old);
+        mColorPanelView = findViewById(R.id.cpv_color_panel_new);
 
-        mPicker.setOnColorChangedListener(new ColorPicker.OnColorChangedListener() {
+        Button btnOK = findViewById(R.id.okRGBButton);
+
+        ((LinearLayout) colorPanelView.getParent())
+                .setPadding(mColorPickerView.getPaddingLeft(), 0, mColorPickerView.getPaddingRight(), 0);
+
+        mColorPickerView.setOnColorChangedListener(this);
+        mColorPickerView.setColor(initialColor, true);
+        colorPanelView.setColor(initialColor);
+
+        btnOK.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onColorChanged(int color) {
-                colorChanged(color);
+            public void onClick(View view) {
+                if (mBLESerialPortService != null) {
+                    mBLESerialPortService.addCommand(ProtocolUtil.cmdExit());
+                    mBLESerialPortService.sendAll();
+                }
+                finish();  // TODO
             }
         });
-
-        SaturationBar satBar = findViewById(R.id.saturationbar);
-
-        satBar.setOnSaturationChangedListener(new SaturationBar.OnSaturationChangedListener() {
-            public void onSaturationChanged(int color) {
-                colorChanged(color);
-            }
-        });
-
-        mPicker.addSaturationBar(satBar);
 
         // Bind and start the bluetooth service
         Intent gattServiceIntent = new Intent(this, BLESerialPortService.class);
@@ -128,6 +109,26 @@ public class RGBActivity extends AppCompatActivity {
         if (mServiceConnection != null) {
             unbindService(mServiceConnection);
             mBLESerialPortService = null;
+        }
+    }
+
+    /**
+     *
+     * @param newColor
+     */
+    @Override public void onColorChanged(int newColor) {
+        mColorPanelView.setColor(mColorPickerView.getColor());
+
+        Log.d(TAG, "Color = " + newColor);
+        int red = Color.red(newColor);
+        int green = Color.green(newColor);
+        int blue = Color.blue(newColor);
+
+        Log.d(TAG, "RGB = " + red + ", " + green + ", " + blue);
+
+        if (mBLESerialPortService != null) {
+            mBLESerialPortService.addCommand(ProtocolUtil.cmdSendRGB(red, green, blue));
+            mBLESerialPortService.sendAll();
         }
     }
 }

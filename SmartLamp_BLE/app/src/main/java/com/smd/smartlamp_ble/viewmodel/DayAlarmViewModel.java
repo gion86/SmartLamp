@@ -20,6 +20,7 @@ package com.smd.smartlamp_ble.viewmodel;
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
+import android.graphics.Color;
 import android.os.AsyncTask;
 
 import com.smd.smartlamp_ble.db.AppDatabase;
@@ -45,23 +46,33 @@ public class DayAlarmViewModel extends AndroidViewModel {
 
     public void addItem(final DayAlarm day) { new addUpdateAsyncTask(mAppDatabase).execute(day); }
 
-    public void updateItem(int position, int hour, int min) {
+    public void updateItemTime(int position, int hour, int min) {
         DayAlarm oldDay = mDayAlarmList.getValue().get(position);
         DayAlarm day = new DayAlarm(oldDay.getWday(), oldDay.getFadeTime(), hour, min);
 
         new addUpdateAsyncTask(mAppDatabase).execute(day);
     }
 
-    public void updateItem(int position, int fadeTime) {
+    public void updateItemFade(int position, int fadeTime) {
         DayAlarm day = mDayAlarmList.getValue().get(position);
         day.setFadeTime(fadeTime);
 
         new addUpdateAsyncTask(mAppDatabase).execute(day);
     }
 
-    public void updateItem(int position, boolean enabled) {
+    public void updateItemEn(int position, boolean enabled) {
         DayAlarm day = mDayAlarmList.getValue().get(position);
         day.setEnabled(enabled);
+
+        new addUpdateAsyncTask(mAppDatabase).execute(day);
+    }
+
+    public void updateItemColor(int position, int color) {
+        DayAlarm day = mDayAlarmList.getValue().get(position);
+
+        day.setRed(Color.red(color));
+        day.setGreen(Color.green(color));
+        day.setBlue(Color.blue(color));
 
         new addUpdateAsyncTask(mAppDatabase).execute(day);
     }

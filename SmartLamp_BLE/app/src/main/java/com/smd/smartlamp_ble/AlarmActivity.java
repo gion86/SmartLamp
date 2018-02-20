@@ -55,6 +55,8 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.jaredrummler.android.colorpicker.ColorPickerDialog;
+import com.jaredrummler.android.colorpicker.ColorPickerDialogListener;
 import com.smd.smartlamp_ble.device.BLESerialPortService;
 import com.smd.smartlamp_ble.device.DeviceControlActivity;
 import com.smd.smartlamp_ble.device.DeviceScanActivity;
@@ -69,7 +71,7 @@ import java.util.Calendar;
 import java.util.List;
 
 public class AlarmActivity extends AppCompatActivity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks, TimePickerDialog.OnTimeSetListener {
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks, TimePickerDialog.OnTimeSetListener, ColorPickerDialogListener {
 
     private final static String TAG = AlarmActivity.class.getSimpleName();
 
@@ -171,7 +173,7 @@ public class AlarmActivity extends AppCompatActivity
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     if (position >= 0 && position < mDayAdapter.getItemCount()) {
-                        mViewModel.updateItem(position, fadeTimeBar.getProgress());
+                        mViewModel.updateItemFade(position, fadeTimeBar.getProgress());
                     }
                     Log.i(TAG, "onFadeTimeClick on position " + position + " = " + fadeTimeBar.getProgress());
                 }
@@ -183,9 +185,21 @@ public class AlarmActivity extends AppCompatActivity
         @Override
         public void onEnableClick(int position, boolean checked) {
             if (position >= 0 && position < mDayAdapter.getItemCount()) {
-                mViewModel.updateItem(position, checked);
+                mViewModel.updateItemEn(position, checked);
             }
             Log.i(TAG, "onEnableClick on position " + position + " = " + checked);
+        }
+
+        @Override
+        public void onColorClick(int position, int color) {
+            // Current list position for the TimePickerDialog.
+            mDayPos = position;
+
+            ColorPickerDialog.newBuilder()
+                    .setDialogType(ColorPickerDialog.TYPE_PRESETS)
+                    .setShowColorShades(false)
+                    .setColor(color)
+                    .show(AlarmActivity.this);
         }
     };
 
@@ -434,6 +448,8 @@ public class AlarmActivity extends AppCompatActivity
         }
     }
 
+
+
     /**
      * A placeholder fragment containing a simple view for the activity with navigation drawer.
      */
@@ -515,9 +531,27 @@ public class AlarmActivity extends AppCompatActivity
     @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
         if (mDayPos >= 0 && mDayPos < mDayAdapter.getItemCount()) {
-            mViewModel.updateItem(mDayPos, hourOfDay, minute);
+            mViewModel.updateItemTime(mDayPos, hourOfDay, minute);
         }
         Log.i(TAG, "OnTimeSet on position " + mDayPos);
+
+    }
+
+    /**
+     *
+     * @param dialogId
+     * @param color
+     */
+    @Override
+    public void onColorSelected(int dialogId, int color) {
+        if (mDayPos >= 0 && mDayPos < mDayAdapter.getItemCount()) {
+            mViewModel.updateItemColor(mDayPos, color);
+        }
+        Log.i(TAG, "onColorSelected on position " + mDayPos);
+    }
+
+    @Override
+    public void onDialogDismissed(int dialogId) {
     }
 
     public void onSendDayClick(View view) {
