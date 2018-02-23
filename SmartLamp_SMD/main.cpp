@@ -46,10 +46,10 @@
 #define BLU_LED             6   // BLE module connection LED
 
 // Serial defines
-#define SERIAL_BAUD      9600   // For at mode and for data mode (CC41, HM-10 and MLT-BT05)
+#define SERIAL_BAUD      9600   // For AT mode and data mode (CC41, HM-10 and MLT-BT05)
 
 // Sleep defines
-#define SLEEP_TIMEOUT   5000L   // Timeout before sleep
+#define SLEEP_TIMEOUT  20000L   // Timeout before sleep [ms]
 
 #define CMD_LENGTH         80   // Command buffer length
 
@@ -67,6 +67,15 @@
 #define STEP_READ_CMD      10
 #define STEP_FADE          15
 #define STEP_RGB           20
+
+// RTC library error codes:
+// 1 length to long for buffer
+// 2 address send, NACK received
+// 3 data send, NACK received
+// 4 other twi error (lost bus arbitration, bus error, ..)
+
+// Application error codes:
+#define ERRCODE_FADETIME_0  5   // Fadetime of the current alarm == 0
 
 // Global constants
 // CET Time Zone (Rome, Berlin) -> UTC/GMT + 1
@@ -107,6 +116,7 @@ alarm alarms[7];                // Alarms array [0...6 as weekdays sun...sat]
 // RGB LED variables
 uint8_t ledColor[3] = {0, 0, 0}; // LED color for RGB command
 
+// Initial state
 uint8_t step = STEP_SLEEP;
 
 
@@ -972,7 +982,7 @@ void loop() {
       }
 
       if (alarms[systemTime.tm_wday].fadeTime == 0) {
-        sigError(BLU_LED, 5);
+        sigError(BLU_LED, ERRCODE_FADETIME_0);
         step = STEP_SLEEP;
         break;
       }
@@ -981,6 +991,7 @@ void loop() {
       fadeTime = alarms[systemTime.tm_wday].fadeTime * 60000.0;
 
       x = (millis() - prevMillis) / fadeTime;
+      // LED brightness, scaled by the max PWM count.
       led_value = (uint8_t) MAX_BRIGTH / 100.0 * MAX_PWM_CNT * (x * x * x);
 
 #ifdef DEBUG
@@ -990,7 +1001,8 @@ void loop() {
       Serial.println(led_value);
 #endif
 
-      // PWM duty cycle on pins PB1, PB2, PB3
+      // PWM duty cycle on pins PB1, PB2, PB3: the value is scaled by the current
+      // alarm color.
       OCR1A = led_value * alarms[systemTime.tm_wday].ledColor[0] / 255;
       OCR1B = led_value * alarms[systemTime.tm_wday].ledColor[1] / 255;
       OCR2A = led_value * alarms[systemTime.tm_wday].ledColor[2] / 255;
