@@ -64,11 +64,17 @@ import com.smd.smartlamp_ble.device.ProtocolUtil;
 import com.smd.smartlamp_ble.model.DayAlarm;
 import com.smd.smartlamp_ble.settings.SettingsActivity;
 import com.smd.smartlamp_ble.ui.DayAlarmAdapter;
+import com.smd.smartlamp_ble.ui.NavigationDrawerFragment;
 import com.smd.smartlamp_ble.viewmodel.DayAlarmViewModel;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+
+import static com.smd.smartlamp_ble.ui.NavigationDrawerFragment.MENU_POS_DEV_DEBUG;
+import static com.smd.smartlamp_ble.ui.NavigationDrawerFragment.MENU_POS_DEV_SCAN;
+import static com.smd.smartlamp_ble.ui.NavigationDrawerFragment.MENU_POS_RBG;
+import static com.smd.smartlamp_ble.ui.NavigationDrawerFragment.MENU_POS_SETTING;
 
 public class AlarmActivity extends AppCompatActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks, TimePickerDialog.OnTimeSetListener, ColorPickerDialogListener {
@@ -80,11 +86,6 @@ public class AlarmActivity extends AppCompatActivity
 
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
-
-    private final static int MENU_POS_SETTING = 0;
-    private final static int MENU_POS_DEV_SCAN = 1;
-    private final static int MENU_POS_RBG = 2;
-    private final static int MENU_POS_DEV_DEBUG = 3;
 
     private DayAlarmAdapter mDayAdapter;
     private DayAlarmViewModel mViewModel;
@@ -243,7 +244,6 @@ public class AlarmActivity extends AppCompatActivity
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
-        mTitle = getTitle();
 
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(R.id.navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout));
@@ -275,6 +275,8 @@ public class AlarmActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
+
+        mTitle = getTitle();
         restoreActionBar();
 
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
@@ -305,7 +307,7 @@ public class AlarmActivity extends AppCompatActivity
         // update the main content by replacing fragments
         FragmentManager fragmentManager = getFragmentManager();
         fragmentManager.beginTransaction()
-                .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
+                .replace(R.id.container, PlaceholderFragment.newInstance(position))
                 .commit();
 
         switch (position) {
@@ -333,16 +335,16 @@ public class AlarmActivity extends AppCompatActivity
 
     public void onSectionAttached(int number) {
         switch (number) {
-            case MENU_POS_SETTING + 1:
+            case MENU_POS_SETTING:
                 mTitle = getString(R.string.title_section1);
                 break;
-            case MENU_POS_DEV_SCAN + 1:
+            case MENU_POS_DEV_SCAN:
                 mTitle = getString(R.string.title_section2);
                 break;
-            case MENU_POS_RBG + 1:
+            case MENU_POS_RBG:
                 mTitle = getString(R.string.title_section3);
                 break;
-            case MENU_POS_DEV_DEBUG + 1:
+            case MENU_POS_DEV_DEBUG:
                 mTitle = getString(R.string.title_section4);
                 break;
         }
@@ -404,6 +406,7 @@ public class AlarmActivity extends AppCompatActivity
     // Handles various events fired by the Service.
     // ACTION_GATT_CONNECTED: connected to a GATT server.
     // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
+    // ACTION_GATT_DEVICE_DOES_NOT_SUPPORT_UART: serial service not supported by device.
     private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -412,17 +415,23 @@ public class AlarmActivity extends AppCompatActivity
             if (BLESerialPortService.ACTION_GATT_CONNECTED.equals(action)) {
                 mConnected = true;
                 invalidateOptionsMenu();
+
             } else if (BLESerialPortService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 mConnected = false;
                 invalidateOptionsMenu();
+            } else if (BLESerialPortService.ACTION_GATT_DEVICE_DOES_NOT_SUPPORT_UART.equals(action)) {
+                Toast.makeText(getBaseContext(), getString(R.string.error_no_service), Toast.LENGTH_LONG).show();
             }
-            // TODO ACTION DEVICE_DOES_NOT_SUPPORT_UART
 
             Button sendAllButton = findViewById(R.id.sendAllButton);
             sendAllButton.setEnabled(mConnected);
 
             if (mConnectDialog != null && mConnectDialog.isShowing())
                 mConnectDialog.dismiss();
+
+            // Update navigation drawer menu state
+            mNavigationDrawerFragment.setConnected(mConnected);
+            mNavigationDrawerFragment.updateMenuState();
         }
     };
 
@@ -447,7 +456,6 @@ public class AlarmActivity extends AppCompatActivity
             }
         }
     }
-
 
 
     /**

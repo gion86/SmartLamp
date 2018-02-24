@@ -15,19 +15,22 @@
  *
  */
 
-package com.smd.smartlamp_ble;
+package com.smd.smartlamp_ble.ui;
 
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -38,6 +41,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
+
+import com.smd.smartlamp_ble.R;
 
 /**
  * Fragment used for managing interactions for and presentation of a navigation drawer.
@@ -56,6 +62,11 @@ public class NavigationDrawerFragment extends Fragment {
      * expands it. This shared preference tracks this.
      */
     private static final String PREF_USER_LEARNED_DRAWER = "navigation_drawer_learned";
+
+    public static final int MENU_POS_SETTING = 0;
+    public static final int MENU_POS_DEV_SCAN = 1;
+    public static final int MENU_POS_RBG = 2;
+    public static final int MENU_POS_DEV_DEBUG = 3;
 
     /**
      * A pointer to the current callbacks instance (the Activity).
@@ -81,7 +92,25 @@ public class NavigationDrawerFragment extends Fragment {
     private boolean mFromSavedInstanceState;
     private boolean mUserLearnedDrawer;
 
+    private boolean mConnected;
+
     public NavigationDrawerFragment() {
+        mConnected = false;
+    }
+
+    public boolean isConnected() {
+        return mConnected;
+    }
+
+    public void setConnected(boolean mConnected) {
+        this.mConnected = mConnected;
+    }
+
+    /**
+     * Invalidates the view of the navigation drawer menu, causing a redraw.
+     */
+    public void updateMenuState() {
+        mDrawerListView.invalidateViews();
     }
 
     @Override
@@ -99,9 +128,6 @@ public class NavigationDrawerFragment extends Fragment {
         }
 
         mActivity = ((AppCompatActivity) getActivity());
-
-        // Select either the default item (0) or the last selected item.
-        // selectItem(mCurrentSelectedPosition);
     }
 
     @Override
@@ -116,13 +142,15 @@ public class NavigationDrawerFragment extends Fragment {
                              Bundle savedInstanceState) {
         mDrawerListView = (ListView) inflater.inflate(
                 R.layout.drawer_alarm, container, false);
+
         mDrawerListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 selectItem(position);
             }
         });
-        mDrawerListView.setAdapter(new ArrayAdapter<String>(
+
+        mDrawerListView.setAdapter(new MenuAdapter(
                 mActivity.getSupportActionBar().getThemedContext(),
                 android.R.layout.simple_list_item_activated_1,
                 android.R.id.text1,
@@ -132,8 +160,67 @@ public class NavigationDrawerFragment extends Fragment {
                         getString(R.string.title_section3),
                         getString(R.string.title_section4)
                 }));
+
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
+
         return mDrawerListView;
+    }
+
+    /**
+     * Custom String adapter to manipulate the color and clickable state on the nav menu times.
+     */
+    public class MenuAdapter extends ArrayAdapter<String> {
+        public MenuAdapter(@NonNull Context context, int resource, int textViewResourceId, @NonNull String[] objects) {
+            super(context, resource, textViewResourceId, objects);
+        }
+
+        @Override
+        public boolean areAllItemsEnabled() {
+            return false;
+        }
+
+        @Override
+        public boolean isEnabled(int position) {
+            if (areAllItemsEnabled()) {
+                return true;
+            }
+
+            switch (position) {
+                case MENU_POS_SETTING:
+                    return true;
+
+                case MENU_POS_DEV_SCAN:
+                    return !mConnected;
+
+                case MENU_POS_RBG:
+                    return mConnected;
+
+                case MENU_POS_DEV_DEBUG:
+                    return mConnected;
+            }
+            return false;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            // Check if an existing view is being reused, otherwise inflate the view
+            if (convertView == null) {
+                convertView = LayoutInflater.from(getContext()).inflate(
+                        android.R.layout.simple_list_item_activated_1, parent, false);
+            }
+
+            // Lookup view for data population
+            TextView menuItem = convertView.findViewById(android.R.id.text1);
+            menuItem.setText(getItem(position));
+
+            if (isEnabled(position)) {
+                menuItem.setTextColor(Color.WHITE);
+            } else {
+                menuItem.setTextColor(Color.DKGRAY);
+            }
+
+            return convertView;
+        }
     }
 
     public boolean isDrawerOpen() {
