@@ -239,8 +239,11 @@ public class AlarmActivity extends AppCompatActivity
         }
 
         // TODO preference for mDeviceAddress
-        //mDeviceName = "HM10";
-        //mDeviceAddress = "34:15:13:1A:E1:AD";
+        // autoconnect
+
+        // mDeviceName = "HM10";
+        // mDeviceAddress = "34:15:13:1A:E1:AD";
+
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
