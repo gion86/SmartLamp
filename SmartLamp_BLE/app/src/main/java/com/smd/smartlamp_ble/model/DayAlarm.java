@@ -28,24 +28,44 @@ import android.arch.persistence.room.PrimaryKey;
 @Entity(tableName = "days", indices = {@Index(value = "wday", unique = true)})
 public class DayAlarm {
 
+    public final static int MAX_FADETIME = 99;
+
     @PrimaryKey
+    /**
+     * Weekday as defined by the AVR standard library (time.h): 0 = sunday, 6 = saturday.
+     */
     private int wday;
 
     private String name;
     private boolean enabled;
 
     /**
-     * Alarm fade time in minutes [1, 30]
+     * Alarm fade time in minutes [1, MAX_FADETIME]
      */
     private int fadeTime;
     private int hour;
     private int min;
 
+    /**
+     * RGB color components [0, 255]
+     */
     private int red;
     private int green;
     private int blue;
 
     public DayAlarm(int wday, int fadeTime, int hour, int min) {
+        if (wday < 0 || wday > 6)
+            throw new IllegalArgumentException("Illegal min value.");
+
+        if (fadeTime  <= 0 || fadeTime > MAX_FADETIME)
+            throw new IllegalArgumentException("Illegal fadetime: <= 0 or > " + MAX_FADETIME);
+
+        if (hour < 0 || hour > 23)
+            throw new IllegalArgumentException("Illegal hour value.");
+
+        if (min < 0 || min > 59)
+            throw new IllegalArgumentException("Illegal min value.");
+
         this.name = "";
         this.enabled = true;
         this.fadeTime = fadeTime;
@@ -59,26 +79,18 @@ public class DayAlarm {
 
     @Ignore
     public DayAlarm(String name, int wday, int fadeTime, int hour, int min) {
+        this(wday,fadeTime, hour, min);
         this.name = name;
-        this.enabled = true;
-        this.fadeTime = fadeTime;
-        this.hour = hour;
-        this.min = min;
-        this.wday = wday;
-        this.setRed(0);
-        this.setGreen(0);
-        this.setBlue(0);
     }
 
-    // TODO checks for value in the constructors
     @Ignore
     public DayAlarm(String name, int wday, int fadeTime, int hour, int min, int red, int green, int blue) {
-        this.name = name;
-        this.enabled = true;
-        this.fadeTime = fadeTime;
-        this.hour = hour;
-        this.min = min;
-        this.wday = wday;
+        this(name, wday,fadeTime, hour, min);
+
+        if (red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255) {
+            throw new IllegalArgumentException("Illegal RGB value.");
+        }
+
         this.setRed(red);
         this.setGreen(green);
         this.setBlue(blue);
