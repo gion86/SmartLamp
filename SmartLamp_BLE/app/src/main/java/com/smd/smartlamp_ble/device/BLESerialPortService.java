@@ -48,6 +48,8 @@ import static com.smd.smartlamp_ble.device.ProtocolUtil.LINE_SEP;
  * given Bluetooth LE device.
  */
 public class BLESerialPortService extends Service {
+    private final static String TAG = BLESerialPortService.class.getSimpleName();
+
     // UUID for the ble serial port client characteristic which is necessary for notifications.
     public static final UUID SERIAL_SERVICE_UUID = UUID.fromString(HM10BleAttributes.HM_10_CONF);
     public final static UUID UUID_HM_RX_TX = UUID.fromString(HM10BleAttributes.HM_RX_TX);
@@ -58,6 +60,8 @@ public class BLESerialPortService extends Service {
             "com.smd.smartlamp_ble.ACTION_GATT_DISCONNECTED";
     public final static String ACTION_GATT_SERVICES_DISCOVERED =
             "com.example.bluetooth.le.ACTION_GATT_SERVICES_DISCOVERED";
+    public final static String ACTION_GATT_DEVICE_DOES_NOT_SUPPORT_UART =
+            "com.example.bluetooth.le.ACTION_GATT_DEVICE_DOES_NOT_SUPPORT_UART";
     public final static String ACTION_DATA_AVAILABLE =
             "com.smd.smartlamp_ble.ACTION_DATA_AVAILABLE";
     public final static String EXTRA_DATA =
@@ -65,7 +69,6 @@ public class BLESerialPortService extends Service {
 
     private final static String ACK_DATA = "OK";
 
-    private final static String TAG = BLESerialPortService.class.getSimpleName();
     private static final int STATE_DISCONNECTED = 0;
     private static final int STATE_CONNECTING = 1;
     private static final int STATE_CONNECTED = 2;
@@ -77,21 +80,17 @@ public class BLESerialPortService extends Service {
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothGatt mBluetoothGatt;
     private BluetoothGattCharacteristic mTx;
-    private boolean mWriteInProgress; // Flag to indicate a write is currently in progress
+
+    // Flags to indicate a write is currently in progress
+    private boolean mWriteInProgress;
     private boolean mAckReceived;
 
     private int mConnectionState = STATE_DISCONNECTED;
-    private boolean mFirstConnection = false;
 
     private String mBluetoothDeviceAddress;
     private String mBLEData;
 
     private Queue<String> mWriteQueue;
-
-    // Device Information state.
-    private BluetoothGattCharacteristic disManuf;
-    private BluetoothGattCharacteristic disModel;
-    private BluetoothGattCharacteristic disSWRev;
 
     // Implements callback methods for GATT events that the app cares about.  For example,
     // connection change and services discovered.
@@ -100,14 +99,17 @@ public class BLESerialPortService extends Service {
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             super.onConnectionStateChange(gatt, status, newState);
             String intentAction;
+
             if (newState == BluetoothGatt.STATE_CONNECTED) {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
+                    Log.i(TAG, "Connected to GATT server.");
+
                     intentAction = ACTION_GATT_CONNECTED;
                     broadcastUpdate(intentAction);
 
                     // Connected to device, start discovering services.
                     mConnectionState = STATE_CONNECTED;
-                    Log.i(TAG, "Connected to GATT server.");
+
                     // Attempts to discover services after successful connection.
                     Log.i(TAG, "Attempting to start service discovery");
 
@@ -121,9 +123,10 @@ public class BLESerialPortService extends Service {
                     Log.i(TAG, "Error connecting to device.");
                 }
             } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
+                Log.i(TAG, "Disconnected from GATT server.");
+
                 intentAction = ACTION_GATT_DISCONNECTED;
                 mConnectionState = STATE_DISCONNECTED;
-                Log.i(TAG, "Disconnected from GATT server.");
                 broadcastUpdate(intentAction);
 
                 mTx = null;
@@ -159,7 +162,7 @@ public class BLESerialPortService extends Service {
                 Log.d(TAG, mBLEData.substring(0, idx));
 
                 if (mBLEData.substring(0, idx).contains(ACK_DATA)) {
-                    Log.w(TAG, "DATA_OK");
+                    Log.d(TAG, "DATA_OK");
                     mAckReceived = true;
                 }
                 mBLEData = mBLEData.substring(idx + 1);
@@ -193,9 +196,6 @@ public class BLESerialPortService extends Service {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         mBluetoothGatt = null;
         mTx = null;
-        disManuf = null;
-        disModel = null;
-        disSWRev = null;
         mWriteInProgress = false;
         mAckReceived = false;
         mBLEData = "";
@@ -268,7 +268,7 @@ public class BLESerialPortService extends Service {
             return false;
         }
 
-        // Previously connected device.  Try to reconnect.
+        // Previously connected device. Try to reconnect.
         if (mBluetoothDeviceAddress != null && address.equals(mBluetoothDeviceAddress)
                 && mBluetoothGatt != null) {
             Log.d(TAG, "Trying to use an existing mBluetoothGatt for connection.");
@@ -354,26 +354,29 @@ public class BLESerialPortService extends Service {
             return;
         }
 
+        Log.w(TAG, characteristic.getStringValue(0));
         mBluetoothGatt.writeCharacteristic(characteristic);
     }
 
     private void enableRXNotification() {
         if (mBluetoothGatt == null) return;
 
-        BluetoothGattService SerialService = mBluetoothGatt.getService(SERIAL_SERVICE_UUID);
-        if (SerialService == null) return;
+        BluetoothGattService serialService = mBluetoothGatt.getService(SERIAL_SERVICE_UUID);
 
-        mTx = SerialService.getCharacteristic(UUID_HM_RX_TX);
-        if (mTx == null) return;
+        if (serialService == null) {
+            Log.e(TAG, "Rx serial service not found!");
+            broadcastUpdate(ACTION_GATT_DEVICE_DOES_NOT_SUPPORT_UART);
+            return;
+        }
+
+        mTx = serialService.getCharacteristic(UUID_HM_RX_TX);
+        if (mTx == null) {
+            Log.e(TAG, "Tx characteristic not found!");
+            broadcastUpdate(ACTION_GATT_DEVICE_DOES_NOT_SUPPORT_UART);
+            return;
+        }
 
         setCharacteristicNotification(mTx, true);
-
-        // TODO Write something to have device reply on first message...
-        if (!mFirstConnection) {
-            mFirstConnection = true;
-            mTx.setValue("Hello".getBytes());
-            mBluetoothGatt.writeCharacteristic(mTx);
-        }
     }
 
     /**
@@ -418,19 +421,6 @@ public class BLESerialPortService extends Service {
         new SendCmdTask().execute(mWriteQueue);
     }
 
-
-    public String getDeviceInfo() { // TODO delete getDeviceInfo??
-        if (mTx == null) {
-            // Do nothing if there is no connection.
-            return "";
-        }
-        StringBuilder sb = new StringBuilder();
-        sb.append("Manufacturer : " + disManuf.getStringValue(0) + "\n");
-        sb.append("Model        : " + disModel.getStringValue(0) + "\n");
-        sb.append("Firmware     : " + disSWRev.getStringValue(0) + "\n");
-        return sb.toString();
-    }
-
     public static class CommunicationStatus {
         public static final long SEND_TIME_OUT_MILLIS = TimeUnit.SECONDS.toMillis(1);
         public static final long RECV_TIME_OUT_MILLIS = TimeUnit.SECONDS.toMillis(1);
@@ -466,7 +456,7 @@ public class BLESerialPortService extends Service {
 
             mWriteInProgress = true;
             mTx.setValue(data);
-            mBluetoothGatt.writeCharacteristic(mTx);
+            writeCharacteristic(mTx);
 
             while (mWriteInProgress) {           // Wait for the flag to clear in onCharacteristicWrite
                 if (System.currentTimeMillis() - beginMillis > CommunicationStatus.SEND_TIME_OUT_MILLIS) {
@@ -523,9 +513,9 @@ public class BLESerialPortService extends Service {
 
                 while (!mAckReceived) {                  // Wait for the flag to clear in onCharacteristicWrite
                     if (System.currentTimeMillis() - beginMillis > CommunicationStatus.RECV_TIME_OUT_MILLIS) {
-                        mErrCmd = cmd;                  // Set the command for the error message
+                        mErrCmd = cmd;                   // Set the command for the error message
                         queue[0].clear();
-                        return ERR_CODE_TIMEOUT_READ;   // TODO retry once..
+                        return ERR_CODE_TIMEOUT_READ;
                     }
                 }
                 //Log.i(TAG, "Read RRTT = " + (System.currentTimeMillis() - beginMillis));

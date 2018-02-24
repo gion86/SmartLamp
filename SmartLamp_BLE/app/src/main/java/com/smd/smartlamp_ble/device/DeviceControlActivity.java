@@ -28,8 +28,6 @@ import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -176,7 +174,6 @@ public class DeviceControlActivity extends AppCompatActivity {
             }
         });
 
-        getSupportActionBar().setTitle(mDeviceName);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Bind and start the bluetooth service
@@ -188,6 +185,7 @@ public class DeviceControlActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
         if (mBLESerialPortService != null) {
             final boolean result = mBLESerialPortService.connect(mDeviceAddress);
@@ -209,36 +207,6 @@ public class DeviceControlActivity extends AppCompatActivity {
             unbindService(mServiceConnection);
             mBLESerialPortService = null;
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.gatt_services, menu);
-        if (mConnected) {
-            menu.findItem(R.id.menu_connect).setVisible(false);
-            menu.findItem(R.id.menu_disconnect).setVisible(true);
-        } else {
-            menu.findItem(R.id.menu_connect).setVisible(true);
-            menu.findItem(R.id.menu_disconnect).setVisible(false);
-        }
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_connect:
-                Log.w(TAG, "Device address: " + mDeviceAddress);
-                mBLESerialPortService.connect(mDeviceAddress);
-                return true;
-            case R.id.menu_disconnect:
-                mBLESerialPortService.disconnect();
-                return true;
-            case android.R.id.home:
-                onBackPressed();
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     private void displayData(String data) {
