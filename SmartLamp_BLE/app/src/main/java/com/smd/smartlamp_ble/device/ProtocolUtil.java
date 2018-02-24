@@ -32,11 +32,11 @@ public class ProtocolUtil {
 
     public final static String LINE_SEP = "\r\n";
 
-    private static String digit(int number) {
+    public static String digit(int number) {
         return number <= 9 ? "0" + number : String.valueOf(number);
     }
 
-    private static String digit2(int number) {
+    public static String digit2(int number) {
         if (number <= 9) {
             return "00" + number;
         } else if (number <= 99) {

@@ -32,6 +32,8 @@ import com.smd.smartlamp_ble.model.DayAlarm;
 
 import java.util.List;
 
+import static com.smd.smartlamp_ble.device.ProtocolUtil.digit;
+
 public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAlarmViewHolder> {
 
     private final static String TAG = DayAlarmAdapter.class.getSimpleName();
@@ -42,8 +44,6 @@ public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAla
 
     // Interface instance
     private final DayAlarmAdapter.OnItemClickListener mListener;
-
-    private String digit(int number) { return number <= 9 ? "0" + number : String.valueOf(number); }
 
     /**
      * Interface for click event on the Activity.
@@ -113,7 +113,14 @@ public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAla
                             PorterDuff.Mode.SRC_IN);
 
         } else {
-            // TODO Covers the case of data not being ready yet.
+            // Covers the case of data not being ready yet
+            // Set day name based on localized string resources.
+            holder.dayName.setText("No day");
+            holder.fadeTime.setText("0");
+            holder.dayTime.setText("0");
+            holder.dayEn.setChecked(false);
+            holder.dayColor.getDrawable()
+                    .setColorFilter(Color.argb(COLOR_ALPHA, 0, 0, 0), PorterDuff.Mode.SRC_IN);
         }
     }
 
