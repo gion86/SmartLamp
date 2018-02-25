@@ -1,8 +1,6 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- A 'parent' preference, which enables/disables child preferences (below)
-         when checked/unchecked. -->
-    <SwitchPreference
+    <CheckBoxPreference
         android:defaultValue="true"
         android:key="device_autoconnect"
         android:title="@string/pref_title_device_autoconnect" />

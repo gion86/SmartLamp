@@ -49,6 +49,10 @@ import java.util.List;
  */
 public class SettingsActivity extends AppCompatPreferenceActivity {
 
+    public static final String PREF_KEY_DEVICE_AUTOCONNECT = "device_autoconnect";
+    public static final String PREF_KEY_DEVICE_NAME = "device_name";
+    public static final String PREF_KEY_DEVICE_ADDRESS = "device_adr";
+
     /**
      * A preference value change listener that updates the preference's summary
      * to reflect its new value.
@@ -93,6 +97,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      * preference title) is updated to reflect the value. The summary is also
      * immediately updated upon calling this method. The exact display format is
      * dependent on the type of preference.
+     *
+     * ONLY for EditText/List/Dialog/Ringtone preferences.
      *
      * @see #sBindPreferenceSummaryToValueListener
      */
@@ -174,12 +180,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_general);
             setHasOptionsMenu(true);
-
-            // Bind the summaries of EditText/List/Dialog/Ringtone preferences
-            // to their values. When their values change, their summaries are
-            // updated to reflect the new value, per the Android Design
-            // guidelines.
-            bindPreferenceSummaryToValue(findPreference("device_autoconnect"));
         }
 
         @Override
@@ -209,8 +209,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
             // guidelines.
-            bindPreferenceSummaryToValue(findPreference("device_name"));
-            bindPreferenceSummaryToValue(findPreference("device_adr"));
+            bindPreferenceSummaryToValue(findPreference(PREF_KEY_DEVICE_NAME));
+            bindPreferenceSummaryToValue(findPreference(PREF_KEY_DEVICE_ADDRESS));
         }
 
         @Override

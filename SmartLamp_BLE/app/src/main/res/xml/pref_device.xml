@@ -13,10 +13,8 @@
         android:title="@string/pref_title_device_name" />
 
     <EditTextPreference
-        android:enabled="false"
-        android:selectable="false"
-        android:persistent="false"
-        android:shouldDisableView="false"
+        android:inputType="text"
+        android:selectAllOnFocus="true"
         android:key="device_adr"
         android:maxLines="1"
         android:singleLine="true"

@@ -34,8 +34,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -71,6 +73,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import static com.smd.smartlamp_ble.settings.SettingsActivity.PREF_KEY_DEVICE_ADDRESS;
+import static com.smd.smartlamp_ble.settings.SettingsActivity.PREF_KEY_DEVICE_AUTOCONNECT;
+import static com.smd.smartlamp_ble.settings.SettingsActivity.PREF_KEY_DEVICE_NAME;
 import static com.smd.smartlamp_ble.ui.NavigationDrawerFragment.MENU_POS_DEV_DEBUG;
 import static com.smd.smartlamp_ble.ui.NavigationDrawerFragment.MENU_POS_DEV_SCAN;
 import static com.smd.smartlamp_ble.ui.NavigationDrawerFragment.MENU_POS_RBG;
@@ -100,6 +105,7 @@ public class AlarmActivity extends AppCompatActivity
      *
      */
     private boolean mConnected;     // True if connected to a BLE device
+    private boolean mAutoConnect;   // True if activity should autoconnect on startup/resume
     private String mDeviceName;
     private String mDeviceAddress;
 
@@ -115,6 +121,13 @@ public class AlarmActivity extends AppCompatActivity
                     if (!mBLESerialPortService.initialize()) {
                         Log.e(TAG, "Unable to initialize Bluetooth");
                         finish();
+                    }
+
+                    // Auto connect to BLE device on startup/resume of the activity (and service bind),
+                    // if configured in preference.
+                    if (mAutoConnect && mDeviceAddress != null && !mDeviceAddress.isEmpty()) {
+                        mBLESerialPortService.connect(mDeviceAddress);
+                        mConnectDialog.show();
                     }
                 }
 
@@ -223,6 +236,8 @@ public class AlarmActivity extends AppCompatActivity
      */
     private CharSequence mTitle;
 
+    private SharedPreferences mSettings;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -238,20 +253,13 @@ public class AlarmActivity extends AppCompatActivity
             return;
         }
 
-        // TODO preference for mDeviceAddress
-        // autoconnect
-
-        // mDeviceName = "HM10";
-        // mDeviceAddress = "34:15:13:1A:E1:AD";
-
-
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
 
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(R.id.navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout));
 
-        // The listener is passed to the adapter
+        // The listener is passed to the adapter.
         mDayAdapter = new DayAlarmAdapter(new ArrayList<DayAlarm>(),
                 getResources().getStringArray(R.array.day_names), mAdpaterListerner);
 
@@ -269,7 +277,14 @@ public class AlarmActivity extends AppCompatActivity
         mConnectDialog.setMessage(getString(R.string.connect_load_msg));
         mConnectDialog.setCancelable(false); // Disable dismiss by tapping outside of the dialog
 
-        // Bind and start the bluetooth service
+        // Read preference values.
+        mSettings = PreferenceManager.getDefaultSharedPreferences(this);
+
+        mAutoConnect = mSettings.getBoolean(PREF_KEY_DEVICE_AUTOCONNECT, false);
+        mDeviceName = mSettings.getString(PREF_KEY_DEVICE_NAME, "HM10");
+        mDeviceAddress = mSettings.getString(PREF_KEY_DEVICE_ADDRESS, "");
+
+        // Bind and start the bluetooth service.
         Intent gattServiceIntent = new Intent(this, BLESerialPortService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
         Log.d(TAG, "Bind service");
@@ -283,7 +298,7 @@ public class AlarmActivity extends AppCompatActivity
         restoreActionBar();
 
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
-        if (mBLESerialPortService != null) {
+        if (mBLESerialPortService != null && mDeviceAddress != null && !mDeviceAddress.isEmpty()) {
             final boolean result = mBLESerialPortService.connect(mDeviceAddress);
             Log.d(TAG, "Connect request result=" + result);
         }
@@ -448,15 +463,19 @@ public class AlarmActivity extends AppCompatActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // Responding to request device
-        if (requestCode == REQUEST_DEVICE) {
-            if (resultCode == RESULT_OK) {
-                mDeviceAddress = data.getStringExtra(EXTRAS_DEVICE_ADDRESS);
-                mDeviceName = data.getStringExtra(EXTRAS_DEVICE_NAME);
+        if (requestCode == REQUEST_DEVICE && resultCode == RESULT_OK) {
+            mDeviceAddress = data.getStringExtra(EXTRAS_DEVICE_ADDRESS);
+            mDeviceName = data.getStringExtra(EXTRAS_DEVICE_NAME);
 
-                Log.i(TAG, "Device address: " + mDeviceAddress);
-                mBLESerialPortService.connect(mDeviceAddress);
-                mConnectDialog.show();
-            }
+            // Save new shared preference value.
+            SharedPreferences.Editor editor = mSettings.edit();
+            editor.putString(PREF_KEY_DEVICE_NAME, mDeviceName);
+            editor.putString(PREF_KEY_DEVICE_ADDRESS, mDeviceAddress);
+            editor.apply();
+
+            Log.i(TAG, "Device address: " + mDeviceAddress);
+            mBLESerialPortService.connect(mDeviceAddress);
+            mConnectDialog.show();
         }
     }
 
