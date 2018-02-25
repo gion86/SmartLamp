@@ -62,6 +62,9 @@
     <string name="connect_load_title">BLE service</string>
     <string name="connect_load_msg">Connecting to BLE device...</string>
 
+    <string name="send_cmd_title">BLE Command</string>
+    <string name="send_cmd_msg">Sending commands to BLE device...</string>
+
     <!-- Strings related to alarms and days -->
     <string-array name="day_names">
         <item>Sunday</item>

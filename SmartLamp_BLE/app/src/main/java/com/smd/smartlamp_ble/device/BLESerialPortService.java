@@ -67,6 +67,12 @@ public class BLESerialPortService extends Service {
     public final static String EXTRA_DATA =
             "com.smd.smartlamp_ble.EXTRA_DATA";
 
+    public final static String ACTION_CMD_ACK_RECV =
+            "com.smd.smartlamp_ble.ACTION_CMD_ACK_RECV";
+
+    public final static String ACTION_CMD_ACK_TIMEOUT =
+            "com.smd.smartlamp_ble.ACTION_CMD_ACK_TIMEOUT";
+
     private final static String ACK_DATA = "OK";
 
     private static final int STATE_DISCONNECTED = 0;
@@ -162,6 +168,9 @@ public class BLESerialPortService extends Service {
 
                 if (mBLEData.substring(0, idx).contains(ACK_DATA)) {
                     Log.d(TAG, "DATA_OK");
+
+                    // Send broadcast information: a command has been acknowledged.
+                    broadcastUpdate(ACTION_CMD_ACK_RECV);
                     mAckReceived = true;
                 }
                 mBLEData = mBLEData.substring(idx + 1);
@@ -405,6 +414,10 @@ public class BLESerialPortService extends Service {
         mWriteQueue.add(command);
     }
 
+    public int getCommandCount() {
+        return mWriteQueue.size();
+    }
+
     public void sendAll() {
         if (mTx == null) {
             // Do nothing if there is no connection.
@@ -542,6 +555,8 @@ public class BLESerialPortService extends Service {
                     Toast.makeText(getApplicationContext(),
                             getResources().getString(R.string.error_ack_timeout) + " " + mErrCmd,
                             Toast.LENGTH_LONG).show();
+
+                    broadcastUpdate(ACTION_CMD_ACK_TIMEOUT, mErrCmd);
                     break;
 
                 case ERR_CODE_NO_CONNECTION:

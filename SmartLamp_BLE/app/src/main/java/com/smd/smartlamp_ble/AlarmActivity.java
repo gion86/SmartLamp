@@ -112,6 +112,7 @@ public class AlarmActivity extends AppCompatActivity
 
     // Code to manage Service lifecycle.
     private ProgressDialog mConnectDialog = null;
+    private ProgressDialog mSendCmdDialog = null;
     private BLESerialPortService mBLESerialPortService;
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
@@ -195,8 +196,7 @@ public class AlarmActivity extends AppCompatActivity
                     Log.i(TAG, "onFadeTimeClick on position " + position + " = " + fadeTimeBar.getProgress());
                 }
             });
-            AlertDialog dialog = alert.create();
-            dialog.show();
+            alert.create().show();
         }
 
         @Override
@@ -240,6 +240,8 @@ public class AlarmActivity extends AppCompatActivity
     private CharSequence mTitle;
 
     private SharedPreferences mSettings;
+    private int mCmdCount;
+    private int mCmdSent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -279,6 +281,12 @@ public class AlarmActivity extends AppCompatActivity
         mConnectDialog.setTitle(getString(R.string.connect_load_title));
         mConnectDialog.setMessage(getString(R.string.connect_load_msg));
         mConnectDialog.setCancelable(false); // Disable dismiss by tapping outside of the dialog
+
+        mSendCmdDialog = new ProgressDialog(this);
+        mSendCmdDialog.setTitle(getString(R.string.send_cmd_title));
+        mSendCmdDialog.setMessage(getString(R.string.send_cmd_msg));
+        mSendCmdDialog.setCancelable(false); // Disable dismiss by tapping outside of the dialog
+        mSendCmdDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 
         // Read preference values.
         mSettings = PreferenceManager.getDefaultSharedPreferences(this);
@@ -424,6 +432,8 @@ public class AlarmActivity extends AppCompatActivity
     // ACTION_GATT_CONNECTED: connected to a GATT server.
     // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
     // ACTION_GATT_DEVICE_DOES_NOT_SUPPORT_UART: serial service not supported by device.
+    // ACTION_CMD_ACK_RECV: a command has been acknowledged.
+    // ACTION_CMD_ACK_TIMEOUT: timeout on a sent command.
     private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -432,12 +442,23 @@ public class AlarmActivity extends AppCompatActivity
             if (BLESerialPortService.ACTION_GATT_CONNECTED.equals(action)) {
                 mConnected = true;
                 invalidateOptionsMenu();
-
             } else if (BLESerialPortService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 mConnected = false;
                 invalidateOptionsMenu();
             } else if (BLESerialPortService.ACTION_GATT_DEVICE_DOES_NOT_SUPPORT_UART.equals(action)) {
                 Toast.makeText(getBaseContext(), getString(R.string.error_no_service), Toast.LENGTH_LONG).show();
+            } else if (BLESerialPortService.ACTION_CMD_ACK_RECV.equals(action)) {
+                mSendCmdDialog.setProgress(++mCmdSent);
+
+                if (mCmdSent == mCmdCount) {
+                    mCmdSent = mCmdCount = 0;
+                    mSendCmdDialog.setProgress(mCmdSent);
+                    mSendCmdDialog.dismiss();
+                }
+            } else if (BLESerialPortService.ACTION_CMD_ACK_TIMEOUT.equals(action)) {
+                mCmdSent = mCmdCount = 0;
+                mSendCmdDialog.setProgress(mCmdSent);
+                mSendCmdDialog.dismiss();
             }
 
             Button sendAllButton = findViewById(R.id.sendAllButton);
@@ -456,6 +477,9 @@ public class AlarmActivity extends AppCompatActivity
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(BLESerialPortService.ACTION_GATT_CONNECTED);
         intentFilter.addAction(BLESerialPortService.ACTION_GATT_DISCONNECTED);
+        intentFilter.addAction(BLESerialPortService.ACTION_GATT_DEVICE_DOES_NOT_SUPPORT_UART);
+        intentFilter.addAction(BLESerialPortService.ACTION_CMD_ACK_RECV);
+        intentFilter.addAction(BLESerialPortService.ACTION_CMD_ACK_TIMEOUT);
         return intentFilter;
     }
 
@@ -606,6 +630,14 @@ public class AlarmActivity extends AppCompatActivity
             }
 
             mBLESerialPortService.sendAll();
+
+            // Dialog setup.
+            mCmdCount = mBLESerialPortService.getCommandCount();
+            mCmdSent = 0;
+
+            mSendCmdDialog.setProgress(mCmdSent);
+            mSendCmdDialog.setMax(mCmdCount);
+            mSendCmdDialog.show();
         }
     }
 }
