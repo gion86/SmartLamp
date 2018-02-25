@@ -158,7 +158,6 @@ public class BLESerialPortService extends Service {
             int idx = mBLEData.lastIndexOf(LINE_SEP);
 
             if (idx >= 0) {
-                //Log.d(TAG, mBLEData.substring(0, idx) + " idx = " + idx);
                 Log.d(TAG, mBLEData.substring(0, idx));
 
                 if (mBLEData.substring(0, idx).contains(ACK_DATA)) {
@@ -548,6 +547,10 @@ public class BLESerialPortService extends Service {
                 case ERR_CODE_NO_CONNECTION:
                     Log.e(TAG, "No connection: tx characteristic == null");
                     Toast.makeText(getApplicationContext(), R.string.error_no_conn, Toast.LENGTH_LONG).show();
+                    break;
+
+                case 0:
+                    Toast.makeText(getApplicationContext(), R.string.all_cmd_sent, Toast.LENGTH_LONG).show();
                     break;
             }
         }

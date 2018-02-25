@@ -44,11 +44,14 @@ public class DayAlarmViewModel extends AndroidViewModel {
         return mDayAlarmList;
     }
 
-    public void addItem(final DayAlarm day) { new addUpdateAsyncTask(mAppDatabase).execute(day); }
+    public void addItem(final DayAlarm day) {
+        new addUpdateAsyncTask(mAppDatabase).execute(day);
+    }
 
     public void updateItemTime(int position, int hour, int min) {
-        DayAlarm oldDay = mDayAlarmList.getValue().get(position);
-        DayAlarm day = new DayAlarm(oldDay.getWday(), oldDay.getFadeTime(), hour, min);
+        DayAlarm day = mDayAlarmList.getValue().get(position);
+        day.setHour(hour);
+        day.setMin(min);
 
         new addUpdateAsyncTask(mAppDatabase).execute(day);
     }

@@ -36,6 +36,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
@@ -91,6 +92,7 @@ public class AlarmActivity extends AppCompatActivity
 
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
+    public static final int CONNECT_TIMEOUT = 5000;     // Connect timeout [ms]
 
     private DayAlarmAdapter mDayAdapter;
     private DayAlarmViewModel mViewModel;
@@ -126,13 +128,15 @@ public class AlarmActivity extends AppCompatActivity
                     // if configured in preference.
                     if (mAutoConnect && mDeviceAddress != null && !mDeviceAddress.isEmpty()) {
                         mBLESerialPortService.connect(mDeviceAddress);
-                        mConnectDialog.show();
+                        timedDialogShow(mConnectDialog, CONNECT_TIMEOUT);
                     }
                 }
 
                 @Override
                 public void onServiceDisconnected(ComponentName componentName) {
                     mBLESerialPortService = null;
+                    mConnected = false;
+                    invalidateOptionsMenu();
                 }
             };
 
@@ -279,10 +283,6 @@ public class AlarmActivity extends AppCompatActivity
         // Read preference values.
         mSettings = PreferenceManager.getDefaultSharedPreferences(this);
 
-        // TODO Autoconnect timeout!
-        // TODO Autodisconnect on click
-        // FIXME "Black" color on set alarm time
-        // TODO Ack on send all alarm!
         mAutoConnect = mSettings.getBoolean(PREF_KEY_DEVICE_AUTOCONNECT, false);
         mDeviceName = mSettings.getString(PREF_KEY_DEVICE_NAME, "HM10");
         mDeviceAddress = mSettings.getString(PREF_KEY_DEVICE_ADDRESS, "");
@@ -301,10 +301,6 @@ public class AlarmActivity extends AppCompatActivity
         restoreActionBar();
 
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
-        if (mBLESerialPortService != null && mDeviceAddress != null && !mDeviceAddress.isEmpty()) {
-            final boolean result = mBLESerialPortService.connect(mDeviceAddress);
-            Log.d(TAG, "Connect request result=" + result);
-        }
     }
 
     @Override
@@ -412,7 +408,7 @@ public class AlarmActivity extends AppCompatActivity
                 } else {
                     Log.i(TAG, "Device address: " + mDeviceAddress);
                     mBLESerialPortService.connect(mDeviceAddress);
-                    mConnectDialog.show();
+                    timedDialogShow(mConnectDialog, CONNECT_TIMEOUT);
                 }
                 return true;
 
@@ -478,10 +474,24 @@ public class AlarmActivity extends AppCompatActivity
 
             Log.i(TAG, "Device address: " + mDeviceAddress);
             mBLESerialPortService.connect(mDeviceAddress);
-            mConnectDialog.show();
+            timedDialogShow(mConnectDialog, CONNECT_TIMEOUT);
         }
     }
 
+    /**
+     * Shows a dialog with a timed dismiss request.
+     *
+     * @param d
+     * @param time
+     */
+    private void timedDialogShow(final Dialog d, long time){
+        d.show();
+        new Handler().postDelayed(new Runnable() {
+            public void run() {
+                d.dismiss();
+            }
+        }, time);
+    }
 
     /**
      * A placeholder fragment containing a simple view for the activity with navigation drawer.
