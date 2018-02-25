@@ -74,6 +74,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import static com.smd.smartlamp_ble.device.BLESerialPortService.EXTRA_DATA;
 import static com.smd.smartlamp_ble.settings.SettingsActivity.PREF_KEY_DEVICE_ADDRESS;
 import static com.smd.smartlamp_ble.settings.SettingsActivity.PREF_KEY_DEVICE_AUTOCONNECT;
 import static com.smd.smartlamp_ble.settings.SettingsActivity.PREF_KEY_DEVICE_NAME;
@@ -173,6 +174,7 @@ public class AlarmActivity extends AppCompatActivity
             fadeTimeBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                    if (i < 1)  i = 1;
                     currentFadeTime.setText(getString(R.string.actual_fade_time) + " " + i);
                 }
 
@@ -459,6 +461,11 @@ public class AlarmActivity extends AppCompatActivity
                 mCmdSent = mCmdCount = 0;
                 mSendCmdDialog.setProgress(mCmdSent);
                 mSendCmdDialog.dismiss();
+
+                Log.e(TAG, "Ack time out on cmd: " + intent.getStringExtra(EXTRA_DATA));
+                Toast.makeText(getApplicationContext(),
+                        getResources().getString(R.string.error_ack_timeout) + " " + intent.getStringExtra(EXTRA_DATA),
+                        Toast.LENGTH_LONG).show();
             }
 
             Button sendAllButton = findViewById(R.id.sendAllButton);

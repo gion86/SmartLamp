@@ -28,9 +28,11 @@ import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Binder;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -73,6 +75,19 @@ public class BLESerialPortService extends Service {
     public final static String ACTION_CMD_ACK_TIMEOUT =
             "com.smd.smartlamp_ble.ACTION_CMD_ACK_TIMEOUT";
 
+    // Communication status
+    public static final long SEND_TIME_OUT_MILLIS = TimeUnit.SECONDS.toMillis(1);
+    public static final long RECV_TIME_OUT_MILLIS = TimeUnit.SECONDS.toMillis(1);
+
+    public final static int ERR_CODE_TIMEOUT_WRITE = -1;
+    public final static int ERR_CODE_NO_CONNECTION = -2;
+
+    public class LocalBinder extends Binder {
+        public BLESerialPortService getService() {
+            return BLESerialPortService.this;
+        }
+    }
+
     private final static String ACK_DATA = "OK";
 
     private static final int STATE_DISCONNECTED = 0;
@@ -89,7 +104,6 @@ public class BLESerialPortService extends Service {
 
     // Flags to indicate a write is currently in progress
     private boolean mWriteInProgress;
-    private boolean mAckReceived;
 
     private int mConnectionState = STATE_DISCONNECTED;
 
@@ -97,6 +111,10 @@ public class BLESerialPortService extends Service {
     private String mBLEData;
 
     private Queue<String> mWriteQueue;
+    private Handler mCmdTimeOutHandler;
+    private long mCmdSendMillis;
+    private Handler mCmdSendHandler;
+
 
     // Implements callback methods for GATT events that the app cares about.  For example,
     // connection change and services discovered.
@@ -167,11 +185,19 @@ public class BLESerialPortService extends Service {
                 Log.d(TAG, mBLEData.substring(0, idx));
 
                 if (mBLEData.substring(0, idx).contains(ACK_DATA)) {
-                    Log.d(TAG, "DATA_OK");
+                    Log.d(TAG, "DATA_OK: RTT " + (System.currentTimeMillis() - mCmdSendMillis) + " ms");
 
                     // Send broadcast information: a command has been acknowledged.
                     broadcastUpdate(ACTION_CMD_ACK_RECV);
-                    mAckReceived = true;
+
+                    // Remove handler for command timeout.
+                    mCmdTimeOutHandler.removeCallbacksAndMessages(null);
+
+                    // Remove head of the message queue.
+                    mWriteQueue.poll();
+
+                    // Send next command.
+                    sendCmd();
                 }
                 mBLEData = mBLEData.substring(idx + 1);
             }
@@ -205,9 +231,43 @@ public class BLESerialPortService extends Service {
         mBluetoothGatt = null;
         mTx = null;
         mWriteInProgress = false;
-        mAckReceived = false;
         mBLEData = "";
         mWriteQueue = new ConcurrentLinkedQueue<>();
+        mCmdTimeOutHandler = new Handler();
+
+        // Create a new background thread for processing messages.
+        HandlerThread handlerThread = new HandlerThread("HandlerThreadName");
+
+        // Starts the background thread
+        handlerThread.start();
+
+        // Create a handler attached to the HandlerThread's Looper
+        mCmdSendHandler = new Handler(handlerThread.getLooper()) {
+            @Override
+            public void handleMessage(Message msg) {
+                mCmdSendMillis = System.currentTimeMillis();
+
+                int errCode = sendCmdStr((String) msg.obj);
+
+                switch (errCode) {
+                    case ERR_CODE_TIMEOUT_WRITE:
+                        Log.e(TAG, "Write time out on cmd: " + msg.obj);
+                        Toast.makeText(getApplicationContext(),
+                                getResources().getString(R.string.error_write_timeout) + " " + msg.obj,
+                                Toast.LENGTH_LONG).show();
+                        break;
+
+                    case ERR_CODE_NO_CONNECTION:
+                        Log.e(TAG, "No connection: tx characteristic == null");
+                        Toast.makeText(getApplicationContext(), R.string.error_no_conn, Toast.LENGTH_LONG).show();
+                        break;
+                }
+
+                if (errCode != 0) {
+                    mWriteQueue.clear();
+                }
+            }
+        };
     }
 
     private void broadcastUpdate(final String action) {
@@ -384,22 +444,20 @@ public class BLESerialPortService extends Service {
             return;
         }
 
-        setCharacteristicNotification(mTx, true);
+        setCharacteristicNotification(mTx);
     }
 
     /**
      * Enables or disables notification on a give characteristic.
      *
      * @param characteristic Characteristic to act on.
-     * @param enabled        If true, enable notification.  False otherwise.
      */
-    public void setCharacteristicNotification(BluetoothGattCharacteristic characteristic,
-                                              boolean enabled) {
+    public void setCharacteristicNotification(BluetoothGattCharacteristic characteristic) {
         if (mBluetoothAdapter == null || mBluetoothGatt == null) {
             Log.w(TAG, "BluetoothAdapter not initialized");
             return;
         }
-        mBluetoothGatt.setCharacteristicNotification(characteristic, enabled);
+        mBluetoothGatt.setCharacteristicNotification(characteristic, true);
 
         // This is specific to serial communication.
         if (UUID_HM_RX_TX.equals(characteristic.getUuid())) {
@@ -418,6 +476,77 @@ public class BLESerialPortService extends Service {
         return mWriteQueue.size();
     }
 
+    // Send data to connected ble serial port device.
+    private Integer sendData(byte[] data) {
+        long beginMillis = System.currentTimeMillis();
+
+        // mTx could be null if anything had happened to the BLE connection.
+        if (mTx == null)
+            return ERR_CODE_NO_CONNECTION;
+
+        mWriteInProgress = true;
+        mTx.setValue(data);
+        writeCharacteristic(mTx);
+
+        while (mWriteInProgress) {           // Wait for the flag to clear in onCharacteristicWrite
+            if (System.currentTimeMillis() - beginMillis > SEND_TIME_OUT_MILLIS) {
+                Log.e(TAG, "current - begin = " + (System.currentTimeMillis() - beginMillis));
+                return ERR_CODE_TIMEOUT_WRITE;
+            }
+        }
+
+        return 0;
+    }
+
+    /**
+     * Send data to connected ble serial port device. We can only send 20 bytes per packet,
+     * so break longer messages up into 20 byte payloads
+     *
+     * @param string
+     * @return
+     */
+    private Integer sendCmdStr(String string) {
+        int len = string.length();
+        int pos = 0;
+        StringBuilder stringBuilder = new StringBuilder();
+
+        while (len > 0) {
+            stringBuilder.setLength(0);
+            if (len >= 20) {
+                stringBuilder.append(string.toCharArray(), pos, 20);
+                len -= 20;
+                pos += 20;
+            } else {
+                stringBuilder.append(string.toCharArray(), pos, len);
+                len = 0;
+            }
+            int errCode = sendData(stringBuilder.toString().getBytes());
+
+            if (errCode != 0)
+                return errCode;
+        }
+        return 0;
+    }
+    /**
+     * Send one command at a time, in an AsyncTask. Sets also the handler for the command timeout.
+     */
+    private void sendCmd() {
+        if (!mWriteQueue.isEmpty()) {
+
+            // Sets handler for timeout check
+            mCmdTimeOutHandler.postDelayed(new Runnable() {
+                public void run() {
+                    // Timeout on a sent command.
+                    broadcastUpdate(ACTION_CMD_ACK_TIMEOUT, mWriteQueue.element());
+                    mWriteQueue.clear();
+                }
+            }, RECV_TIME_OUT_MILLIS);
+
+            // Send message to the handler
+            mCmdSendHandler.obtainMessage(0, mWriteQueue.element()).sendToTarget();
+        }
+    }
+
     public void sendAll() {
         if (mTx == null) {
             // Do nothing if there is no connection.
@@ -427,147 +556,7 @@ public class BLESerialPortService extends Service {
             return;
         }
 
-        if (mWriteQueue.isEmpty())
-            return;
-
-        new SendCmdTask().execute(mWriteQueue);
-    }
-
-    public static class CommunicationStatus {
-        public static final long SEND_TIME_OUT_MILLIS = TimeUnit.SECONDS.toMillis(1);
-        public static final long RECV_TIME_OUT_MILLIS = TimeUnit.SECONDS.toMillis(1);
-        public static final int COMMUNICATION_SUCCESS = 0;
-        public static final int COMMUNICATION_TIMEOUT = -1;
-    }
-
-    public class LocalBinder extends Binder {
-        public BLESerialPortService getService() {
-            return BLESerialPortService.this;
-        }
-    }
-
-
-    /**
-     *
-     */
-    private class SendCmdTask extends AsyncTask<Queue<String>, Integer, Integer> {
-
-        private final static int ERR_CODE_TIMEOUT_WRITE = -1;
-        private final static int ERR_CODE_TIMEOUT_READ = -2;
-        private final static int ERR_CODE_NO_CONNECTION = -3;
-
-        private String mErrCmd = "";
-
-        // Send data to connected ble serial port device.
-        private Integer sendData(byte[] data) {
-            long beginMillis = System.currentTimeMillis();
-
-            // mTx could be null if anything had happened to the BLE connection.
-            if (mTx == null)
-                return ERR_CODE_NO_CONNECTION;
-
-            mWriteInProgress = true;
-            mTx.setValue(data);
-            writeCharacteristic(mTx);
-
-            while (mWriteInProgress) {           // Wait for the flag to clear in onCharacteristicWrite
-                if (System.currentTimeMillis() - beginMillis > CommunicationStatus.SEND_TIME_OUT_MILLIS) {
-                    Log.e(TAG, "current - begin = " + (System.currentTimeMillis() - beginMillis));
-                    return ERR_CODE_TIMEOUT_WRITE;
-                }
-            }
-
-            return 0;
-        }
-
-        // Send data to connected ble serial port device. We can only send 20 bytes per packet,
-        // so break longer messages up into 20 byte payloads
-        private Integer sendCmd(String string) {
-            int len = string.length();
-            int pos = 0;
-            StringBuilder stringBuilder = new StringBuilder();
-
-            while (len > 0) {
-                stringBuilder.setLength(0);
-                if (len >= 20) {
-                    stringBuilder.append(string.toCharArray(), pos, 20);
-                    len -= 20;
-                    pos += 20;
-                } else {
-                    stringBuilder.append(string.toCharArray(), pos, len);
-                    len = 0;
-                }
-                //Log.i(TAG, "T: " + stringBuilder.toString() + "   len = " + stringBuilder.toString().length());
-                int errCode = sendData(stringBuilder.toString().getBytes());
-
-                if (errCode != 0)
-                    return errCode;
-            }
-            return 0;
-        }
-
-
-        protected Integer doInBackground(Queue<String>... queue) {
-
-            long beginMillis;
-
-            for (String cmd : queue[0]) {
-                int errCode = sendCmd(cmd);     // Send actual command
-
-                if (errCode != 0) {
-                    mErrCmd = cmd;
-                    queue[0].clear();
-                    return errCode;
-                }
-
-                mAckReceived = false;
-                beginMillis = System.currentTimeMillis();
-
-                while (!mAckReceived) {                  // Wait for the flag to clear in onCharacteristicWrite
-                    if (System.currentTimeMillis() - beginMillis > CommunicationStatus.RECV_TIME_OUT_MILLIS) {
-                        mErrCmd = cmd;                   // Set the command for the error message
-                        queue[0].clear();
-                        return ERR_CODE_TIMEOUT_READ;
-                    }
-                }
-                //Log.i(TAG, "Read RRTT = " + (System.currentTimeMillis() - beginMillis));
-            }
-
-            queue[0].clear();
-            return 0;
-        }
-
-        protected void onProgressUpdate(Integer... progress) {
-        }
-
-        protected void onPostExecute(Integer errCode) {
-
-            switch (errCode) {
-                case ERR_CODE_TIMEOUT_WRITE:
-                    Log.e(TAG, "Write time out on cmd: " + mErrCmd);
-                    Toast.makeText(getApplicationContext(),
-                            getResources().getString(R.string.error_write_timeout) + " " + mErrCmd,
-                            Toast.LENGTH_LONG).show();
-                    break;
-
-                case ERR_CODE_TIMEOUT_READ:
-                    Log.e(TAG, "Ack time out on cmd: " + mErrCmd);
-                    Toast.makeText(getApplicationContext(),
-                            getResources().getString(R.string.error_ack_timeout) + " " + mErrCmd,
-                            Toast.LENGTH_LONG).show();
-
-                    broadcastUpdate(ACTION_CMD_ACK_TIMEOUT, mErrCmd);
-                    break;
-
-                case ERR_CODE_NO_CONNECTION:
-                    Log.e(TAG, "No connection: tx characteristic == null");
-                    Toast.makeText(getApplicationContext(), R.string.error_no_conn, Toast.LENGTH_LONG).show();
-                    break;
-
-                case 0:
-                    Toast.makeText(getApplicationContext(), R.string.all_cmd_sent, Toast.LENGTH_LONG).show();
-                    break;
-            }
-        }
+        // Send first command.
+        sendCmd();
     }
 }

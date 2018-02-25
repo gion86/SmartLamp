@@ -33,7 +33,6 @@
     <string name="error_ack_timeout">Timeout on ack for command:</string>
     <string name="error_no_conn">No connection to BLE characteristic</string>
     <string name="error_no_service">Serial service non supported by device</string>
-    <string name="all_cmd_sent">All command sent!</string>
 
     <!-- Buttons -->
     <string name="button_day_send">Send</string>
@@ -60,10 +59,10 @@
 
     <!-- Strings related to dialogs and UI -->
     <string name="connect_load_title">BLE service</string>
-    <string name="connect_load_msg">Connecting to BLE device...</string>
+    <string name="connect_load_msg">Connecting to BLE device…</string>
 
     <string name="send_cmd_title">BLE Command</string>
-    <string name="send_cmd_msg">Sending commands to BLE device...</string>
+    <string name="send_cmd_msg">Sending commands to BLE device…</string>
 
     <!-- Strings related to alarms and days -->
     <string-array name="day_names">

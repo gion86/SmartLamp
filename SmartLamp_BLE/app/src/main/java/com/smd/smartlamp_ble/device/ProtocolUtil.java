@@ -24,6 +24,7 @@ import com.smd.smartlamp_ble.model.DayAlarm;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.TimeZone;
 
 public class ProtocolUtil {
@@ -48,7 +49,7 @@ public class ProtocolUtil {
 
     @NonNull
     public static String cmdSendTime(Date date) {
-        SimpleDateFormat dateFormatGmt = new SimpleDateFormat(DATE_FORMAT);
+        SimpleDateFormat dateFormatGmt = new SimpleDateFormat(DATE_FORMAT, Locale.US);
         dateFormatGmt.setTimeZone(TimeZone.getTimeZone(TIME_ZONE));
 
         return "ST_" + dateFormatGmt.format(date) + LINE_SEP;
