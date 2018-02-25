@@ -43,17 +43,18 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.smd.smartlamp_ble.AlarmActivity;
 import com.smd.smartlamp_ble.R;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Activity for scanning and displaying available Bluetooth LE devices.
  */
 public class DeviceScanActivity extends AppCompatActivity {
     private static final int REQUEST_ENABLE_BT = 1;
+
+    public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
+    public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
 
     // Stops scanning after 10 seconds.
     private static final long SCAN_PERIOD = 10000;
@@ -71,16 +72,6 @@ public class DeviceScanActivity extends AppCompatActivity {
 
             mLeDeviceListAdapter.addDevice(result.getDevice());
             mLeDeviceListAdapter.notifyDataSetChanged();
-        }
-
-        @Override
-        public void onBatchScanResults(List<ScanResult> results) {
-            super.onBatchScanResults(results);
-        }
-
-        @Override
-        public void onScanFailed(int errorCode) {
-            super.onScanFailed(errorCode);
         }
     };
 
@@ -131,8 +122,8 @@ public class DeviceScanActivity extends AppCompatActivity {
                 }
 
                 Intent returnIntent = new Intent();
-                returnIntent.putExtra(AlarmActivity.EXTRAS_DEVICE_NAME, device.getName());
-                returnIntent.putExtra(AlarmActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
+                returnIntent.putExtra(EXTRAS_DEVICE_NAME, device.getName());
+                returnIntent.putExtra(EXTRAS_DEVICE_ADDRESS, device.getAddress());
                 setResult(Activity.RESULT_OK, returnIntent);
                 finish();
             }

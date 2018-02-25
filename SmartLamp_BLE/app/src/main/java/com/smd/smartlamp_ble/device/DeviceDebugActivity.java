@@ -38,6 +38,7 @@ import com.smd.smartlamp_ble.model.DayAlarm;
 
 import java.util.Date;
 
+import static com.smd.smartlamp_ble.device.DeviceScanActivity.EXTRAS_DEVICE_ADDRESS;
 import static com.smd.smartlamp_ble.device.ProtocolUtil.LINE_SEP;
 
 /**
@@ -47,8 +48,8 @@ import static com.smd.smartlamp_ble.device.ProtocolUtil.LINE_SEP;
  * Bluetooth LE API.
  */
 public class DeviceDebugActivity extends AppCompatActivity {
-    public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
     private final static String TAG = DeviceDebugActivity.class.getSimpleName();
+
     private TextView mReadTextView;
     private EditText mWriteText;
     private String mDeviceAddress;
@@ -191,10 +192,8 @@ public class DeviceDebugActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
 
-        if (mServiceConnection != null) {
-            unbindService(mServiceConnection);
-            mBLESerialPortService = null;
-        }
+        unbindService(mServiceConnection);
+        mBLESerialPortService = null;
     }
 
     private void displayData(String data) {

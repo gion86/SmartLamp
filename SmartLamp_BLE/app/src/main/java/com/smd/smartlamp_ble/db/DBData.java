@@ -27,15 +27,15 @@ import java.util.List;
  */
 public class DBData {
 
-    static final DayAlarm SUNDAY = new DayAlarm("Sunday", 0, 10, 12, 0, 255, 255, 0);
-    static final DayAlarm MONDAY = new DayAlarm("Monday", 1, 5, 8, 0,  255, 0, 0);
-    static final DayAlarm TUEDAY = new DayAlarm("Tuesday", 2, 15, 9, 0,  0, 255, 0);
-    static final DayAlarm WEDDAY = new DayAlarm("Wednesday", 3, 20, 10, 0,  125, 156, 55);
-    static final DayAlarm THUDAY = new DayAlarm("Thursday", 4, 4, 11, 0,  155, 33, 200);
-    static final DayAlarm FRIDAY = new DayAlarm("Friday", 5, 2, 7, 0,  225, 189, 55);
-    static final DayAlarm SATDAY = new DayAlarm("Saturday", 6, 8, 18, 0,  55, 200, 200);
+    public static final DayAlarm SUNDAY = new DayAlarm("Sunday", 0, 10, 12, 0, 255, 255, 0);
+    public static final DayAlarm MONDAY = new DayAlarm("Monday", 1, 5, 8, 0,  255, 0, 0);
+    public static final DayAlarm TUEDAY = new DayAlarm("Tuesday", 2, 15, 9, 0,  0, 255, 0);
+    public static final DayAlarm WEDDAY = new DayAlarm("Wednesday", 3, 20, 10, 0,  125, 156, 55);
+    public static final DayAlarm THUDAY = new DayAlarm("Thursday", 4, 4, 11, 0,  155, 33, 200);
+    public static final DayAlarm FRIDAY = new DayAlarm("Friday", 5, 2, 7, 0,  225, 189, 55);
+    public static final DayAlarm SATDAY = new DayAlarm("Saturday", 6, 8, 18, 0,  55, 200, 200);
 
-    static final List<DayAlarm> DAYS = Arrays.asList(SUNDAY, MONDAY, TUEDAY, WEDDAY, THUDAY, FRIDAY, SATDAY);
+    public static final List<DayAlarm> DAYS = Arrays.asList(SUNDAY, MONDAY, TUEDAY, WEDDAY, THUDAY, FRIDAY, SATDAY);
 }
 
 

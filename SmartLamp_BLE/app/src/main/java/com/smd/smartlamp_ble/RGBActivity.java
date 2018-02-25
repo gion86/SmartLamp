@@ -103,10 +103,8 @@ public class RGBActivity extends AppCompatActivity implements ColorPickerView.On
     public void onDestroy() {
         super.onDestroy();
 
-        if (mServiceConnection != null) {
-            unbindService(mServiceConnection);
-            mBLESerialPortService = null;
-        }
+        unbindService(mServiceConnection);
+        mBLESerialPortService = null;
     }
 
     /**

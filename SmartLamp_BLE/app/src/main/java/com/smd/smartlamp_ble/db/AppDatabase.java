@@ -23,6 +23,7 @@ import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 
 import com.smd.smartlamp_ble.model.DayAlarm;
 
@@ -48,11 +49,11 @@ public abstract class AppDatabase extends RoomDatabase {
 
     public abstract DayAlarmDAO dayAlarmDAO();
 
-    private static RoomDatabase.Callback sRoomDatabaseCallback =
+    private static final RoomDatabase.Callback sRoomDatabaseCallback =
             new RoomDatabase.Callback(){
 
                 @Override
-                public void onCreate (SupportSQLiteDatabase db) {
+                public void onCreate (@NonNull SupportSQLiteDatabase db) {
                     super.onCreate(db);
                     new PopulateDbAsync(INSTANCE).execute();
                 }

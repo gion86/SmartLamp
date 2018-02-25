@@ -23,27 +23,21 @@
                 android:id="@+id/dayList"
                 android:layout_width="match_parent"
                 android:layout_height="450dp"
-                android:layout_weight="1"
                 app:layoutManager="android.support.v7.widget.LinearLayoutManager" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_weight="1"
                 android:orientation="horizontal">
 
                 <Space
                     android:layout_width="260dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1" />
+                    android:layout_height="wrap_content" />
 
                 <Button
                     android:id="@+id/sendAllButton"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
                     android:layout_marginEnd="17dp"
                     android:layout_weight="1"
                     android:width="100dp"

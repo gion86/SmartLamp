@@ -1,12 +1,14 @@
 <component name="ProjectDictionaryState">
   <dictionary name="gionata">
     <words>
+      <w>autoconnect</w>
       <w>fadetime</w>
       <w>inflator</w>
       <w>prova</w>
       <w>rssi</w>
       <w>smartlamp</w>
       <w>uart</w>
+      <w>wday</w>
     </words>
   </dictionary>
 </component>

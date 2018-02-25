@@ -115,10 +115,11 @@ public class BLESerialPortService extends Service {
     private long mCmdSendMillis;
     private Handler mCmdSendHandler;
 
-
-    // Implements callback methods for GATT events that the app cares about.  For example,
-    // connection change and services discovered.
-    public BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
+    /**
+     * Implements callback methods for GATT events that the app cares about.  For example,
+     * connection change and services discovered.
+     */
+    private BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             super.onConnectionStateChange(gatt, status, newState);

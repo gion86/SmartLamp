@@ -17,14 +17,4 @@
 
 <resources>
     <string name="app_name">SmartLamp SMD</string>
-    <string name="intro_message">
-        <![CDATA[
-        
-            
-            This application uses Bluetooth LE Generic Attribute Profile (GATT)
-            to transmit data between the device and a smartlamp PCB custom made with a HM10 BLE module.
-            
-        
-        ]]>
-    </string>
 </resources>

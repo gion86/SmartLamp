@@ -40,7 +40,7 @@ public class DayAlarmViewModel extends AndroidViewModel {
         mDayAlarmList = mAppDatabase.dayAlarmDAO().getAll();
     }
 
-    public LiveData<List<DayAlarm>> getmDayAlarmList() {
+    public LiveData<List<DayAlarm>> getDayAlarmList() {
         return mDayAlarmList;
     }
 
@@ -49,42 +49,51 @@ public class DayAlarmViewModel extends AndroidViewModel {
     }
 
     public void updateItemTime(int position, int hour, int min) {
-        DayAlarm day = mDayAlarmList.getValue().get(position);
-        day.setHour(hour);
-        day.setMin(min);
+        DayAlarm day = mDayAlarmList.getValue(). get(position);
 
-        new addUpdateAsyncTask(mAppDatabase).execute(day);
+        if (day != null) {
+            day.setHour(hour);
+            day.setMin(min);
+            new addUpdateAsyncTask(mAppDatabase).execute(day);
+        }
     }
 
     public void updateItemFade(int position, int fadeTime) {
         DayAlarm day = mDayAlarmList.getValue().get(position);
-        day.setFadeTime(fadeTime);
 
-        new addUpdateAsyncTask(mAppDatabase).execute(day);
+        if (day != null) {
+            day.setFadeTime(fadeTime);
+            new addUpdateAsyncTask(mAppDatabase).execute(day);
+        }
     }
 
     public void updateItemEn(int position, boolean enabled) {
         DayAlarm day = mDayAlarmList.getValue().get(position);
-        day.setEnabled(enabled);
 
-        new addUpdateAsyncTask(mAppDatabase).execute(day);
+        if (day != null) {
+            day.setEnabled(enabled);
+            new addUpdateAsyncTask(mAppDatabase).execute(day);
+        }
     }
 
     public void updateItemColor(int position, int color) {
         DayAlarm day = mDayAlarmList.getValue().get(position);
 
-        day.setRed(Color.red(color));
-        day.setGreen(Color.green(color));
-        day.setBlue(Color.blue(color));
-
-        new addUpdateAsyncTask(mAppDatabase).execute(day);
+        if (day != null) {
+            day.setRed(Color.red(color));
+            day.setGreen(Color.green(color));
+            day.setBlue(Color.blue(color));
+            new addUpdateAsyncTask(mAppDatabase).execute(day);
+        }
     }
 
     public void updateItem(int position) {
         DayAlarm day = mDayAlarmList.getValue().get(position);
-        day.setEnabled(!day.isEnabled());
 
-        new addUpdateAsyncTask(mAppDatabase).execute(day);
+        if (day != null) {
+            day.setEnabled(!day.isEnabled());
+            new addUpdateAsyncTask(mAppDatabase).execute(day);
+        }
     }
 
     public void deleteItem(int wday) {

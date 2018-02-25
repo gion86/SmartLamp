@@ -75,6 +75,8 @@ import java.util.Calendar;
 import java.util.List;
 
 import static com.smd.smartlamp_ble.device.BLESerialPortService.EXTRA_DATA;
+import static com.smd.smartlamp_ble.device.DeviceScanActivity.EXTRAS_DEVICE_ADDRESS;
+import static com.smd.smartlamp_ble.device.DeviceScanActivity.EXTRAS_DEVICE_NAME;
 import static com.smd.smartlamp_ble.settings.SettingsActivity.PREF_KEY_DEVICE_ADDRESS;
 import static com.smd.smartlamp_ble.settings.SettingsActivity.PREF_KEY_DEVICE_AUTOCONNECT;
 import static com.smd.smartlamp_ble.settings.SettingsActivity.PREF_KEY_DEVICE_NAME;
@@ -88,12 +90,10 @@ public class AlarmActivity extends AppCompatActivity
 
     private final static String TAG = AlarmActivity.class.getSimpleName();
 
-    public static final int REQUEST_ENABLE_BT = 2;      // Request to enable BlueTooth adapter
-    public static final int REQUEST_DEVICE = 1;         // Request to find a new device to connect (scan)
+    private static final int REQUEST_ENABLE_BT = 2;      // Request to enable BlueTooth adapter
+    private static final int REQUEST_DEVICE = 1;         // Request to find a new device to connect (scan)
 
-    public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
-    public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
-    public static final int CONNECT_TIMEOUT = 5000;     // Connect timeout [ms]
+    private static final int CONNECT_TIMEOUT = 5000;     // Connect timeout [ms]
 
     private DayAlarmAdapter mDayAdapter;
     private DayAlarmViewModel mViewModel;
@@ -274,7 +274,7 @@ public class AlarmActivity extends AppCompatActivity
         recyclerView.setAdapter(mDayAdapter);
 
         mViewModel = ViewModelProviders.of(this).get(DayAlarmViewModel.class);
-        mViewModel.getmDayAlarmList().observe(AlarmActivity.this, mDayListObserver);
+        mViewModel.getDayAlarmList().observe(AlarmActivity.this, mDayListObserver);
 
         mDayPos = -1;
         mConnected = false;
@@ -323,10 +323,8 @@ public class AlarmActivity extends AppCompatActivity
     public void onDestroy() {
         super.onDestroy();
 
-        if (mServiceConnection != null) {
-            unbindService(mServiceConnection);
-            mBLESerialPortService = null;
-        }
+        unbindService(mServiceConnection);
+        mBLESerialPortService = null;
     }
 
     @Override
@@ -628,7 +626,7 @@ public class AlarmActivity extends AppCompatActivity
     }
 
     public void onSendDayClick(View view) {
-       List<DayAlarm> dayList = mViewModel.getmDayAlarmList().getValue();
+       List<DayAlarm> dayList = mViewModel.getDayAlarmList().getValue();
 
         if (dayList != null) {
             for (DayAlarm day :dayList) {

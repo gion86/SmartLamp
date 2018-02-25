@@ -45,6 +45,7 @@ import android.widget.TextView;
 
 import com.smd.smartlamp_ble.R;
 
+// TODO deprecated API??
 /**
  * Fragment used for managing interactions for and presentation of a navigation drawer.
  */
@@ -200,7 +201,8 @@ public class NavigationDrawerFragment extends Fragment {
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        @NonNull
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
             // Check if an existing view is being reused, otherwise inflate the view
             if (convertView == null) {
                 convertView = LayoutInflater.from(getContext()).inflate(

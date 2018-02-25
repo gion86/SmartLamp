@@ -53,7 +53,8 @@
         android:layout_width="30dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:textAlignment="center"
+        android:gravity="end"
+        android:textAlignment="textEnd"
         android:textSize="20sp" />
 
     <Space

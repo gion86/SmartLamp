@@ -105,7 +105,8 @@ public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAla
             day.setName(mDayNames[day.getWday()]);
 
             holder.dayName.setText(day.getName());
-            holder.fadeTime.setText(Integer.toString(day.getFadeTime()));
+            //holder.fadeTime.setText(Integer.toString(day.getFadeTime()));
+            holder.fadeTime.setText(String.format("%d", day.getFadeTime()));
             holder.dayTime.setText(digit(day.getHour()) + ":" + digit(day.getMin()));
             holder.dayEn.setChecked(day.isEnabled());
             holder.dayColor.getDrawable()

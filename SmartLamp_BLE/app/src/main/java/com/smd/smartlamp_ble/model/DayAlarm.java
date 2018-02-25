@@ -30,10 +30,11 @@ public class DayAlarm {
 
     public final static int MAX_FADETIME = 99;
 
-    @PrimaryKey
+
     /**
      * Weekday as defined by the AVR standard library (time.h): 0 = sunday, 6 = saturday.
      */
+    @PrimaryKey
     private int wday;
 
     private String name;
