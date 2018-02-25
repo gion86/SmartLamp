@@ -60,7 +60,7 @@ import android.widget.Toast;
 import com.jaredrummler.android.colorpicker.ColorPickerDialog;
 import com.jaredrummler.android.colorpicker.ColorPickerDialogListener;
 import com.smd.smartlamp_ble.device.BLESerialPortService;
-import com.smd.smartlamp_ble.device.DeviceControlActivity;
+import com.smd.smartlamp_ble.device.DeviceDebugActivity;
 import com.smd.smartlamp_ble.device.DeviceScanActivity;
 import com.smd.smartlamp_ble.device.ProtocolUtil;
 import com.smd.smartlamp_ble.model.DayAlarm;
@@ -94,7 +94,6 @@ public class AlarmActivity extends AppCompatActivity
 
     private DayAlarmAdapter mDayAdapter;
     private DayAlarmViewModel mViewModel;
-    private RecyclerView mRecyclerView;
 
     /**
      *
@@ -156,7 +155,7 @@ public class AlarmActivity extends AppCompatActivity
             LayoutInflater inflater = getLayoutInflater();
             View alertLayout = inflater.inflate(R.layout.fragment_fade_time, null);
 
-            // This is set the view from XML inside AlertDialog
+            // This sets the view from XML inside AlertDialog
             alert.setView(alertLayout);
 
             final TextView currentFadeTime = alertLayout.findViewById(R.id.currentFadeTime);
@@ -263,8 +262,8 @@ public class AlarmActivity extends AppCompatActivity
         mDayAdapter = new DayAlarmAdapter(new ArrayList<DayAlarm>(),
                 getResources().getStringArray(R.array.day_names), mAdpaterListerner);
 
-        mRecyclerView = findViewById(R.id.dayList);
-        mRecyclerView.setAdapter(mDayAdapter);
+        RecyclerView recyclerView = findViewById(R.id.dayList);
+        recyclerView.setAdapter(mDayAdapter);
 
         mViewModel = ViewModelProviders.of(this).get(DayAlarmViewModel.class);
         mViewModel.getmDayAlarmList().observe(AlarmActivity.this, mDayListObserver);
@@ -280,6 +279,10 @@ public class AlarmActivity extends AppCompatActivity
         // Read preference values.
         mSettings = PreferenceManager.getDefaultSharedPreferences(this);
 
+        // TODO Autoconnect timeout!
+        // TODO Autodisconnect on click
+        // FIXME "Black" color on set alarm time
+        // TODO Ack on send all alarm!
         mAutoConnect = mSettings.getBoolean(PREF_KEY_DEVICE_AUTOCONNECT, false);
         mDeviceName = mSettings.getString(PREF_KEY_DEVICE_NAME, "HM10");
         mDeviceAddress = mSettings.getString(PREF_KEY_DEVICE_ADDRESS, "");
@@ -346,7 +349,7 @@ public class AlarmActivity extends AppCompatActivity
             // Start RGB test activity
             case MENU_POS_DEV_DEBUG:
                 // Start serial debug activity
-                startActivity(new Intent(this, DeviceControlActivity.class));
+                startActivity(new Intent(this, DeviceDebugActivity.class));
                 break;
         }
     }
@@ -507,8 +510,7 @@ public class AlarmActivity extends AppCompatActivity
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_alarm, container, false);
-            return rootView;
+            return inflater.inflate(R.layout.fragment_alarm, container, false);
         }
 
         @Override
@@ -585,11 +587,15 @@ public class AlarmActivity extends AppCompatActivity
     }
 
     public void onSendDayClick(View view) {
-        for (DayAlarm day : mViewModel.getmDayAlarmList().getValue()) {
-            mBLESerialPortService.addCommand(ProtocolUtil.cmdSetAlarmFull(day));
-            Log.i(TAG, "SEND: " + ProtocolUtil.cmdSetAlarmFull(day));
-        }
+       List<DayAlarm> dayList = mViewModel.getmDayAlarmList().getValue();
 
-        mBLESerialPortService.sendAll();
+        if (dayList != null) {
+            for (DayAlarm day :dayList) {
+                mBLESerialPortService.addCommand(ProtocolUtil.cmdSetAlarmFull(day));
+                Log.i(TAG, "SEND: " + ProtocolUtil.cmdSetAlarmFull(day));
+            }
+
+            mBLESerialPortService.sendAll();
+        }
     }
 }

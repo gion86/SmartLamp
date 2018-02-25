@@ -199,7 +199,7 @@ public class BLESerialPortService extends Service {
         mWriteInProgress = false;
         mAckReceived = false;
         mBLEData = "";
-        mWriteQueue = new ConcurrentLinkedQueue<String>();
+        mWriteQueue = new ConcurrentLinkedQueue<>();
     }
 
     private void broadcastUpdate(final String action) {
@@ -497,7 +497,7 @@ public class BLESerialPortService extends Service {
 
         protected Integer doInBackground(Queue<String>... queue) {
 
-            long beginMillis = 0;
+            long beginMillis;
 
             for (String cmd : queue[0]) {
                 int errCode = sendCmd(cmd);     // Send actual command

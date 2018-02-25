@@ -181,7 +181,7 @@ public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAla
                 public void onClick(View view) {
                     listener.onColorClick(position, Color.argb(COLOR_ALPHA, day.getRed(), day.getGreen(), day.getBlue()));
                 }
-            });;
+            });
         }
     }
 }

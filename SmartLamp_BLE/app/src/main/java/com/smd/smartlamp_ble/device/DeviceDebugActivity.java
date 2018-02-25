@@ -41,20 +41,17 @@ import java.util.Date;
 import static com.smd.smartlamp_ble.device.ProtocolUtil.LINE_SEP;
 
 /**
- * For a given BLE device, this Activity provides the user interface to connect, display data,
- * and display GATT services and characteristics supported by the device.  The Activity
- * communicates with {@code BLESerialPortService}, which in turn interacts with the
+ * For a given BLE device, this Activity provides the user interface to send and receive command,
+ * and display data from BLE device.
+ * The Activity communicates with {@code BLESerialPortService}, which in turn interacts with the
  * Bluetooth LE API.
  */
-public class DeviceControlActivity extends AppCompatActivity {
-    public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
+public class DeviceDebugActivity extends AppCompatActivity {
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
-    private final static String TAG = DeviceControlActivity.class.getSimpleName();
+    private final static String TAG = DeviceDebugActivity.class.getSimpleName();
     private TextView mReadTextView;
     private EditText mWriteText;
-    private String mDeviceName;
     private String mDeviceAddress;
-    private boolean mConnected = false;
 
     private BLESerialPortService mBLESerialPortService;
 
@@ -80,21 +77,13 @@ public class DeviceControlActivity extends AppCompatActivity {
     };
 
     // Handles various events fired by the Service.
-    // ACTION_GATT_CONNECTED: connected to a GATT server.
-    // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
-    // ACTION_DATA_AVAILABLE: received data from the device.  This can be a result of read
+    // ACTION_DATA_AVAILABLE: received data from the device. This can be a result of read
     //                        or notification operations.
     private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
-            if (BLESerialPortService.ACTION_GATT_CONNECTED.equals(action)) {
-                mConnected = true;
-                invalidateOptionsMenu();
-            } else if (BLESerialPortService.ACTION_GATT_DISCONNECTED.equals(action)) {
-                mConnected = false;
-                invalidateOptionsMenu();
-            } else if (BLESerialPortService.ACTION_DATA_AVAILABLE.equals(action)) {
+            if (BLESerialPortService.ACTION_DATA_AVAILABLE.equals(action)) {
                 displayData(intent.getStringExtra(BLESerialPortService.EXTRA_DATA));
             }
         }
@@ -114,7 +103,6 @@ public class DeviceControlActivity extends AppCompatActivity {
         setContentView(R.layout.serial_read_write);
 
         final Intent intent = getIntent();
-        mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
         mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
 
         // Sets up UI references.

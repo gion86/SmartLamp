@@ -26,6 +26,7 @@ public class HM10BleAttributes {
     public static String CLIENT_CHARACTERISTIC_CONFIG = "00002902-0000-1000-8000-00805f9b34fb";
     public static String HM_10_CONF = "0000ffe0-0000-1000-8000-00805f9b34fb";
     public static String HM_RX_TX = "0000ffe1-0000-1000-8000-00805f9b34fb";
+    @SuppressWarnings("unchecked")
     private static HashMap<String, String> attributes = new HashMap();
 
     static {

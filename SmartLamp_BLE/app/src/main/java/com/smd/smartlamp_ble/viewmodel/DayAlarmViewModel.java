@@ -85,7 +85,7 @@ public class DayAlarmViewModel extends AndroidViewModel {
     }
 
     public void deleteItem(int wday) {
-        new deleteWdayAsyncTask(mAppDatabase).execute(new Integer(wday));
+        new deleteWdayAsyncTask(mAppDatabase).execute(wday);
     }
 
     public void deleteItem(DayAlarm day) {
