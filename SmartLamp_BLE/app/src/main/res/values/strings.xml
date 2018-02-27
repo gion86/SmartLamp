@@ -54,6 +54,12 @@
     <string name="send_cmd_title">BLE Command</string>
     <string name="send_cmd_msg">Sending commands to BLE device…</string>
 
+    <string name="Location_dialog_title">This app needs location access</string>
+    <string name="location_dialog_mes">Please grant location access so this app can detect beacons.</string>
+
+    <string name="location_dis_title">Functionality limited</string>
+    <string name="location_dis_mes">Since location access has not been granted, this app will not be able to discover beacons when in the background.</string>
+
     <!-- Strings related to alarms and days -->
     <string-array name="day_names">
         <item>Sunday</item>

@@ -23,29 +23,21 @@
                 android:id="@+id/dayList"
                 android:layout_width="match_parent"
                 android:layout_height="450dp"
-                app:layoutManager="android.support.v7.widget.LinearLayoutManager" />
+                app:layoutManager="android.support.v7.widget.LinearLayoutManager">
 
-            <LinearLayout
+            </android.support.v7.widget.RecyclerView>
+
+            <Button
+                android:id="@+id/sendAllButton"
+                style="@style/Widget.AppCompat.Button.Colored"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <Space
-                    android:layout_width="260dp"
-                    android:layout_height="wrap_content" />
-
-                <Button
-                    android:id="@+id/sendAllButton"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="17dp"
-                    android:layout_weight="1"
-                    android:width="100dp"
-                    android:onClick="onSendDayClick"
-                    android:text="@string/button_day_send"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
+                android:layout_weight="1"
+                android:gravity="center_vertical|center_horizontal"
+                android:onClick="onSendDayClick"
+                android:text="@string/button_day_send"
+                android:textSize="24sp"
+                android:textStyle="bold" />
 
         </LinearLayout>
 
