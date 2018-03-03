@@ -12,21 +12,15 @@
 *.map
 *.exp
 
-# Precompiled Headers
-*.gch
-*.pch
-
 # Libraries
 *.lib
 *.a
 *.la
 *.lo
 
-# Shared objects (inc. Windows DLLs)
-*.dll
+# Shared objects
 *.so
 *.so.*
-*.dylib
 
 # Executables
 *.exe
@@ -36,19 +30,5 @@
 *.x86_64
 *.hex
 
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
-
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
 /Test_HM10_SMD/
-/DOC_vari/
+/Box/
