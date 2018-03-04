@@ -17,6 +17,9 @@
 
 package com.smd.smartlamp_ble.db;
 
+import android.support.annotation.NonNull;
+
+import com.smd.smartlamp_ble.BuildConfig;
 import com.smd.smartlamp_ble.model.DayAlarm;
 
 import java.util.Arrays;
@@ -27,15 +30,35 @@ import java.util.List;
  */
 public class DBData {
 
-    public static final DayAlarm SUNDAY = new DayAlarm("Sunday", 0, 10, 12, 0, 255, 255, 0);
-    public static final DayAlarm MONDAY = new DayAlarm("Monday", 1, 5, 8, 0,  255, 0, 0);
-    public static final DayAlarm TUEDAY = new DayAlarm("Tuesday", 2, 15, 9, 0,  0, 255, 0);
-    public static final DayAlarm WEDDAY = new DayAlarm("Wednesday", 3, 20, 10, 0,  125, 156, 55);
-    public static final DayAlarm THUDAY = new DayAlarm("Thursday", 4, 4, 11, 0,  155, 33, 200);
-    public static final DayAlarm FRIDAY = new DayAlarm("Friday", 5, 2, 7, 0,  225, 189, 55);
-    public static final DayAlarm SATDAY = new DayAlarm("Saturday", 6, 8, 18, 0,  55, 200, 200);
+    // Debug data
+    public static final DayAlarm SUNDAY_D = new DayAlarm("Sunday", 0, 10, 12, 0, 255, 255, 0);
+    public static final DayAlarm MONDAY_D = new DayAlarm("Monday", 1, 5, 8, 0,  255, 0, 0);
+    public static final DayAlarm TUEDAY_D = new DayAlarm("Tuesday", 2, 15, 9, 0,  0, 255, 0);
+    public static final DayAlarm WEDDAY_D = new DayAlarm("Wednesday", 3, 20, 10, 0,  125, 156, 55);
+    public static final DayAlarm THUDAY_D = new DayAlarm("Thursday", 4, 4, 11, 0,  155, 33, 200);
+    public static final DayAlarm FRIDAY_D = new DayAlarm("Friday", 5, 2, 7, 0,  225, 189, 55);
+    public static final DayAlarm SATDAY_D = new DayAlarm("Saturday", 6, 8, 18, 0,  55, 200, 200);
 
-    public static final List<DayAlarm> DAYS = Arrays.asList(SUNDAY, MONDAY, TUEDAY, WEDDAY, THUDAY, FRIDAY, SATDAY);
+    // Release data: to populate DB on first install
+    public static final DayAlarm SUNDAY = new DayAlarm("Sunday", 0, 20, 10, 0, 215, 11, 0);
+    public static final DayAlarm MONDAY = new DayAlarm("Monday", 1, 10, 7, 0,  238, 218, 0);
+    public static final DayAlarm TUEDAY = new DayAlarm("Tuesday", 2, 10, 7, 0,  238, 218, 0);
+    public static final DayAlarm WEDDAY = new DayAlarm("Wednesday", 3, 10, 7, 0,  238, 218, 0);
+    public static final DayAlarm THUDAY = new DayAlarm("Thursday", 4, 10, 7, 0,  238, 218, 0);
+    public static final DayAlarm FRIDAY = new DayAlarm("Friday", 5, 10, 7, 0,  238, 218, 0);
+    public static final DayAlarm SATDAY = new DayAlarm("Saturday", 6, 20, 9, 0,  215, 11, 0);
+
+    /**
+     * Creates an array of {@link DayAlarm} objects to populate DB for debug and release build.
+     *
+     * @return a List of {@link DayAlarm} objects
+     */
+    @NonNull
+    public static List<DayAlarm> createDaysData() {
+       if (BuildConfig.DEBUG) {
+           return Arrays.asList(SUNDAY_D, MONDAY_D, TUEDAY_D, WEDDAY_D, THUDAY_D, FRIDAY_D, SATDAY_D);
+       } else {
+           return Arrays.asList(SUNDAY, MONDAY, TUEDAY, WEDDAY, THUDAY, FRIDAY, SATDAY);
+       }
+    }
 }
-
-

@@ -27,7 +27,8 @@ import android.support.annotation.NonNull;
 
 import com.smd.smartlamp_ble.model.DayAlarm;
 
-import static com.smd.smartlamp_ble.db.DBData.DAYS;
+import static com.smd.smartlamp_ble.db.DBData.createDaysData;
+
 
 @Database(entities = {DayAlarm.class}, version = 1)
 public abstract class AppDatabase extends RoomDatabase {
@@ -72,7 +73,7 @@ public abstract class AppDatabase extends RoomDatabase {
             mDao.deleteAll();
 
             // Populate the database with default data
-            mDao.insertAll(DAYS);
+            mDao.insertAll(createDaysData());
 
             return null;
         }

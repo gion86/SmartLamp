@@ -128,7 +128,7 @@ public class AlarmActivity extends AppCompatActivity
 
                     // Auto connect to BLE device on startup/resume of the activity (and service bind),
                     // if configured in preference.
-                    if (mAutoConnect && mDeviceAddress != null && !mDeviceAddress.isEmpty()) {
+                    if (mAutoConnect && mBtAdapter.isEnabled() && mDeviceAddress != null && !mDeviceAddress.isEmpty()) {
                         mBLESerialPortService.connect(mDeviceAddress);
                         timedDialogShow(mConnectDialog, CONNECT_TIMEOUT);
                     }
@@ -504,7 +504,12 @@ public class AlarmActivity extends AppCompatActivity
             Log.i(TAG, "Device address: " + mDeviceAddress);
             mBLESerialPortService.connect(mDeviceAddress);
             timedDialogShow(mConnectDialog, CONNECT_TIMEOUT);
+        } else if (requestCode == REQUEST_ENABLE_BT && resultCode == RESULT_OK) {
+            // BlueTooth enabled: start scan activity
+            Intent deviceScanIntent = new Intent(this, DeviceScanActivity.class);
+            startActivityForResult(deviceScanIntent, REQUEST_DEVICE);
         }
+
     }
 
     /**
