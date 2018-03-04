@@ -19,3 +19,15 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# For parse
+-dontwarn android.test.**
+-dontwarn org.junit.**
+
+# Remove all Log calls
+-assumenosideeffects class android.util.Log {
+    public static *** d(...);
+    public static *** i(...);
+    public static *** w(...);
+    public static *** e(...);
+}
