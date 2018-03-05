@@ -18,7 +18,7 @@ This project consists of a main C++ file and some libraries:
 
 * **DS3232RTC** : real time clock library, to read the actual date and time. The library 
   have been modified to work with the an external instance of the I2C bus control 
-  class, and each functionality has been tested with the hardware;
+  class, and each functionality has been tested with the hardware (reference <https://github.com/gion86/DS3232RTC>);
 * **TimeZone** : Arduino library to account for DST (summer time) with the RTC clock
   (reference <https://github.com/gion86/Timezone>, version with time.h from avr-libc);
 * **Wire** : I2C library for Atmel micros. The library includes the correct source file for 

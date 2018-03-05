@@ -341,9 +341,15 @@ public class AlarmActivity extends AppCompatActivity
                 break;
 
             case MENU_POS_DEV_SCAN:
-                // Start scan activity
-                Intent deviceScanIntent = new Intent(this, DeviceScanActivity.class);
-                startActivityForResult(deviceScanIntent, REQUEST_DEVICE);
+                if (!mBtAdapter.isEnabled()) {
+                    Log.i(TAG, "BT not enabled yet");
+                    Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                    startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
+                } else {
+                    // Start scan activity
+                    Intent deviceScanIntent = new Intent(this, DeviceScanActivity.class);
+                    startActivityForResult(deviceScanIntent, REQUEST_DEVICE);
+                }
             break;
 
             case MENU_POS_RBG:
@@ -406,7 +412,7 @@ public class AlarmActivity extends AppCompatActivity
         switch (item.getItemId()) {
             case R.id.menu_connect:
                 if (!mBtAdapter.isEnabled()) {
-                    Log.i(TAG, "onClick - BT not enabled yet");
+                    Log.i(TAG, "BT not enabled yet");
                     Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                     startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
                 } else if (mDeviceAddress == null || mDeviceAddress.isEmpty()) {
