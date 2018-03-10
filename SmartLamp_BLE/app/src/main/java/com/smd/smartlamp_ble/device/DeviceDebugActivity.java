@@ -32,13 +32,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.smd.smartlamp_ble.R;
 import com.smd.smartlamp_ble.model.DayAlarm;
 
 import java.util.Date;
 
-import static com.smd.smartlamp_ble.device.DeviceScanActivity.EXTRAS_DEVICE_ADDRESS;
+import static com.smd.smartlamp_ble.device.BLESerialPortService.EXTRA_DATA;
 import static com.smd.smartlamp_ble.device.ProtocolUtil.LINE_SEP;
 
 /**
@@ -52,7 +53,6 @@ public class DeviceDebugActivity extends AppCompatActivity {
 
     private TextView mReadTextView;
     private EditText mWriteText;
-    private String mDeviceAddress;
 
     private BLESerialPortService mBLESerialPortService;
 
@@ -67,8 +67,6 @@ public class DeviceDebugActivity extends AppCompatActivity {
                 Log.e(TAG, "Unable to initialize Bluetooth");
                 finish();
             }
-            // Automatically connects to the device upon successful start-up initialization.
-            mBLESerialPortService.connect(mDeviceAddress);
         }
 
         @Override
@@ -80,21 +78,26 @@ public class DeviceDebugActivity extends AppCompatActivity {
     // Handles various events fired by the Service.
     // ACTION_DATA_AVAILABLE: received data from the device. This can be a result of read
     //                        or notification operations.
+    // ACTION_CMD_ACK_TIMEOUT: timeout on a sent command.
     private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
             if (BLESerialPortService.ACTION_DATA_AVAILABLE.equals(action)) {
                 displayData(intent.getStringExtra(BLESerialPortService.EXTRA_DATA));
+            } else if (BLESerialPortService.ACTION_CMD_ACK_TIMEOUT.equals(action)) {
+                Log.e(TAG, "Ack time out on cmd: " + intent.getStringExtra(EXTRA_DATA));
+                Toast.makeText(getApplicationContext(),
+                        getResources().getString(R.string.error_ack_timeout) + " " + intent.getStringExtra(EXTRA_DATA),
+                        Toast.LENGTH_LONG).show();
             }
         }
     };
 
     private static IntentFilter makeGattUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(BLESerialPortService.ACTION_GATT_CONNECTED);
-        intentFilter.addAction(BLESerialPortService.ACTION_GATT_DISCONNECTED);
         intentFilter.addAction(BLESerialPortService.ACTION_DATA_AVAILABLE);
+        intentFilter.addAction(BLESerialPortService.ACTION_CMD_ACK_TIMEOUT);
         return intentFilter;
     }
 
@@ -102,9 +105,6 @@ public class DeviceDebugActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.serial_read_write);
-
-        final Intent intent = getIntent();
-        mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
 
         // Sets up UI references.
         mReadTextView = findViewById(R.id.readTextView);
@@ -174,12 +174,7 @@ public class DeviceDebugActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
-        if (mBLESerialPortService != null) {
-            final boolean result = mBLESerialPortService.connect(mDeviceAddress);
-            Log.d(TAG, "Connect request result=" + result);
-        }
     }
 
     @Override

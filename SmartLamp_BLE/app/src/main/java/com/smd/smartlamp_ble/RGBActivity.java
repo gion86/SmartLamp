@@ -17,8 +17,11 @@
 
 package com.smd.smartlamp_ble;
 
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
@@ -29,11 +32,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.jaredrummler.android.colorpicker.ColorPanelView;
 import com.jaredrummler.android.colorpicker.ColorPickerView;
 import com.smd.smartlamp_ble.device.BLESerialPortService;
 import com.smd.smartlamp_ble.device.ProtocolUtil;
+
+import static com.smd.smartlamp_ble.device.BLESerialPortService.EXTRA_DATA;
 
 public class RGBActivity extends AppCompatActivity implements ColorPickerView.OnColorChangedListener {
 
@@ -61,6 +67,22 @@ public class RGBActivity extends AppCompatActivity implements ColorPickerView.On
                     mBLESerialPortService = null;
                 }
             };
+
+    // Handles various events fired by the Service.
+    // ACTION_CMD_ACK_TIMEOUT: timeout on a sent command.
+    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+
+            if (BLESerialPortService.ACTION_CMD_ACK_TIMEOUT.equals(action)) {
+                Log.e(TAG, "Ack time out on cmd: " + intent.getStringExtra(EXTRA_DATA));
+                Toast.makeText(getApplicationContext(),
+                        getResources().getString(R.string.error_ack_timeout) + " " + intent.getStringExtra(EXTRA_DATA),
+                        Toast.LENGTH_LONG).show();
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,6 +119,24 @@ public class RGBActivity extends AppCompatActivity implements ColorPickerView.On
         Intent gattServiceIntent = new Intent(this, BLESerialPortService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
         Log.d(TAG, "Bind service");
+    }
+
+    private static IntentFilter makeGattUpdateIntentFilter() {
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BLESerialPortService.ACTION_CMD_ACK_TIMEOUT);
+        return intentFilter;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(mGattUpdateReceiver);
     }
 
     @Override

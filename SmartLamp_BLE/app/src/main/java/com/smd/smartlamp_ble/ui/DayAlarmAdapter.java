@@ -31,6 +31,7 @@ import com.smd.smartlamp_ble.R;
 import com.smd.smartlamp_ble.model.DayAlarm;
 
 import java.util.List;
+import java.util.Locale;
 
 import static com.smd.smartlamp_ble.device.ProtocolUtil.digit;
 
@@ -106,7 +107,7 @@ public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAla
 
             holder.dayName.setText(day.getName());
             //holder.fadeTime.setText(Integer.toString(day.getFadeTime()));
-            holder.fadeTime.setText(String.format("%d", day.getFadeTime()));
+            holder.fadeTime.setText(String.format(Locale.US, "%d", day.getFadeTime()));
             holder.dayTime.setText(digit(day.getHour()) + ":" + digit(day.getMin()));
             holder.dayEn.setChecked(day.isEnabled());
             holder.dayColor.getDrawable()
@@ -115,8 +116,7 @@ public class DayAlarmAdapter extends RecyclerView.Adapter<DayAlarmAdapter.DayAla
 
         } else {
             // Covers the case of data not being ready yet
-            // Set day name based on localized string resources.
-            holder.dayName.setText("No day");
+            holder.dayName.setText(R.string.no_day);
             holder.fadeTime.setText("0");
             holder.dayTime.setText("0");
             holder.dayEn.setChecked(false);

@@ -191,14 +191,16 @@ public class BLESerialPortService extends Service {
                     // Send broadcast information: a command has been acknowledged.
                     broadcastUpdate(ACTION_CMD_ACK_RECV);
 
-                    // Remove handler for command timeout.
+                    // Remove all handlers for command timeout.
                     mCmdTimeOutHandler.removeCallbacksAndMessages(null);
 
                     // Remove head of the message queue.
                     mWriteQueue.poll();
 
                     // Send next command.
-                    sendCmd();
+                    if (!mWriteQueue.isEmpty()) {
+                        sendCmd();
+                    }
                 }
                 mBLEData = mBLEData.substring(idx + 1);
             }
@@ -252,9 +254,9 @@ public class BLESerialPortService extends Service {
 
                 switch (errCode) {
                     case ERR_CODE_TIMEOUT_WRITE:
-                        Log.e(TAG, "Write time out on cmd: " + msg.obj);
+                        Log.e(TAG, "Write time out on cmd: " + (String) msg.obj);
                         Toast.makeText(getApplicationContext(),
-                                getResources().getString(R.string.error_write_timeout) + " " + msg.obj,
+                                getResources().getString(R.string.error_write_timeout) + " " + (String) msg.obj,
                                 Toast.LENGTH_LONG).show();
                         break;
 
@@ -528,24 +530,28 @@ public class BLESerialPortService extends Service {
         }
         return 0;
     }
+
     /**
-     * Send one command at a time, in an AsyncTask. Sets also the handler for the command timeout.
+     * Send one command at a time, in an separate thread with an message handles.
+     * Sets also the handler for the command timeout.
      */
     private void sendCmd() {
-        if (!mWriteQueue.isEmpty()) {
-
-            // Sets handler for timeout check
-            mCmdTimeOutHandler.postDelayed(new Runnable() {
-                public void run() {
-                    // Timeout on a sent command.
+        // Sets handler for timeout check
+        mCmdTimeOutHandler.postDelayed(new Runnable() {
+            public void run() {
+                // Timeout on a sent command.
+                if (!mWriteQueue.isEmpty()) {
                     broadcastUpdate(ACTION_CMD_ACK_TIMEOUT, mWriteQueue.element());
                     mWriteQueue.clear();
-                }
-            }, RECV_TIME_OUT_MILLIS);
 
-            // Send message to the handler
-            mCmdSendHandler.obtainMessage(0, mWriteQueue.element()).sendToTarget();
-        }
+                    // Remove all handlers for command timeout.
+                    mCmdTimeOutHandler.removeCallbacksAndMessages(null);
+                }
+            }
+        }, RECV_TIME_OUT_MILLIS);
+
+        // Send message to the handler
+        mCmdSendHandler.obtainMessage(0, mWriteQueue.element()).sendToTarget();
     }
 
     public void sendAll() {

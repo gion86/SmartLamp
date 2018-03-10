@@ -60,6 +60,8 @@
     <string name="location_dis_title">Functionality limited</string>
     <string name="location_dis_mes">Since location access has not been granted, this app will not be able to discover beacons when in the background.</string>
 
+    <string name="no_day">No day</string>
+
     <!-- Strings related to alarms and days -->
     <string-array name="day_names">
         <item>Sunday</item>

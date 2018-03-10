@@ -158,7 +158,7 @@ public class AlarmActivity extends AppCompatActivity
             AlertDialog.Builder alert = new AlertDialog.Builder(AlarmActivity.this);
             alert.setTitle(R.string.fade_time_choose);
 
-            LayoutInflater inflater = getLayoutInflater();
+            LayoutInflater inflater = LayoutInflater.from(AlarmActivity.this);
             View alertLayout = inflater.inflate(R.layout.fragment_fade_time, null);
 
             // This sets the view from XML inside AlertDialog
