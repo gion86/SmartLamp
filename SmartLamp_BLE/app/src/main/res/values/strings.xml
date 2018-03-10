@@ -12,7 +12,7 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="ble_not_supported">BLE is not supported</string>
     <string name="rgb_activity_title">RGB LED Test</string>
     <string name="debug_activity_title">Device debug</string>
@@ -42,8 +42,8 @@
     <string name="title_section3">RGB LED Test</string>
     <string name="title_section4">Device debug</string>
 
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="navigation_drawer_open" tools:ignore="UnusedResources">Open navigation drawer</string>
+    <string name="navigation_drawer_close" tools:ignore="UnusedResources">Close navigation drawer</string>
 
     <string name="title_activity_settings">Settings</string>
 
@@ -52,7 +52,7 @@
     <string name="connect_load_msg">Connecting to BLE device…</string>
 
     <string name="send_cmd_title">BLE Command</string>
-    <string name="send_cmd_msg">Sending commands to BLE device…</string>
+    <string name="send_cmd_msg">Sending data to BLE device…</string>
 
     <string name="Location_dialog_title">This app needs location access</string>
     <string name="location_dialog_mes">Please grant location access so this app can detect beacons.</string>
@@ -88,6 +88,7 @@
     <string name="pref_default_device_name">HM10</string>
 
     <string name="pref_title_device_adr">Device address</string>
+    <string name="edittext_input_err">wrong format</string>
 
     <!-- Settings for device section -->
     <string name="pref_header_device">Device</string>

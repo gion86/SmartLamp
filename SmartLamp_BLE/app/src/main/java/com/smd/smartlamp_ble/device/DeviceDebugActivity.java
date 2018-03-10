@@ -58,7 +58,6 @@ public class DeviceDebugActivity extends AppCompatActivity {
 
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
-
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
             Log.i(TAG, "New service connection");

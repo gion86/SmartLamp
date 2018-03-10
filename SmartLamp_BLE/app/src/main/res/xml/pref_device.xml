@@ -12,7 +12,8 @@
         android:singleLine="true"
         android:title="@string/pref_title_device_name" />
 
-    <EditTextPreference
+    <com.smd.smartlamp_ble.settings.ValidatingEditTextMACPreference
+        android:capitalize="characters"
         android:inputType="text"
         android:selectAllOnFocus="true"
         android:key="device_adr"

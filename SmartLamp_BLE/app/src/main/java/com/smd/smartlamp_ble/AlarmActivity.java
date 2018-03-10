@@ -116,7 +116,6 @@ public class AlarmActivity extends AppCompatActivity
     private ProgressDialog mSendCmdDialog = null;
     private BLESerialPortService mBLESerialPortService;
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
-
                 @Override
                 public void onServiceConnected(ComponentName componentName, IBinder service) {
                     Log.i(TAG, "New service connection");
@@ -142,7 +141,7 @@ public class AlarmActivity extends AppCompatActivity
                 }
             };
 
-    private DayAlarmAdapter.OnItemClickListener mAdpaterListerner = new DayAlarmAdapter.OnItemClickListener() {
+    private final DayAlarmAdapter.OnItemClickListener mAdpaterListerner = new DayAlarmAdapter.OnItemClickListener() {
         @Override
         public void onTimeClick(int position) {
             // Current list position for the TimePickerDialog.
@@ -222,7 +221,7 @@ public class AlarmActivity extends AppCompatActivity
         }
     };
 
-    private Observer mDayListObserver = new Observer<List<DayAlarm>>() {
+    private final Observer<List<DayAlarm>> mDayListObserver = new Observer<List<DayAlarm>>() {
         @Override
         public void onChanged(@Nullable List<DayAlarm> mDayList) {
             mDayAdapter.setItems(mDayList);

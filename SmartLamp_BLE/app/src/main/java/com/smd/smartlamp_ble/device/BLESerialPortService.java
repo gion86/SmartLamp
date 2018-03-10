@@ -119,7 +119,7 @@ public class BLESerialPortService extends Service {
      * Implements callback methods for GATT events that the app cares about.  For example,
      * connection change and services discovered.
      */
-    private BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
+    private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             super.onConnectionStateChange(gatt, status, newState);
@@ -254,15 +254,16 @@ public class BLESerialPortService extends Service {
 
                 switch (errCode) {
                     case ERR_CODE_TIMEOUT_WRITE:
-                        Log.e(TAG, "Write time out on cmd: " + (String) msg.obj);
+                        Log.e(TAG, "Write time out on cmd: " + msg.obj);
                         Toast.makeText(getApplicationContext(),
-                                getResources().getString(R.string.error_write_timeout) + " " + (String) msg.obj,
+                                getResources().getString(R.string.error_write_timeout) + " " + msg.obj,
                                 Toast.LENGTH_LONG).show();
                         break;
 
                     case ERR_CODE_NO_CONNECTION:
                         Log.e(TAG, "No connection: tx characteristic == null");
-                        Toast.makeText(getApplicationContext(), R.string.error_no_conn, Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), R.string.error_no_conn,
+                                Toast.LENGTH_LONG).show();
                         break;
                 }
 

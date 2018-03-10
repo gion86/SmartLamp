@@ -49,7 +49,7 @@ public class DayAlarmViewModel extends AndroidViewModel {
     }
 
     public void updateItemTime(int position, int hour, int min) {
-        DayAlarm day = mDayAlarmList.getValue(). get(position);
+        DayAlarm day = mDayAlarmList.getValue().get(position);
 
         if (day != null) {
             day.setHour(hour);

@@ -44,14 +44,15 @@ import static com.smd.smartlamp_ble.device.BLESerialPortService.EXTRA_DATA;
 public class RGBActivity extends AppCompatActivity implements ColorPickerView.OnColorChangedListener {
 
     private final static String TAG = RGBActivity.class.getSimpleName();
-    public static final int INITIAL_COLOR = 0xFF0000;
+
+    public static final int INITIAL_COLOR = 0xFFFF0000; // Initial color_picker color (#ARGB)
 
     private ColorPickerView mColorPickerView;
     private ColorPanelView mColorPanelView;
 
+    // Code to manage Service lifecycle.
     private BLESerialPortService mBLESerialPortService;
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
-
                 @Override
                 public void onServiceConnected(ComponentName componentName, IBinder service) {
                     Log.i(TAG, "New service connection");
@@ -92,17 +93,17 @@ public class RGBActivity extends AppCompatActivity implements ColorPickerView.On
         getWindow().setFormat(PixelFormat.RGBA_8888);
 
         mColorPickerView = findViewById(R.id.cpv_color_picker_view);
-        ColorPanelView colorPanelView = findViewById(R.id.cpv_color_panel_old);
+        ColorPanelView colorPanelViewOld = findViewById(R.id.cpv_color_panel_old);
         mColorPanelView = findViewById(R.id.cpv_color_panel_new);
 
         Button btnOK = findViewById(R.id.okRGBButton);
 
-        ((LinearLayout) colorPanelView.getParent())
+        ((LinearLayout) colorPanelViewOld.getParent())
                 .setPadding(mColorPickerView.getPaddingLeft(), 0, mColorPickerView.getPaddingRight(), 0);
 
         mColorPickerView.setOnColorChangedListener(this);
         mColorPickerView.setColor(INITIAL_COLOR, true);
-        colorPanelView.setColor(INITIAL_COLOR);
+        colorPanelViewOld.setColor(INITIAL_COLOR);
 
         btnOK.setOnClickListener(new View.OnClickListener() {
             @Override
