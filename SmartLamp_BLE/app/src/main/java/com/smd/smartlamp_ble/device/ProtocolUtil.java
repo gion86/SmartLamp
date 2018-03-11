@@ -96,6 +96,11 @@ public class ProtocolUtil {
     }
 
     @NonNull
+    public static String cmdPrint() {
+        return "PRINT" + LINE_SEP;
+    }
+
+    @NonNull
     public static String cmdExit() {
         return "EXIT" + LINE_SEP;
     }

@@ -23,11 +23,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Spannable;
+import android.text.SpannableString;
 import android.text.method.ScrollingMovementMethod;
+import android.text.style.StyleSpan;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -37,7 +43,10 @@ import android.widget.Toast;
 import com.smd.smartlamp_ble.R;
 import com.smd.smartlamp_ble.model.DayAlarm;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import static com.smd.smartlamp_ble.device.BLESerialPortService.EXTRA_DATA;
 import static com.smd.smartlamp_ble.device.ProtocolUtil.LINE_SEP;
@@ -50,6 +59,14 @@ import static com.smd.smartlamp_ble.device.ProtocolUtil.LINE_SEP;
  */
 public class DeviceDebugActivity extends AppCompatActivity {
     private final static String TAG = DeviceDebugActivity.class.getSimpleName();
+
+    private static final String DATE_LOG_FORMAT = "HH:mm:ss.SSS";
+
+    private static final Character CAR_RET = '\r';
+    private static final Character LINE_FEED = '\n';
+
+    private boolean mLogInit;
+    private SimpleDateFormat mDateFormatGmt;
 
     private TextView mReadTextView;
     private EditText mWriteText;
@@ -103,12 +120,15 @@ public class DeviceDebugActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.serial_read_write);
+        setContentView(R.layout.activity_debug);
+
+        mLogInit = false;
+        mDateFormatGmt = new SimpleDateFormat(DATE_LOG_FORMAT, Locale.getDefault());
+        mDateFormatGmt.setTimeZone(TimeZone.getDefault());
 
         // Sets up UI references.
         mReadTextView = findViewById(R.id.readTextView);
         mReadTextView.setMovementMethod(new ScrollingMovementMethod());
-
         mWriteText = findViewById(R.id.writeText);
 
         final Button sendButton = findViewById(R.id.sendButton);
@@ -155,6 +175,13 @@ public class DeviceDebugActivity extends AppCompatActivity {
             }
         });
 
+        final Button printButton = findViewById(R.id.printButton);
+        printButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                mWriteText.setText(ProtocolUtil.cmdPrint());
+            }
+        });
+
         final Button exitButton = findViewById(R.id.exitButton);
         exitButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -190,9 +217,73 @@ public class DeviceDebugActivity extends AppCompatActivity {
         mBLESerialPortService = null;
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.activity_debug_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_debug_log_clear:
+                mReadTextView.setText("");
+                mLogInit = false;
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void parseData(String data) {
+        // Remove first '\n' character if the previous call had something like "\r\nOK\r".
+        // i.e the line separator is split in two different data buffer!
+        if (data.charAt(0) == LINE_FEED) {
+            data = data.substring(1, data.length());
+        }
+
+        int end = data.indexOf(CAR_RET);
+
+        if (end == -1) {
+            mReadTextView.append(data);
+            return;
+        }
+
+        mReadTextView.append(data.substring(0, end));
+
+        if (end + 2 > data.length()) {
+            data = data.substring(end + 1, data.length()); // i.e. empty string??
+        }
+        else {
+            data = data.substring(end + 2, data.length()); // 2 == line separator length
+        }
+
+        String date = LINE_SEP + mDateFormatGmt.format(new Date()) + ": ";
+        SpannableString str = new SpannableString(date);
+        str.setSpan(new StyleSpan(Typeface.BOLD), 0, date.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        mReadTextView.append(str);
+
+        // New data substring
+        if (data.isEmpty()) {
+            return;
+        }
+
+        parseData(data);
+    }
+
     private void displayData(String data) {
         if (data != null) {
-            mReadTextView.append(data);
+            Log.d(TAG, "data: " + data);
+
+            if (!mLogInit) {
+                String date = mDateFormatGmt.format(new Date()) + ": ";
+                SpannableString str = new SpannableString(date);
+                str.setSpan(new StyleSpan(Typeface.BOLD), 0, date.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                mReadTextView.setText(str);
+                mLogInit = true;
+            }
+
+            parseData(data);
         }
     }
 }

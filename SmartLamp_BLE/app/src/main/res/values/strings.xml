@@ -36,6 +36,7 @@
     <string name="menu_scan">Scan</string>
     <string name="menu_stop">Stop</string>
     <string name="menu_refresh">Refresh</string>
+    <string name="menu_debug_log_clear">Clear log</string>
 
     <string name="title_section1">Settings</string>
     <string name="title_section2">Device Scan</string>
@@ -99,7 +100,8 @@
     <string name="debug_exit_btn">EXIT</string>
     <string name="debug_test_btn">TEST</string>
     <string name="debug_time_btn">TIME</string>
-    <string name="debug_alarm_btn">AL</string>
+    <string name="debug_alarm_btn">ALARM</string>
     <string name="debug_rgb_btn">RGB</string>
+    <string name="debug_print_btn">PRINT</string>
 
 </resources>

@@ -183,7 +183,7 @@ public class BLESerialPortService extends Service {
             int idx = mBLEData.lastIndexOf(LINE_SEP);
 
             if (idx >= 0) {
-                Log.d(TAG, mBLEData.substring(0, idx));
+                //Log.d(TAG, mBLEData.substring(0, idx));
 
                 if (mBLEData.substring(0, idx).contains(ACK_DATA)) {
                     Log.d(TAG, "DATA_OK: RTT " + (System.currentTimeMillis() - mCmdSendMillis) + " ms");
