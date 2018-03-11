@@ -17,7 +17,7 @@
 
 /*
  * Built for ATMega328P 8Mhz, using AVR USBasp programmer.
- * VERSION 0.6
+ * VERSION 0.65
  */
 
 #include <avr/io.h>
@@ -212,9 +212,9 @@ void printAlarms() {
     printDigits(alarms[i].hh);
     Serial.print(":");
     printDigits(alarms[i].mm);
-    Serial.print(", fade time = ");
+    Serial.print(", ft  = ");
     Serial.print(alarms[i].fadeTime);
-    Serial.print(", colors = [");
+    Serial.print(", c = [");
     Serial.print(alarms[i].ledColor[0]);
     Serial.print(", ");
     Serial.print(alarms[i].ledColor[1]);
@@ -350,7 +350,7 @@ static bool setNextAlarm(struct tm *sys_t) {
         gmtime_r(&utc_alarm, &utc_alarm_tm);
 
 #ifdef DEBUG
-        Serial.print("Set alarm on ");
+        Serial.print("UTC alarm:");
         digitalClockDisplay(&utc_alarm_tm, "UTC");
 #endif
 
@@ -371,13 +371,13 @@ static bool setNextAlarm(struct tm *sys_t) {
 }
 
 /**
- * Reads system time from RTC clock.
+ * Reads system time from RTC clock (local timezone).
  *
  * Param:
  * - struct tm *tm: the struct tm to be filled.
  *
  * Returns:
- * the system time in binary format (time_t avr-libc).
+ * the local system time in binary format (time_t avr-libc).
  */
 static time_t getSysTime(struct tm *tm) {
   memset((void*) tm, 0, sizeof(*tm));
@@ -428,26 +428,6 @@ static bool parseCommand(char *buffer, char *command) {
     mm   = atod(buffer[14]) * 10 + atod(buffer[15]);
     ss   = atod(buffer[16]) * 10 + atod(buffer[17]);
 
-//#ifdef DEBUG
-//    Serial.print("YYYY = ");
-//    Serial.println(YYYY);
-//
-//    Serial.print("MM = ");
-//    Serial.println(MM);
-//
-//    Serial.print("DD = ");
-//    Serial.println(DD);
-//
-//    Serial.print("hh = ");
-//    Serial.println(hh);
-//
-//    Serial.print("mm = ");
-//    Serial.println(mm);
-//
-//    Serial.print("ss = ");
-//    Serial.println(ss);
-//#endif
-
     // Date and time data checks
     if (YYYY < 1900 || MM < 1 || DD < 1 || hh < 0 || mm < 0 || ss < 0
         ||
@@ -480,7 +460,7 @@ static bool parseCommand(char *buffer, char *command) {
   }
 
   // ------------------------------------------------------
-  // Set alarm on weekday, set fadetime and LED time
+  // Set alarm on weekday, set fadetime and LED color
   // ------------------------------------------------------
   s = strstr(buffer, "AL_");
 
@@ -509,26 +489,12 @@ static bool parseCommand(char *buffer, char *command) {
       alarms[WD].ledColor[2] = atod(buffer[22]) * 100 + atod(buffer[23]) * 10 + atod(buffer[24]);
     }
 
-//#ifdef DEBUG
-//    Serial.print("WD = ");
-//    Serial.println(WD);
-//
-//    Serial.print("hh = ");
-//    Serial.println(hh);
-//
-//    Serial.print("mm = ");
-//    Serial.println(mm);
-//
-//    Serial.print("ft = ");
-//    Serial.println(fadeTime);
-//#endif
-
     alarms[WD].hh = hh;
     alarms[WD].mm = mm;
     alarms[WD].fadeTime = fadeTime;
     alarms[WD].enabled = true;
 
-    eeprom_write_block((void*) &alarms, (void*) ALARMS_OFFSET, sizeof(alarms));
+    eeprom_write_block((void*) &alarms[WD], (void*) (ALARMS_OFFSET + WD * sizeof(alarms[0])), sizeof(alarms[0]));
 
 #ifdef DEBUG
     printAlarms();
@@ -552,11 +518,6 @@ static bool parseCommand(char *buffer, char *command) {
 
     WD = atod(buffer[7]) * 10 + atod(buffer[8]);
 
-//#ifdef DEBUG
-//    Serial.print("WD = ");
-//    Serial.println(WD);
-//#endif
-
     // Data checks
     if (WD < 0 || WD > 6) {
       return false;
@@ -564,7 +525,11 @@ static bool parseCommand(char *buffer, char *command) {
 
     alarms[WD].enabled = false;
 
-    eeprom_write_block((void*) &alarms, (void*) ALARMS_OFFSET, sizeof(alarms));
+    eeprom_write_block((void*) &alarms[WD], (void*) (ALARMS_OFFSET + WD * sizeof(alarms[0])), sizeof(alarms[0]));
+
+#ifdef DEBUG
+    printAlarms();
+#endif
 
     // Get the current system time and set next alarm
     getSysTime(&systemTime);
@@ -586,14 +551,6 @@ static bool parseCommand(char *buffer, char *command) {
     WD       = atod(buffer[3]) * 10 + atod(buffer[4]);
     fadeTime = atod(buffer[6]) * 10 + atod(buffer[7]);
 
-//#ifdef DEBUG
-//    Serial.print("WD = ");
-//    Serial.println(WD);
-//
-//    Serial.print("ft = ");
-//    Serial.println(fadeTime);
-//#endif
-
     // Data checks
     if (WD < 0 || WD > 6) {
       return false;
@@ -602,7 +559,7 @@ static bool parseCommand(char *buffer, char *command) {
     // Set the alarm fade time
     alarms[WD].fadeTime = fadeTime;
 
-    eeprom_write_block((void*) &alarms, (void*) ALARMS_OFFSET, sizeof(alarms));
+    eeprom_write_block((void*) &alarms[WD], (void*) (ALARMS_OFFSET + WD * sizeof(alarms[0])), sizeof(alarms[0]));
 
     return true;
   }
@@ -619,17 +576,38 @@ static bool parseCommand(char *buffer, char *command) {
     ledColor[1] = atod(buffer[8]) * 100 + atod(buffer[9]) * 10 + atod(buffer[10]);
     ledColor[2] = atod(buffer[12]) * 100 + atod(buffer[13]) * 10 + atod(buffer[14]);
 
-#ifdef DEBUG
-    for (int i = 0; i < 3; ++i) {
-      Serial.print("ledColor[");
-      Serial.print(i);
-      Serial.print("] = ");
-      Serial.println(ledColor[i]);
-    }
-#endif
-
     *command = CMD_RGB;
 
+    return true;
+  }
+
+  // ------------------------------------------------------
+  // Test command
+  // ------------------------------------------------------
+  s = strstr(buffer, "TEST");
+
+  // buffer = "TEST"
+  if (s != NULL && strlen(buffer) == 4) {
+    *command = CMD_TEST;
+    return true;
+  }
+
+  // ------------------------------------------------------
+  // Print command
+  // ------------------------------------------------------
+  s = strstr(buffer, "PRINT");
+
+  // buffer = "PRINT"
+  if (s != NULL && strlen(buffer) == 5) {
+    time_t utc = RTC.get();
+    Serial.print("UTC:   ");
+    digitalClockDisplay(utc, "UTC");
+
+    time_t local = TZ.toLocal(utc, &tcr);
+    Serial.print("Local: ");
+    digitalClockDisplay(local, tcr->abbrev);
+
+    printAlarms();
     return true;
   }
 
@@ -641,18 +619,6 @@ static bool parseCommand(char *buffer, char *command) {
   // buffer = "TEST"
   if (s != NULL && strlen(buffer) == 4) {
     *command = CMD_EXIT;
-    return true;
-  }
-
-
-  // ------------------------------------------------------
-  // Test command
-  // ------------------------------------------------------
-  s = strstr(buffer, "TEST");
-
-  // buffer = "TEST"
-  if (s != NULL && strlen(buffer) == 4) {
-    *command = CMD_TEST;
     return true;
   }
 
@@ -809,16 +775,13 @@ void setup() {
     eeprom_write_block((void*) &alarms, (void*) ALARMS_OFFSET, sizeof(alarms));
   }
 
-#ifdef DEBUG
-  printAlarms();
-#endif
-
   // Get the current system time from RTC
   getSysTime(&systemTime);
 
 #ifdef DEBUG
-  Serial.println("STARTUP system time");
+  Serial.print("Local: ");
   digitalClockDisplay(&systemTime, tcr->abbrev);
+  printAlarms();
 #endif
 
   // Set the next alarm.
@@ -871,7 +834,7 @@ void loop() {
       getSysTime(&systemTime);
 
 #ifdef DEBUG
-      Serial.println("System time");
+      Serial.print("Local: ");
       digitalClockDisplay(&systemTime, tcr->abbrev);
 #endif
 
@@ -927,6 +890,7 @@ void loop() {
         // Send back "OK" response as an acknowledge.
         if (parseCommand(buffer, &command)) {
           Serial.println("OK");
+          Serial.println();
         }
 
         count = 0;
