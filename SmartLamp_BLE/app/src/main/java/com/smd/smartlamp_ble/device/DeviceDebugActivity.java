@@ -136,12 +136,14 @@ public class DeviceDebugActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String cmd = mWriteText.getText().toString();
 
-                if (!cmd.contains(LINE_SEP))
-                    mBLESerialPortService.addCommand(cmd + LINE_SEP);
-                else
-                    mBLESerialPortService.addCommand(cmd);
+                if (!cmd.isEmpty()) {
+                    if (!cmd.contains(LINE_SEP))
+                        mBLESerialPortService.addCommand(cmd + LINE_SEP);
+                    else
+                        mBLESerialPortService.addCommand(cmd);
 
-                mBLESerialPortService.sendAll();
+                    mBLESerialPortService.sendAll();
+                }
             }
         });
 

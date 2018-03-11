@@ -10,6 +10,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <!--TODO fix layout on multiple devices-->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="350dp"
@@ -20,7 +21,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="bottom"
-                android:textSize="15sp" />
+                android:textSize="13sp" />
         </LinearLayout>
 
         <EditText
@@ -31,10 +32,7 @@
             android:layout_marginStart="@dimen/activity_horizontal_margin"
             android:ems="10"
             android:inputType="textPersonName"
-            android:labelFor="@+id/writeText"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/nestedScrollView" />
+            android:labelFor="@+id/writeText" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -46,36 +44,44 @@
 
             <Button
                 android:id="@+id/timeButton"
-                android:layout_width="75dp"
+                android:layout_width="0dp"
                 android:layout_height="45dp"
+                android:layout_weight="1"
                 android:text="@string/debug_time_btn"
+                android:textSize="13sp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/writeText"
                 tools:ignore="ButtonStyle" />
 
             <Button
                 android:id="@+id/colorButton"
-                android:layout_width="75dp"
+                android:layout_width="0dp"
                 android:layout_height="45dp"
+                android:layout_weight="1"
                 android:text="@string/debug_rgb_btn"
+                android:textSize="13sp"
                 app:layout_constraintStart_toEndOf="@+id/alarmButton"
                 app:layout_constraintTop_toBottomOf="@+id/writeText"
                 tools:ignore="ButtonStyle" />
 
             <Button
                 android:id="@+id/alarmButton"
-                android:layout_width="75dp"
+                android:layout_width="0dp"
                 android:layout_height="45dp"
+                android:layout_weight="1"
                 android:text="@string/debug_alarm_btn"
+                android:textSize="13sp"
                 app:layout_constraintStart_toEndOf="@+id/timeButton"
                 app:layout_constraintTop_toBottomOf="@+id/writeText"
                 tools:ignore="ButtonStyle" />
 
             <Button
                 android:id="@+id/printButton"
-                android:layout_width="75dp"
+                android:layout_width="0dp"
                 android:layout_height="45dp"
+                android:layout_weight="1"
                 android:text="@string/debug_print_btn"
+                android:textSize="13sp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/writeText"
                 tools:ignore="ButtonStyle" />
@@ -86,6 +92,7 @@
                 android:layout_height="45dp"
                 android:layout_weight="1"
                 android:text="@string/debug_test_btn"
+                android:textSize="13sp"
                 app:layout_constraintStart_toEndOf="@+id/colorButton"
                 app:layout_constraintTop_toBottomOf="@+id/writeText"
                 tools:ignore="ButtonStyle" />
@@ -102,21 +109,24 @@
 
             <Button
                 android:id="@+id/exitButton"
-                android:layout_width="75dp"
+                android:layout_width="0dp"
                 android:layout_height="45dp"
+                android:layout_weight="1"
                 android:text="@string/debug_exit_btn"
+                android:textSize="13sp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/writeText" />
 
             <Space
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="3" />
 
             <Button
                 android:id="@+id/sendButton"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="45dp"
+                android:layout_weight="1"
                 android:text="@string/debug_send_cmd"
                 android:textSize="16sp"
                 android:textStyle="bold"
