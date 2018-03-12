@@ -37,6 +37,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -70,6 +71,7 @@ public class DeviceDebugActivity extends AppCompatActivity {
 
     private TextView mReadTextView;
     private EditText mWriteText;
+    private ScrollView mScrollView;
 
     private BLESerialPortService mBLESerialPortService;
 
@@ -127,6 +129,7 @@ public class DeviceDebugActivity extends AppCompatActivity {
         mDateFormatGmt.setTimeZone(TimeZone.getDefault());
 
         // Sets up UI references.
+        mScrollView = findViewById(R.id.scrollView);
         mReadTextView = findViewById(R.id.readTextView);
         mReadTextView.setMovementMethod(new ScrollingMovementMethod());
         mWriteText = findViewById(R.id.writeText);
@@ -237,6 +240,7 @@ public class DeviceDebugActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    // FIXME new data on the same line!
     private void parseData(String data) {
         // Remove first '\n' character if the previous call had something like "\r\nOK\r".
         // i.e the line separator is split in two different data buffer!
@@ -254,7 +258,7 @@ public class DeviceDebugActivity extends AppCompatActivity {
         mReadTextView.append(data.substring(0, end));
 
         if (end + 2 > data.length()) {
-            data = data.substring(end + 1, data.length()); // i.e. empty string??
+            data = data.substring(end + 1, data.length()); // i.e. empty string
         }
         else {
             data = data.substring(end + 2, data.length()); // 2 == line separator length
@@ -286,6 +290,14 @@ public class DeviceDebugActivity extends AppCompatActivity {
             }
 
             parseData(data);
+
+            // Scroll to the bottom of the view
+            mScrollView.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mScrollView.fullScroll(View.FOCUS_DOWN);
+                }
+            }, 100);
         }
     }
 }
