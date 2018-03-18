@@ -17,7 +17,7 @@
 
 /*
  * Built for ATMega328P 8Mhz, using AVR USBasp programmer.
- * VERSION 0.65
+ * VERSION 0.7
  */
 
 #include <avr/io.h>
@@ -53,20 +53,22 @@
 
 #define CMD_LENGTH         80   // Command buffer length
 
-#define ALARMS_OFFSET       0   // Alarms array EEPROM start address
+#define OPT_OFFSET          0   // Options structure EEPROM start address TODO?
+#define ALARMS_OFFSET       2   // Alarms array EEPROM start address
 
 // LED defines
 #define FADE_TIME          10   // Default LED fade total duration [m]
 #define MAX_PWM_CNT        80   // PWM timer max count TOP (<= 255 @ 8 bit)
                                 // PWM frequency = F_CPU / (N * (1 + TOP)) ~ 98 KHz
-#define MAX_BRIGTH       50.0   // Max brightness in percent [1 - 100 %]
+#define MAX_BRIGHT       50.0   // Default max LED brightness in percent [1 - 100 %]
 
 // States
 #define STEP_SLEEP         0
 #define SET_DAY_ALARM      5
 #define STEP_READ_CMD      10
 #define STEP_FADE          15
-#define STEP_RGB           20
+#define STEP_ON            20
+#define STEP_RGB           50
 
 // RTC library error codes:
 // 1 length to long for buffer
@@ -104,6 +106,7 @@ TimeChangeRule *tcr;            // Pointer to the time change rule, use to get T
 
 struct tm systemTime;           // Current system time (local timezone)
 
+// Alarms data
 typedef struct {
   bool enabled;
   int8_t hh, mm;                   // Time of day
@@ -112,6 +115,14 @@ typedef struct {
 } alarm;                           // Alarm structure
 
 alarm alarms[7];                // Alarms array [0...6 as weekdays sun...sat]
+
+// Options data
+typedef struct {
+  uint8_t onTime;               // On time in minutes, after the fadetime
+  uint8_t maxBright;           // LED max brightness
+} options;                      // Options structure
+
+options opt;                    // Global application options
 
 // RGB LED variables
 uint8_t ledColor[3] = {0, 0, 0}; // LED color for RGB command
@@ -582,6 +593,22 @@ static bool parseCommand(char *buffer, char *command) {
   }
 
   // ------------------------------------------------------
+  // Options parsing
+  // ------------------------------------------------------
+  s = strstr(buffer, "OPT_");
+
+  // buffer = "OPT_10_095"
+  if (s != NULL && strlen(buffer) == 10) {
+
+    opt.onTime    = atod(buffer[4]) * 100 + atod(buffer[5]) * 10;
+    opt.maxBright = atod(buffer[7]) * 100 + atod(buffer[8]) * 10 + atod(buffer[9]);
+
+    eeprom_write_block((void*) &opt, (void*)OPT_OFFSET, sizeof(opt));
+
+    return true;
+  }
+
+  // ------------------------------------------------------
   // Test command
   // ------------------------------------------------------
   s = strstr(buffer, "TEST");
@@ -766,6 +793,7 @@ void setup() {
 
   // Read alarms[] array from EEPROM: set bit EESAVE (high fuse byte = D7) to preserve EEPROM
   // through the chip erase cycle.
+  eeprom_read_block((void*) &opt, (void*) OPT_OFFSET, sizeof(opt));
   eeprom_read_block((void*) &alarms, (void*) ALARMS_OFFSET, sizeof(alarms));
 
   // Check for default value of EEPROM (0xFF -> -1 to avoid C compiler signed/unsigned
@@ -773,6 +801,9 @@ void setup() {
   if (alarms[0].hh == -1 && alarms[0].mm == -1) {
     memset((void*) &alarms, 0, sizeof(alarms));
     eeprom_write_block((void*) &alarms, (void*) ALARMS_OFFSET, sizeof(alarms));
+
+    memset((void*) &opt, 0, sizeof(opt));
+    eeprom_write_block((void*) &opt, (void*) OPT_OFFSET, sizeof(opt));
   }
 
   // Get the current system time from RTC
@@ -811,7 +842,7 @@ void loop() {
   uint8_t led_value;
   float x = 0;
 
-  float fadeTime;
+  float fadeTime, ledBright;
 
   switch (step) {
     case STEP_SLEEP:
@@ -951,12 +982,19 @@ void loop() {
         break;
       }
 
+      // LED brightness in percentage [1, 100%]
+      if (opt.maxBright == 0 || opt.maxBright > 100) {
+        ledBright = MAX_BRIGHT;
+      } else {
+        ledBright = opt.maxBright;
+      }
+
       // Fade time in millisecond
       fadeTime = alarms[systemTime.tm_wday].fadeTime * 60000.0;
 
       x = (millis() - prevMillis) / fadeTime;
       // LED brightness, scaled by the max PWM count.
-      led_value = (uint8_t) MAX_BRIGTH / 100.0 * MAX_PWM_CNT * (x * x * x);
+      led_value = (uint8_t) ledBright / 100.0 * MAX_PWM_CNT * (x * x * x);
 
 #ifdef DEBUG
       Serial.print("x: ");
@@ -972,6 +1010,17 @@ void loop() {
       OCR2A = led_value * alarms[systemTime.tm_wday].ledColor[2] / 255;
 
       if (x >= 1.0) {
+        prevMillis = millis();      // Update prevMillis for the next state
+        step = STEP_ON;
+      }
+
+      break;
+
+    case STEP_ON:
+      // ######################################################################
+      // LED ON state
+
+      if ((millis() - prevMillis) >= opt.onTime * 60000) {
         // Don't stop the PWM timer: just set duty cycle to 0
         OCR1A = 0;
         OCR1B = 0;
