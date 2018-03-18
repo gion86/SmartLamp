@@ -44,6 +44,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     public static final String PREF_KEY_DEVICE_AUTOCONNECT = "device_autoconnect";
     public static final String PREF_KEY_DEVICE_NAME = "device_name";
     public static final String PREF_KEY_DEVICE_ADDRESS = "device_adr";
+    public static final String PREF_KEY_ON_TIME = "on_time";
+    public static final String PREF_KEY_LED_BRIGHT = "led_bright";
 
     /**
      * A preference value change listener that updates the preference's summary
@@ -158,6 +160,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     protected boolean isValidFragment(String fragmentName) {
         return PreferenceFragment.class.getName().equals(fragmentName)
                 || GeneralPreferenceFragment.class.getName().equals(fragmentName)
+                || LEDPreferenceFragment.class.getName().equals(fragmentName)
                 || DevicePreferenceFragment.class.getName().equals(fragmentName);
     }
 
@@ -171,6 +174,30 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_general);
+            setHasOptionsMenu(true);
+        }
+
+        @Override
+        public boolean onOptionsItemSelected(MenuItem item) {
+            int id = item.getItemId();
+            if (id == android.R.id.home) {
+                startActivity(new Intent(getActivity(), SettingsActivity.class));
+                return true;
+            }
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
+    /**
+     * This fragment shows notification preferences only. It is used when the
+     * activity is showing a two-pane settings UI.
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public static class LEDPreferenceFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.pref_led);
             setHasOptionsMenu(true);
         }
 

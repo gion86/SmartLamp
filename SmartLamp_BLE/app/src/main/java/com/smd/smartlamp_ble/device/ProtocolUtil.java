@@ -91,6 +91,11 @@ public class ProtocolUtil {
     }
 
     @NonNull
+    public static String cmdSendOPT(int onTime, int ledBright) {
+        return "OPT_" + digit(onTime) + "_" + digit2(ledBright) + LINE_SEP;
+    }
+
+    @NonNull
     public static String cmdTest() {
         return "TEST" + LINE_SEP;
     }

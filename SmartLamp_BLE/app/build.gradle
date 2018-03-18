@@ -6,8 +6,8 @@ android {
         applicationId "com.smd.smartlamp_ble"
         minSdkVersion 22
         targetSdkVersion 26
-        versionCode 8
-        versionName "0.66"
+        versionCode 9
+        versionName "0.7"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
 

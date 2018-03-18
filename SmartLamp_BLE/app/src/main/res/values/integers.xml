@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <integer name="max_fade_min">30</integer>
+
+    <integer name="on_time_default_value">10</integer>
+    <integer name="on_time_min_value">0</integer>
+    <integer name="on_time_max_value">99</integer>
+
+    <integer name="bright_default_value">50</integer>
+    <integer name="bright_min_value">0</integer>
+    <integer name="bright_max_value">100</integer>
+
 </resources>

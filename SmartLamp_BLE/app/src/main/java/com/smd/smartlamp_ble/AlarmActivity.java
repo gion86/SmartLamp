@@ -80,6 +80,8 @@ import static com.smd.smartlamp_ble.device.DeviceScanActivity.EXTRAS_DEVICE_NAME
 import static com.smd.smartlamp_ble.settings.SettingsActivity.PREF_KEY_DEVICE_ADDRESS;
 import static com.smd.smartlamp_ble.settings.SettingsActivity.PREF_KEY_DEVICE_AUTOCONNECT;
 import static com.smd.smartlamp_ble.settings.SettingsActivity.PREF_KEY_DEVICE_NAME;
+import static com.smd.smartlamp_ble.settings.SettingsActivity.PREF_KEY_LED_BRIGHT;
+import static com.smd.smartlamp_ble.settings.SettingsActivity.PREF_KEY_ON_TIME;
 import static com.smd.smartlamp_ble.ui.NavigationDrawerFragment.MENU_POS_DEV_DEBUG;
 import static com.smd.smartlamp_ble.ui.NavigationDrawerFragment.MENU_POS_DEV_SCAN;
 import static com.smd.smartlamp_ble.ui.NavigationDrawerFragment.MENU_POS_RBG;
@@ -636,7 +638,7 @@ public class AlarmActivity extends AppCompatActivity
     }
 
     public void onSendDayClick(View view) {
-       List<DayAlarm> dayList = mViewModel.getDayAlarmList().getValue();
+        List<DayAlarm> dayList = mViewModel.getDayAlarmList().getValue();
 
         if (dayList != null) {
             for (DayAlarm day :dayList) {
@@ -654,5 +656,10 @@ public class AlarmActivity extends AppCompatActivity
             mSendCmdDialog.setMax(mCmdCount);
             mSendCmdDialog.show();
         }
+
+        // Add command to send application options
+        mBLESerialPortService.addCommand(ProtocolUtil.cmdSendOPT(
+                mSettings.getInt(PREF_KEY_ON_TIME, 0),
+                mSettings.getInt(PREF_KEY_LED_BRIGHT, 50)));
     }
 }

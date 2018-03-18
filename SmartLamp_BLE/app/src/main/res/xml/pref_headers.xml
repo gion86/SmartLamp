@@ -8,6 +8,11 @@
         android:title="@string/pref_header_general" />
 
     <header
+        android:fragment="com.smd.smartlamp_ble.settings.SettingsActivity$LEDPreferenceFragment"
+        android:icon="@drawable/ic_settings_brightness_24dp"
+        android:title="@string/pref_header_led" />
+
+    <header
         android:fragment="com.smd.smartlamp_ble.settings.SettingsActivity$DevicePreferenceFragment"
         android:icon="@drawable/ic_smartphone_black_24dp"
         android:title="@string/pref_header_device" />

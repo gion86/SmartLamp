@@ -91,6 +91,11 @@
     <string name="pref_title_device_adr">Device address</string>
     <string name="edittext_input_err">wrong format</string>
 
+    <!-- Settings for LED section -->
+    <string name="pref_header_led">LED</string>
+    <string name="on_time_title">On time [minutes]:</string>
+    <string name="bright_title">LED max brightness [0, 100%]:</string>
+
     <!-- Settings for device section -->
     <string name="pref_header_device">Device</string>
     <string name="pref_title_device_autoconnect">Autoconnect device on startup</string>
