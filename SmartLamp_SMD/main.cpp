@@ -17,7 +17,7 @@
 
 /*
  * Built for ATMega328P 8Mhz, using AVR USBasp programmer.
- * VERSION 0.7
+ * VERSION 0.71
  */
 
 #include <avr/io.h>
@@ -60,7 +60,9 @@
 #define FADE_TIME          10   // Default LED fade total duration [m]
 #define MAX_PWM_CNT        80   // PWM timer max count TOP (<= 255 @ 8 bit)
                                 // PWM frequency = F_CPU / (N * (1 + TOP)) ~ 98 KHz
-#define MAX_BRIGHT       50.0   // Default max LED brightness in percent [1 - 100 %]
+
+#define DEF_ON_MIN         10   // Default on minutes
+#define DEF_LED_BRIGHT   50.0   // Default max LED brightness in percent [1 - 100 %]
 
 // States
 #define STEP_SLEEP         0
@@ -208,6 +210,17 @@ static void digitalClockDisplay(time_t time, const char *tz = NULL) {
   gmtime_r(&time, &tm);
 
   digitalClockDisplay(&tm, tz);
+}
+
+/**
+ * Prints the options for debug
+ */
+void printOptions() {
+  Serial.print("OPT onTime: ");
+  Serial.println(opt.onTime);
+  Serial.print("OPT maxBright: ");
+  Serial.println(opt.maxBright);
+  Serial.println();
 }
 
 /**
@@ -600,10 +613,24 @@ static bool parseCommand(char *buffer, char *command) {
   // buffer = "OPT_10_095"
   if (s != NULL && strlen(buffer) == 10) {
 
-    opt.onTime    = atod(buffer[4]) * 100 + atod(buffer[5]) * 10;
+    opt.onTime    = atod(buffer[4]) * 10  + atod(buffer[5]);
     opt.maxBright = atod(buffer[7]) * 100 + atod(buffer[8]) * 10 + atod(buffer[9]);
 
+    // Default on time in minutes
+    if (opt.onTime == 0) {
+      opt.onTime = DEF_ON_MIN;
+    }
+
+    // Default LED brightness in percentage [1, 100%]
+    if (opt.maxBright == 0 || opt.maxBright > 100) {
+      opt.maxBright = DEF_LED_BRIGHT;
+    }
+
     eeprom_write_block((void*) &opt, (void*)OPT_OFFSET, sizeof(opt));
+
+#ifdef DEBUG
+    printOptions();
+#endif
 
     return true;
   }
@@ -634,6 +661,11 @@ static bool parseCommand(char *buffer, char *command) {
     Serial.print("Local: ");
     digitalClockDisplay(local, tcr->abbrev);
 
+    Serial.println();
+    Serial.println("OPTIONS");
+    printOptions();
+
+    Serial.println("ALARMS");
     printAlarms();
     return true;
   }
@@ -812,6 +844,12 @@ void setup() {
 #ifdef DEBUG
   Serial.print("Local: ");
   digitalClockDisplay(&systemTime, tcr->abbrev);
+
+  Serial.println();
+  Serial.println("OPTIONS");
+  printOptions();
+
+  Serial.println("ALARMS");
   printAlarms();
 #endif
 
@@ -983,11 +1021,7 @@ void loop() {
       }
 
       // LED brightness in percentage [1, 100%]
-      if (opt.maxBright == 0 || opt.maxBright > 100) {
-        ledBright = MAX_BRIGHT;
-      } else {
-        ledBright = opt.maxBright;
-      }
+      ledBright = opt.maxBright;
 
       // Fade time in millisecond
       fadeTime = alarms[systemTime.tm_wday].fadeTime * 60000.0;
