@@ -12,7 +12,7 @@
         android:singleLine="true"
         android:title="@string/pref_title_device_name" />
 
-    <com.smd.smartlamp_ble.settings.ValidatingEditTextMACPreference
+    <com.smd.smartlamp_ble.settings.text.ValidatingEditTextMACPreference
         android:capitalize="characters"
         android:inputType="text"
         android:selectAllOnFocus="true"

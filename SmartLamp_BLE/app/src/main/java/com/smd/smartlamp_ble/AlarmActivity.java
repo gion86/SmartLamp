@@ -640,26 +640,27 @@ public class AlarmActivity extends AppCompatActivity
     public void onSendDayClick(View view) {
         List<DayAlarm> dayList = mViewModel.getDayAlarmList().getValue();
 
+        // Command to send alarm data
         if (dayList != null) {
             for (DayAlarm day :dayList) {
                 mBLESerialPortService.addCommand(ProtocolUtil.cmdSetAlarmFull(day));
                 Log.i(TAG, "SEND: " + ProtocolUtil.cmdSetAlarmFull(day));
             }
-
-            mBLESerialPortService.sendAll();
-
-            // Dialog setup.
-            mCmdCount = mBLESerialPortService.getCommandCount();
-            mCmdSent = 0;
-
-            mSendCmdDialog.setProgress(mCmdSent);
-            mSendCmdDialog.setMax(mCmdCount);
-            mSendCmdDialog.show();
         }
 
         // Add command to send application options
         mBLESerialPortService.addCommand(ProtocolUtil.cmdSendOPT(
                 mSettings.getInt(PREF_KEY_ON_TIME, 0),
                 mSettings.getInt(PREF_KEY_LED_BRIGHT, 50)));
+
+        mBLESerialPortService.sendAll();
+
+        // Dialog setup.
+        mCmdCount = mBLESerialPortService.getCommandCount();
+        mCmdSent = 0;
+
+        mSendCmdDialog.setProgress(mCmdSent);
+        mSendCmdDialog.setMax(mCmdCount);
+        mSendCmdDialog.show();
     }
 }

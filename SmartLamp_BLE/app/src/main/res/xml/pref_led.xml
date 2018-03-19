@@ -1,7 +1,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:preference="http://schemas.android.com/apk/res-auto">
 
-    <com.smd.smartlamp_ble.settings.NumberPickerPreference
+    <com.smd.smartlamp_ble.settings.number.NumberPickerPreference
         android:defaultValue="@integer/on_time_default_value"
         android:key="on_time"
         android:title="@string/on_time_title"
@@ -9,7 +9,7 @@
         preference:minValue="@integer/on_time_min_value"
         preference:wrapSelectorWheel="false"/>
 
-    <com.smd.smartlamp_ble.settings.NumberPickerPreference
+    <com.smd.smartlamp_ble.settings.number.NumberPickerPreference
         android:defaultValue="@integer/bright_default_value"
         android:key="led_bright"
         android:title="@string/bright_title"

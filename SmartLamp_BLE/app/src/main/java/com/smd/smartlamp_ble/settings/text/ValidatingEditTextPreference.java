@@ -1,4 +1,4 @@
-package com.smd.smartlamp_ble.settings;
+package com.smd.smartlamp_ble.settings.text;
 
 import android.app.AlertDialog;
 import android.content.Context;

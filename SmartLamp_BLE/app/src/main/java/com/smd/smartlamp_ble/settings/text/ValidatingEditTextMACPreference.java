@@ -1,4 +1,4 @@
-package com.smd.smartlamp_ble.settings;
+package com.smd.smartlamp_ble.settings.text;
 
 import android.content.Context;
 import android.text.InputFilter;

@@ -15,7 +15,7 @@
  *
  */
 
-package com.smd.smartlamp_ble.settings;
+package com.smd.smartlamp_ble.settings.number;
 
 import android.content.Context;
 import android.content.res.TypedArray;
