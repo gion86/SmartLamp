@@ -79,7 +79,10 @@
 <layer number="114" name="Badge_Outline" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="115" name="ReferenceISLANDS" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="116" name="Patch_BOT" color="9" fill="4" visible="yes" active="yes"/>
+<layer number="117" name="BACKMAAT1" color="7" fill="1" visible="no" active="no"/>
 <layer number="118" name="Rect_Pads" color="7" fill="1" visible="no" active="no"/>
+<layer number="119" name="KAP_TEKEN" color="7" fill="1" visible="no" active="no"/>
+<layer number="120" name="KAP_MAAT1" color="7" fill="1" visible="no" active="no"/>
 <layer number="121" name="_tsilk" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="122" name="_bsilk" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="123" name="tTestmark" color="7" fill="1" visible="yes" active="yes"/>
@@ -89,15 +92,25 @@
 <layer number="127" name="_tValues" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="128" name="_bValues" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="129" name="Mask" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="130" name="SMDSTROOK" color="7" fill="1" visible="no" active="no"/>
 <layer number="131" name="tAdjust" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="132" name="bAdjust" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="133" name="bottom_silk" color="7" fill="1" visible="no" active="no"/>
+<layer number="134" name="silk_top" color="7" fill="1" visible="no" active="no"/>
+<layer number="135" name="silk_bottom" color="7" fill="1" visible="no" active="no"/>
+<layer number="136" name="silktop" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="137" name="silkbottom" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="144" name="Drill_legend" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="145" name="DrillLegend_01-16" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="146" name="DrillLegend_01-20" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="150" name="Notes" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="151" name="HeatSink" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="152" name="_bDocu" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="153" name="FabDoc1" color="6" fill="1" visible="no" active="no"/>
 <layer number="154" name="FabDoc2" color="2" fill="1" visible="no" active="no"/>
 <layer number="155" name="FabDoc3" color="7" fill="15" visible="no" active="no"/>
+<layer number="166" name="AntennaArea" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="168" name="4mmHeightArea" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="199" name="Contour" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="200" name="200bmp" color="1" fill="10" visible="no" active="no"/>
 <layer number="201" name="201bmp" color="2" fill="1" visible="no" active="no"/>
@@ -173,6 +186,7 @@ RX</text>
 <text x="29.972" y="50.292" size="1.27" layer="26" rot="MR0">RED</text>
 <text x="39.624" y="50.292" size="1.27" layer="26" rot="MR0">BLUE</text>
 <hole x="17.526" y="1.778" drill="2"/>
+<text x="28.194" y="58.547" size="0.254" layer="33" ratio="10" rot="R90">&gt;name</text>
 </plain>
 <libraries>
 <library name="adafruit">
@@ -1385,9 +1399,7 @@ Created by Robert Siegler</description>
 <wire x1="2.75" y1="-4" x2="2.75" y2="4" width="0.1" layer="51"/>
 <wire x1="-10.75" y1="3.2" x2="-1.75" y2="3.2" width="0.1" layer="21" style="shortdash"/>
 <wire x1="-10.75" y1="-3.2" x2="-1.75" y2="-3.2" width="0.1" layer="21" style="shortdash"/>
-<wire x1="-1.75" y1="-3.2" x2="-1.75" y2="-1" width="0.1" layer="21" style="shortdash"/>
-<wire x1="-1.75" y1="-1" x2="-1.75" y2="1" width="0.1" layer="21" style="shortdash"/>
-<wire x1="-1.75" y1="1" x2="-1.75" y2="3.2" width="0.1" layer="21" style="shortdash"/>
+<wire x1="-1.75" y1="-3.2" x2="-1.75" y2="3.2" width="0.1" layer="21" style="shortdash"/>
 <wire x1="-8.75" y1="-1" x2="-1.75" y2="-1" width="0.1" layer="51" style="shortdash"/>
 <wire x1="-8.75" y1="1" x2="-1.75" y2="1" width="0.1" layer="51" style="shortdash"/>
 <wire x1="-8.75" y1="-1" x2="-8.75" y2="1" width="0.1" layer="21" curve="-180"/>
@@ -1427,6 +1439,18 @@ Created by Robert Siegler</description>
 <rectangle x1="2.4892" y1="-0.1524" x2="2.5146" y2="1.7526" layer="46"/>
 <rectangle x1="2.4892" y1="-1.7526" x2="2.5146" y2="-0.1524" layer="46"/>
 <rectangle x1="-1.4986" y1="-5.207" x2="1.4986" y2="-4.3942" layer="46"/>
+<wire x1="0" y1="-1.905" x2="0" y2="0" width="0.127" layer="46"/>
+<wire x1="0" y1="0" x2="-1.778" y2="0" width="0.127" layer="46"/>
+<wire x1="-1.778" y1="0" x2="-1.27" y2="0.254" width="0.127" layer="46"/>
+<wire x1="-1.778" y1="0" x2="-1.27" y2="-0.254" width="0.127" layer="46"/>
+<wire x1="0" y1="0" x2="1.905" y2="0" width="0.127" layer="46"/>
+<wire x1="1.905" y1="0" x2="1.397" y2="0.254" width="0.127" layer="46"/>
+<wire x1="1.905" y1="0" x2="1.397" y2="-0.254" width="0.127" layer="46"/>
+<wire x1="0" y1="-2.667" x2="0" y2="-3.683" width="0.127" layer="46"/>
+<wire x1="0" y1="-3.683" x2="-0.254" y2="-3.175" width="0.127" layer="46"/>
+<wire x1="0" y1="-3.683" x2="0.254" y2="-3.175" width="0.127" layer="46"/>
+<text x="-5.715" y="-2.54" size="0.6096" layer="46" ratio="10">3 Slot Drills with copper</text>
+<text x="13.97" y="5.715" size="0.254" layer="33" ratio="10" rot="R90">&gt;name</text>
 </package>
 </packages>
 </library>
