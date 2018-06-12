@@ -164,7 +164,7 @@
 <hole x="50.546" y="1.778" drill="2"/>
 <hole x="50.546" y="49.53" drill="2"/>
 <hole x="14.224" y="49.53" drill="2"/>
-<text x="44.87671875" y="41.630596875" size="0.6096" layer="49" rot="R90">MOSI</text>
+<text x="44.62271875" y="41.630596875" size="0.6096" layer="49" rot="R90">MOSI</text>
 <text x="52.49671875" y="44.170596875" size="0.6096" layer="49" rot="R90">RESET</text>
 <text x="52.49671875" y="41.884596875" size="0.6096" layer="49" rot="R90">SCK</text>
 <text x="52.49671875" y="39.090596875" size="0.6096" layer="49" rot="R90">MISO</text>
@@ -174,8 +174,8 @@ TX</text>
 RX</text>
 <text x="26.162" y="3.048" size="0.6096" layer="49">KEY</text>
 <text x="24.13" y="5.588" size="0.6096" layer="49">ON/OFF</text>
-<text x="44.87671875" y="38.836596875" size="0.6096" layer="49" rot="R90">+3V3</text>
-<text x="44.87671875" y="44.678596875" size="0.6096" layer="49" rot="R90">GND</text>
+<text x="44.62271875" y="38.836596875" size="0.6096" layer="49" rot="R90">+3V3</text>
+<text x="44.62271875" y="44.678596875" size="0.6096" layer="49" rot="R90">GND</text>
 <text x="5.334" y="38.608" size="0.6096" layer="49">+12V</text>
 <text x="5.334" y="36.068" size="0.6096" layer="49">GR</text>
 <text x="5.334" y="33.528" size="0.6096" layer="49">RED</text>
