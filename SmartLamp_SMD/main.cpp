@@ -53,7 +53,7 @@
 
 #define CMD_LENGTH         80   // Command buffer length
 
-#define OPT_OFFSET          0   // Options structure EEPROM start address TODO?
+#define OPT_OFFSET          0   // Options structure EEPROM start address
 #define ALARMS_OFFSET       2   // Alarms array EEPROM start address
 
 // LED defines
@@ -172,7 +172,7 @@ static void inline printDigits(int digits) {
  * - struct tm  *tm: struct tm from the time.h (avr-libc)
  * - const char *tz: string for the timezone, if not used set to NULL
  */
-static void digitalClockDisplay(struct tm *tm, const char *tz = NULL) {
+static void printTime(struct tm *tm, const char *tz = NULL) {
   printDigits(tm->tm_hour);
   Serial.print(':');
   printDigits(tm->tm_min);
@@ -203,13 +203,13 @@ static void digitalClockDisplay(struct tm *tm, const char *tz = NULL) {
  * - time_t time: time from the time.h (avr-libc)
  * - const char *tz: string for the timezone, if not used set to NULL
  */
-static void digitalClockDisplay(time_t time, const char *tz = NULL) {
+static void printTime(time_t time, const char *tz = NULL) {
   struct tm tm;
 
   memset((void*) &tm, 0, sizeof(tm));
   gmtime_r(&time, &tm);
 
-  digitalClockDisplay(&tm, tz);
+  printTime(&tm, tz);
 }
 
 /**
@@ -375,7 +375,7 @@ static bool setNextAlarm(struct tm *sys_t) {
 
 #ifdef DEBUG
         Serial.print("UTC alarm:");
-        digitalClockDisplay(&utc_alarm_tm, "UTC");
+        printTime(&utc_alarm_tm, "UTC");
 #endif
 
         // Set alarm to the RTC clock in UTC format!!
@@ -466,11 +466,11 @@ static bool parseCommand(char *buffer, char *command) {
 #ifdef DEBUG
       time_t utc = RTC.get();
       Serial.print("UTC:   ");
-      digitalClockDisplay(utc, "UTC");
+      printTime(utc, "UTC");
 
       time_t local = TZ.toLocal(utc, &tcr);
       Serial.print("Local: ");
-      digitalClockDisplay(local, tcr->abbrev);
+      printTime(local, tcr->abbrev);
 #endif
 
       // Get the current system time and set next alarm
@@ -655,11 +655,11 @@ static bool parseCommand(char *buffer, char *command) {
   if (s != NULL && strlen(buffer) == 5) {
     time_t utc = RTC.get();
     Serial.print("UTC:   ");
-    digitalClockDisplay(utc, "UTC");
+    printTime(utc, "UTC");
 
     time_t local = TZ.toLocal(utc, &tcr);
     Serial.print("Local: ");
-    digitalClockDisplay(local, tcr->abbrev);
+    printTime(local, tcr->abbrev);
 
     Serial.println();
     Serial.println("OPTIONS");
@@ -692,7 +692,7 @@ static bool parseCommand(char *buffer, char *command) {
 /*
  * Put the micro to sleep
  */
-static void system_sleep() {
+static void systemSleep() {
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
   sleep_enable();
   sleep_mode();
@@ -714,29 +714,29 @@ ISR(PCINT2_vect) {
  * Set various power reduction options
  */
 static void powerReduction() {
-    // Disable digital input buffer on ADC pins
-    DIDR0 = (1 << ADC5D) | (1 << ADC4D) | (1 << ADC3D) | (1 << ADC2D) | (1 << ADC1D) | (1 << ADC0D);
+  // Disable digital input buffer on ADC pins
+  DIDR0 = (1 << ADC5D) | (1 << ADC4D) | (1 << ADC3D) | (1 << ADC2D) | (1 << ADC1D) | (1 << ADC0D);
 
-    // Disable digital input buffer on Analog comparator pins
-    DIDR1 |= (1 << AIN1D) | (1 << AIN0D);
+  // Disable digital input buffer on Analog comparator pins
+  DIDR1 |= (1 << AIN1D) | (1 << AIN0D);
 
-    // Disable Analog Comparator interrupt
-    ACSR &= ~(1 << ACIE);
+  // Disable Analog Comparator interrupt
+  ACSR &= ~(1 << ACIE);
 
-    // Disable Analog Comparator
-    ACSR |= (1 << ACD);
+  // Disable Analog Comparator
+  ACSR |= (1 << ACD);
 
-    // Disable unused peripherals to save power
-    // Disable ADC (ADC must be disabled before shutdown)
-    ADCSRA &= ~(1 << ADEN);
+  // Disable unused peripherals to save power
+  // Disable ADC (ADC must be disabled before shutdown)
+  ADCSRA &= ~(1 << ADEN);
 
-    // Enable power reduction register except:
-    // - USART0: for serial communications
-    // - TWI module: for I2C communications
-    // - TIMER0: for millis()
-    // - TIMER1: for Fast PWM
-    // - TIMER2: for Fast PWM
-    PRR = 0xFF & (~(1 << PRUSART0)) & (~(1 << PRTWI)) & (~(1 << PRTIM0)) & (~(1 << PRTIM1)) & (~(1 << PRTIM2));
+  // Enable power reduction register except:
+  // - USART0: for serial communications
+  // - TWI module: for I2C communications
+  // - TIMER0: for millis()
+  // - TIMER1: for Fast PWM
+  // - TIMER2: for Fast PWM
+  PRR = 0xFF & (~(1 << PRUSART0)) & (~(1 << PRTWI)) & (~(1 << PRTIM0)) & (~(1 << PRTIM1)) & (~(1 << PRTIM2));
 }
 
 /*
@@ -843,7 +843,7 @@ void setup() {
 
 #ifdef DEBUG
   Serial.print("Local: ");
-  digitalClockDisplay(&systemTime, tcr->abbrev);
+  printTime(&systemTime, tcr->abbrev);
 
   Serial.println();
   Serial.println("OPTIONS");
@@ -897,14 +897,14 @@ void loop() {
       OCR2A = 0;
 
       delay(50);
-      system_sleep();
+      systemSleep();
 
       // Get the current system time from RTC
       getSysTime(&systemTime);
 
 #ifdef DEBUG
       Serial.print("Local: ");
-      digitalClockDisplay(&systemTime, tcr->abbrev);
+      printTime(&systemTime, tcr->abbrev);
 #endif
 
       // Necessary to reset the alarm flag on RTC!
